@@ -12,6 +12,7 @@ https://docs.djangoproject.com/en/5.0/ref/settings/
 
 from pathlib import Path
 import os
+from dotenv import load_dotenv #env file
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -26,10 +27,12 @@ SECRET_KEY = 'django-insecure-!#o5g*stc)^mmk^ds1&9#2qo=bpi7j+fjfr7*ki#==105!7&+*
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
+load_dotenv()
+
 ALLOWED_HOSTS = [
     "patient-chart-monitoring-and-management.onrender.com", 
     "0.0.0.0",
-    "127.0.0.1",
+    os.getenv('ALLOWED_HOSTS'), #env variable
 ]
 
 
