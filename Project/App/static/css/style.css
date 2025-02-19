@@ -1,4 +1,41 @@
-*{
-    background-color: black;
-    color:azure;
+html, body {
+    margin: 0;
+    padding: 0;
+}
+/*for smaller screens */
+@media (max-width: 768px) {
+    .login-page{
+        background-size: contain;
+    }
+}
+@media (max-width: 480px) {
+    .login-page{
+        background-size: contain;
+    }
+}
+
+/*for login page*/
+.login-page{
+    background-image: url("../images/landingpage-background.jpg");
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+
+    margin:0;
+    padding:0;
+    min-height: 100vh;
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: flex-start;
+    padding-top: 10vh;
+}
+.login-page h1, .login-page h2, .login-page p {
+    width: 100%;
+    text-align: center;
+    margin:0 auto;
+    color: white;
+    margin-bottom: 20px;
+    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.7);
 }
