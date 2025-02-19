@@ -26,7 +26,10 @@ SECRET_KEY = 'django-insecure-!#o5g*stc)^mmk^ds1&9#2qo=bpi7j+fjfr7*ki#==105!7&+*
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = [
+    "patient-chart-monitoring-and-management.onrender.com", 
+    "0.0.0.0",
+]
 
 
 # Application definition
