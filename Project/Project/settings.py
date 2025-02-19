@@ -129,6 +129,8 @@ MEDIA_URL = 'images/'
 
 STATICFILES_DIRS = (os.path.join(BASE_DIR,'App' ,'static'),)
 
+STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles') #render webhost "run python manage.py collectstatic --noinput" for update in css
+
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.0/ref/settings/#default-auto-field
 
