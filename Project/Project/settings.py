@@ -29,6 +29,7 @@ DEBUG = True
 ALLOWED_HOSTS = [
     "patient-chart-monitoring-and-management.onrender.com", 
     "0.0.0.0",
+    "127.0.0.1",
 ]
 
 
@@ -123,7 +124,7 @@ USE_TZ = True
 STATIC_URL = 'static/'
 MEDIA_URL = 'images/'
 
-STATICFILES_DIRS = (os.path.join(BASE_DIR,'webApp' ,'static'),)
+STATICFILES_DIRS = (os.path.join(BASE_DIR,'App' ,'static'),)
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.0/ref/settings/#default-auto-field
