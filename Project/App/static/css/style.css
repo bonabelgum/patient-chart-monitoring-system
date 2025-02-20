@@ -21,15 +21,12 @@ html, body {
     }
 }
 @media (max-width: 480px) {
-    .login-page{
-        background-size: 
-            350px,
-            200px,
-            cover !important;
+    .login-page {
         background-image: url("../images/bkg-mobile.jpg") !important;
-        background-position: center !important;
+        align-items: center;
     }
     .login-user {
+        display:flex;
         flex-direction: column;
         gap: 25px;
         justify-content: center;
@@ -40,6 +37,9 @@ html, body {
     .admin, .nurse {
         width: min(25vw, 130px);
         height: min(25vw, 130px);
+        display: flex;
+        align-items: center;
+        justify-content: center;
     }
     .divider {
         width: 40%;
