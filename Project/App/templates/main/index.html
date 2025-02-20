@@ -15,22 +15,17 @@
             <div class="divider"></div>
         </div>
         <h2 class="login-title">Login</h2>
-        <div class = user-types>
-            <p class="login-p">Choose your type of user and enter details to sign in to your account</p>
-            <div class="login-user">
-                <div class="admin user-circle"></div>
-                <div class="nurse user-circle"></div>
-            </div>
-        </div>
+        <p class="login-p">Enter your details to sign in to your account</p>
         <div class="login-details">
-            <img src="{% static 'images/left-arrow.png' %}" alt="Back" class="back-arrow">
-            <div class="details-container">
-                <div class ="admin-details">
-                    <p>SREEN FOR ADMIN</p>
-                </div>
-                <div class="nurse-details">
-                    <p>SCREEN FOR NURSE</p>
-                </div>
+            <div class="login-left">
+                <i class="icon">🔒</i>
+            </div>
+            <div class="login-right">
+                <form>
+                    <input type="text" placeholder="Employee ID" required>
+                    <input type="password" placeholder="Password" required>
+                    <button type="submit">Login</button>
+                </form>
             </div>
         </div>
         <p class="create-account"><a href="{% url 'signup' %}">Create new account</a></p>

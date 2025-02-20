@@ -11,10 +11,6 @@ html, body {
             270px,
             contain;
     }
-    .admin, .nurse {
-        width: min(35vw, 170px);
-        height: min(35vw, 170px);
-    }
     .divider {
         width: 50%;
         max-width: 350px;
@@ -30,14 +26,6 @@ html, body {
             250px,
             100px,
             cover;
-    }
-    .login-user {
-        flex-direction: column;
-        gap: 25px;
-    }
-    .admin, .nurse {
-        width: min(25vw, 150px);
-        height: min(25vw, 150px);
     }
     .divider {
         width: 40%;
@@ -100,7 +88,6 @@ html, body {
 }
 .login-page p{
     font-size: 1rem;
-    padding-bottom: 35px;
     max-width: 55%;
     margin: 0 auto;
     text-align: center;
@@ -113,115 +100,68 @@ html, body {
     margin-bottom: 25px;
     font-family: 'Poppins', sans-serif;
 }
-/*user types*/
-.user-types{
-    justify-content: center;
-    align-items: center;
+
+
+/*login details*/
+.login-details{
+    display: flex;
+    flex-direction: row;
+    width:75%;
+    position: relative;
+    background-color: rgba(89, 107, 248, 0.5);
+    border-radius: 10px;
+    overflow: hidden;
+    margin: auto;
+    margin-top: 25px;
+}
+.login-right {
+    flex: 2;
+    padding: 20px;
+    background: white;
     display: flex;
     flex-direction: column;
-    width: 100%;
-    text-align: center;
-}
-.login-user {
-    display: flex;
     justify-content: center;
-    align-items: center;
-    gap: 10vw; /*space between circles*/
-    flex-wrap: wrap;
-    margin-top: 20px;
-    margin-bottom: 55px;
-    max-width: 90vw;
 }
-.admin, .nurse {
-    width: min(45vw, 250px); 
-    min-width: 190px; /*size*/
-    min-height: 190px;
-    height: min(45vw, 250px);
-    background-color: white;
-    border-radius: 50%;
+.login-left {
+    flex: 1;
     display: flex;
     align-items: center;
     justify-content: center;
-    box-shadow: 2px 2px 4px rgba(9, 36, 255, 0.5);
-    position: relative;
-    transition: transform 0.3s ease-in-out; /*hover effect*/
 }
-/*circle labels*/
-.admin::before, .nurse::before {
-    font-family: 'Poppins', sans-serif;
-    content: attr(data-label);
-    position: absolute;
-    top: -30px;
-    font-size: 1.3rem;
+.login-left .icon {
+    font-size: 50px;
     color: white;
-    font-weight: bold;
-    text-align: center;
-    width: 100%;
 }
-.admin::before {
-    content: "Admin";
-}
-.nurse::before {
-    content: "Nurse";
-}
-/*circle hover effect*/
-.admin:hover, .nurse:hover {
-    transform: scale(1.2);
-}
-/*on click*/
-.user-circle {
-    width: 120px;
-    height: 120px;
-    background-color: white;
-    border-radius: 50%;
+form {
     display: flex;
-    align-items: center;
-    justify-content: center;
-    box-shadow: 2px 2px 4px rgba(9, 36, 255, 0.5);
-    transition: transform 0.2s ease-in-out;
+    flex-direction: column;
+}
+input {
+    margin: 10px 0;
+    padding: 10px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+}
+button {
+    padding: 10px;
+    background: #7585ff;
+    color: white;
+    border: none;
+    border-radius: 5px;
     cursor: pointer;
 }
+
 /*create-account*/
 .create-account {
-    padding-top: 25px;
-    color:rgba(9, 36, 255, 0.5) !important;
+    position: relative;
+    top: -70px;
     transition: transform 0.3s ease-in-out;
     cursor: pointer;
+}
+.create-account a {
+    text-decoration: none;
+    color:rgba(9, 36, 255, 0.5);
 }
 .create-account:hover {
     transform: scale(1.2);
 }
-
-/*login details*/
-.login-details{
-    display: none;
-    flex-direction: column;
-    width:75%;
-    position: relative;
-    background: rgba(89, 107, 248, 0.5);
-}
-.details-container {
-    display: flex;
-    flex-direction: column;
-    margin-top: 40px;
-}
-.admin-details, .nurse-details{
-    display:none;
-    align-items: center;
-    flex-direction: column;
-}
-.back-arrow {
-    width: 45px;
-    height: auto;
-    filter: invert(100%); /* converts black image to white */
-    transition: transform 0.3s ease-in-out;
-    cursor: pointer;
-    position: absolute;
-    top:2px;
-    right:5px;
-}
-.back-arrow:hover {
-    transform: scale(1.2);
-}
-/*login details for admin*/
-/*login details for nurse*/

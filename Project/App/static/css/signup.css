@@ -184,9 +184,12 @@ html, body {
 /*existing-acc*/
 .existing-acc {
     padding-top: 25px;
-    color:rgba(9, 36, 255, 0.5) !important;
     transition: transform 0.3s ease-in-out;
     cursor: pointer;
+}
+.existing-acc a {
+    text-decoration: none;
+    color:rgba(9, 36, 255, 0.5);
 }
 .existing-acc:hover {
     transform: scale(1.2);
@@ -199,6 +202,7 @@ html, body {
     width:75%;
     position: relative;
     background: rgba(89, 107, 248, 0.5);
+    border-radius: 10px;
 }
 .details-container {
     display: flex;
