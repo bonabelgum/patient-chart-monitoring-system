@@ -11,6 +11,14 @@ html, body {
         290px,
         contain;
     }
+    .admin, .nurse {
+        width: min(35vw, 170px);
+        height: min(35vw, 170px);
+    }
+    .divider {
+        width: 50%;
+        max-width: 350px;
+    }
 }
 @media (max-width: 480px) {
     .login-page{
@@ -27,6 +35,10 @@ html, body {
     .admin, .nurse {
         width: min(25vw, 130px);
         height: min(25vw, 130px);
+    }
+    .divider {
+        width: 40%;
+        max-width: 130px;
     }
 }
 
@@ -60,16 +72,31 @@ html, body {
     padding-top: 0;
     padding-bottom: 30px;
 }
+.title-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
 .login-page h1{
+    display: inline-block;
     font-size: 2.5rem;
     padding-top: 50px;
+}
+.divider {
+    width: 92%;
+    height: 1px;
+    background-color: white;
+    padding: 0 20px;
 }
 .login-page h2{
     font-size: 2rem;
 }
 .login-page p{
-    font-size: 1.3rem;
+    font-size: 1rem;
     padding-bottom: 35px;
+    max-width: 55%;
+    margin: 0 auto;
+    text-align: center;
 }
 .login-page h1, .login-page h2, .login-page p {
     width: 100%;
@@ -90,8 +117,10 @@ html, body {
     max-width: 90vw;
 }
 .admin, .nurse {
-    width: min(45vw, 170px); /*size*/
-    height: min(45vw, 170px);
+    width: min(45vw, 200px); /*size*/
+    min-width: 170px;
+    min-height: 170px;
+    height: min(45vw, 200px);
     background-color: white;
     border-radius: 50%;
     display: flex;
@@ -99,6 +128,7 @@ html, body {
     justify-content: center;
     box-shadow: 2px 2px 4px rgba(27, 98, 255, 0.5);
     position: relative;
+    transition: transform 0.3s ease-in-out; /*hover effect*/
 }
 /*circle labels*/
 .admin::before, .nurse::before {
@@ -117,4 +147,21 @@ html, body {
 }
 .nurse::before {
     content: "Nurse";
+}
+/*circle hover effect*/
+.admin:hover, .nurse:hover {
+    transform: scale(1.2);
+}
+/*on click*/
+.user-circle {
+    width: 120px;
+    height: 120px;
+    background-color: white;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 2px 2px 4px rgba(27, 98, 255, 0.5);
+    transition: transform 0.2s ease-in-out;
+    cursor: pointer;
 }
