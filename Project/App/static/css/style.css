@@ -7,8 +7,8 @@ html, body {
 @media (max-width: 768px) {
     .login-page{
         background-size: 
-        440px,
-        290px,
+        420px,
+        270px,
         contain;
     }
     .admin, .nurse {
@@ -27,8 +27,8 @@ html, body {
             url("../images/bkg-elem2.png"),
             url("../images/bkg-mobile.jpg") !important;
         background-size: 
-            350px,
-            200px,
+            250px,
+            100px,
             cover;
     }
     .login-user {
@@ -36,8 +36,8 @@ html, body {
         gap: 25px;
     }
     .admin, .nurse {
-        width: min(25vw, 130px);
-        height: min(25vw, 130px);
+        width: min(25vw, 150px);
+        height: min(25vw, 150px);
     }
     .divider {
         width: 40%;
@@ -113,6 +113,10 @@ html, body {
 .user-types{
     justify-content: center;
     align-items: center;
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+    text-align: center;
 }
 .login-user {
     display: flex;
@@ -124,10 +128,10 @@ html, body {
     max-width: 90vw;
 }
 .admin, .nurse {
-    width: min(45vw, 200px); /*size*/
-    min-width: 170px;
-    min-height: 170px;
-    height: min(45vw, 200px);
+    width: min(45vw, 250px); 
+    min-width: 190px; /*size*/
+    min-height: 190px;
+    height: min(45vw, 250px);
     background-color: white;
     border-radius: 50%;
     display: flex;
