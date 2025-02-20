@@ -25,14 +25,17 @@ html, body {
         background-size: 
             350px,
             200px,
-            cover;
-        background-image: url("../images/bkg-mobile.jpg");
+            cover !important;
+        background-image: url("../images/bkg-mobile.jpg") !important;
+        background-position: center !important;
     }
     .login-user {
         flex-direction: column;
         gap: 25px;
         justify-content: center;
         align-items: center;
+        width:100%;
+        height:auto;
     }
     .admin, .nurse {
         width: min(25vw, 130px);
