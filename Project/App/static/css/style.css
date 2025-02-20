@@ -22,24 +22,22 @@ html, body {
 }
 @media (max-width: 480px) {
     .login-page {
-        background-image: url("../images/bkg-mobile.jpg") !important;
-        align-items: center;
+        background-image:
+            url("../images/bkg-elem1.png"), 
+            url("../images/bkg-elem2.png"),
+            url("../images/bkg-mobile.jpg") !important;
+        background-size: 
+            350px,
+            200px,
+            cover;
     }
     .login-user {
-        display:flex;
         flex-direction: column;
         gap: 25px;
-        justify-content: center;
-        align-items: center;
-        width:100%;
-        height:auto;
     }
     .admin, .nurse {
         width: min(25vw, 130px);
         height: min(25vw, 130px);
-        display: flex;
-        align-items: center;
-        justify-content: center;
     }
     .divider {
         width: 40%;
@@ -112,6 +110,10 @@ html, body {
     font-family: 'Poppins', sans-serif;
 }
 /*user*/
+.user-types{
+    justify-content: center;
+    align-items: center;
+}
 .login-user {
     display: flex;
     justify-content: center;
