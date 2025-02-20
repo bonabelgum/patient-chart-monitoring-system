@@ -5,7 +5,7 @@ html, body {
 }
 /*for smaller screens */
 @media (max-width: 768px) {
-    .login-page{
+    .signup-page{
         background-size: 
             420px,
             270px,
@@ -21,7 +21,7 @@ html, body {
     }
 }
 @media (max-width: 480px) {
-    .login-page {
+    .signup-page {
         background-image:
             url("../images/bkg-elem1.png"), 
             url("../images/bkg-elem2.png"),
@@ -31,7 +31,7 @@ html, body {
             100px,
             cover;
     }
-    .login-user {
+    .signup-user {
         flex-direction: column;
         gap: 25px;
     }
@@ -46,8 +46,8 @@ html, body {
 }
 
 
-/*for login page*/
-.login-page{
+/*for signup page*/
+.signup-page{
     background-image: 
         url("../images/bkg-elem1.png"), 
         url("../images/bkg-elem2.png"),
@@ -81,7 +81,7 @@ html, body {
     flex-direction: column;
     align-items: center;
 }
-.login-page h1{
+.signup-page h1{
     display: inline-block;
     font-size: 2.5rem;
     padding-top: 50px;
@@ -94,11 +94,11 @@ html, body {
     background-color: white;
     padding: 0 20px;
 }
-.login-page h2{
+.signup-page h2{
     font-size: 2rem;
     color: white;
 }
-.login-page p{
+.signup-page p{
     font-size: 1rem;
     padding-bottom: 35px;
     max-width: 55%;
@@ -106,7 +106,7 @@ html, body {
     text-align: center;
     color: white;
 }
-.login-page h1, .login-page h2, .login-page p {
+.signup-page h1, .signup-page h2, .signup-page p {
     width: 100%;
     text-align: center;
     margin:0 auto;
@@ -122,7 +122,7 @@ html, body {
     width: 100%;
     text-align: center;
 }
-.login-user {
+.signup-user {
     display: flex;
     justify-content: center;
     align-items: center;
@@ -181,19 +181,19 @@ html, body {
     transition: transform 0.2s ease-in-out;
     cursor: pointer;
 }
-/*create-account*/
-.create-account {
+/*existing-acc*/
+.existing-acc {
     padding-top: 25px;
     color:rgba(9, 36, 255, 0.5) !important;
     transition: transform 0.3s ease-in-out;
     cursor: pointer;
 }
-.create-account:hover {
+.existing-acc:hover {
     transform: scale(1.2);
 }
 
-/*login details*/
-.login-details{
+/*signup details*/
+.signup-details{
     display: none;
     flex-direction: column;
     width:75%;
@@ -223,5 +223,5 @@ html, body {
 .back-arrow:hover {
     transform: scale(1.2);
 }
-/*login details for admin*/
-/*login details for nurse*/
+/*signup details for admin*/
+/*signup details for nurse*/

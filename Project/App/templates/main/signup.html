@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="en">
+    {% load static %}
+    <head>
+        <meta charset="UTF-8">
+        <meta http-equiv="X-UA-Compatible" content="IE=edge">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <link rel="stylesheet" href="{% static 'css/signup.css' %}">
+        <title>Patient Monitoring and Management System</title>
+    </head>
+    <body>
+        <div class="signup-page">
+            <div class="title-container">
+                <h1 class="page-title">Patient Monitoring and Management System</h1>
+                <div class="divider"></div>
+            </div>
+            <h2 class="signup-title">Signup</h2>
+            <div class = user-types>
+                <p class="signup-p">Choose your type of user and enter details to create account</p>
+                <div class="signup-user">
+                    <div class="admin user-circle"></div>
+                    <div class="nurse user-circle"></div>
+                </div>
+            </div>
+            <div class="signup-details">
+                <img src="{% static 'images/left-arrow.png' %}" alt="Back" class="back-arrow">
+                <div class="details-container">
+                    <div class ="admin-details">
+                        <p>SREEN FOR ADMIN</p>
+                    </div>
+                    <div class="nurse-details">
+                        <p>SCREEN FOR NURSE</p>
+                    </div>
+                </div>
+            </div>
+            <p class="existing-acc"><a href="{% url 'index' %}">Already have an account</a></p>
+        </div>
+        <script src="{% static 'js/signup.js' %}"></script>
+    </body>
+</html>
