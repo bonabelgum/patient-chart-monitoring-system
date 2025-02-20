@@ -5,37 +5,96 @@ html, body {
 /*for smaller screens */
 @media (max-width: 768px) {
     .login-page{
-        background-size: contain;
+        background-size: 
+        440px,
+        290px,
+        contain;
     }
 }
 @media (max-width: 480px) {
     .login-page{
-        background-size: contain;
+        background-size: 
+            350px,
+            200px,
+            cover;
+        background-image: url("../images/bkg-mobile.jpg");
+    }
+    .login-user {
+        flex-direction: column; 
+        gap: 20px;
+    }
+    .admin, .nurse {
+        width: min(25vw, 150px);
+        height: min(25vw, 150px);
     }
 }
 
 /*for login page*/
 .login-page{
-    background-image: url("../images/landingpage-background.jpg");
-    background-size: cover;
-    background-position: center;
-    background-repeat: no-repeat;
+    background-image: 
+        url("../images/bkg-elem1.png"), 
+        url("../images/bkg-elem2.png"),
+        url("../images/bkg.jpg");
+    background-size: 
+        450px,
+        300px,
+        cover;
+    background-position: 
+        bottom left,
+        top right,
+        top;
+    background-repeat: 
+        no-repeat, 
+        no-repeat, 
+        no-repeat;
 
     margin:0;
     padding:0;
+    max-height: 70vh;
     min-height: 100vh;
     width: 100%;
     display: flex;
     flex-direction: column;
     align-items: center;
     justify-content: flex-start;
-    padding-top: 10vh;
+    padding-top: 0;
+    padding-bottom: 0;
+}
+.login-page h1{
+    font-size: 2.5rem;
+    padding-top: 50px;
+}
+.login-page h2{
+    font-size: 2rem;
+}
+.login-page p{
+    font-size: 1.5rem;
 }
 .login-page h1, .login-page h2, .login-page p {
     width: 100%;
     text-align: center;
     margin:0 auto;
     color: white;
-    margin-bottom: 20px;
-    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.7);
+    margin-bottom: 25px;
+    font-family: 'Poppins', sans-serif;
+}
+/*user*/
+.login-user {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 10vw; /*space between circles*/
+    flex-wrap: wrap;
+    margin-top: 20px;
+    max-width: 90vw;
+}
+.admin, .nurse {
+    width: min(45vw, 170px); /*size*/
+    height: min(45vw, 170px);
+    background-color: white;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 2px 2px 4px rgba(27, 98, 255, 0.5);
 }
