@@ -29,8 +29,21 @@ document.addEventListener("DOMContentLoaded", function () {
     document.querySelectorAll(".user-circle").forEach(circle => {
         circle.addEventListener("click", toggleSignUpDetails);
     });
-
+    
     document.querySelector(".admin").addEventListener("click", showAdminDetails);
     document.querySelector(".nurse").addEventListener("click", showNurseDetails);
     document.querySelector(".back-arrow").addEventListener("click", showSignUpUser);
+});
+
+document.addEventListener("DOMContentLoaded", function () { //for popup
+    document.getElementById("verifyNurseForm").addEventListener("submit", function (event) {
+        event.preventDefault();
+        var verifyNurse = new bootstrap.Modal(document.getElementById('verifyNurse'));
+        verifyNurse.show();
+    });
+    document.getElementById("verifyAdminForm").addEventListener("submit", function (event) {
+        event.preventDefault();
+        var verifyAdmin = new bootstrap.Modal(document.getElementById('verifyAdmin'));
+        verifyAdmin.show();
+    });
 });

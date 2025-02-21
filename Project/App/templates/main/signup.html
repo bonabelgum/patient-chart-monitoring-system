@@ -6,6 +6,12 @@
         <meta http-equiv="X-UA-Compatible" content="IE=edge">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
         <link rel="stylesheet" href="{% static 'css/signup.css' %}">
+        <!--icon-->
+        <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" crossorigin="anonymous">
+        <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons/font/bootstrap-icons.css" crossorigin="anonymous">
+        <!--popup-->
+        <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet" crossorigin="anonymous">
+        <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons/font/bootstrap-icons.css" rel="stylesheet" crossorigin="anonymous">
         <title>Patient Monitoring and Management System</title>
     </head>
     <body>
@@ -26,15 +32,75 @@
                 <img src="{% static 'images/left-arrow.png' %}" alt="Back" class="back-arrow">
                 <div class="details-container">
                     <div class ="admin-details">
-                        <p>SREEN FOR ADMIN</p>
+                        <img src="../static/images/admin.png" alt="Admin Icon" class="admin-icon">
+                        <form id="verifyAdminForm">
+                            <div class="input-group mb-2">
+                                <span class="input-group-text"><i class="bi bi-person"></i></span>
+                                <input class="form-control" id="employeeID" type="text" placeholder="Employee ID" required>
+                            </div>
+                            <div class="input-group mb-2">
+                                <span class="input-group-text"><i class="bi bi-lock"></i></span>
+                                <input class="form-control" id="password" type="password" placeholder="Password" required>
+                            </div>
+                            <button type="submit" class="verify-admin">Verify</button>
+                        </form>
                     </div>
-                    <div class="nurse-details">
-                        <p>SCREEN FOR NURSE</p>
+                    <div class="nurse-details mt-4">
+                        <img src="../static/images/nurse.png" alt="Nurse Icon" class="nurse-icon">
+                        <form id="verifyNurseForm">
+                            <div class="input-group mb-2">
+                                <span class="input-group-text"><i class="bi bi-person"></i></span>
+                                <input class="form-control" id="employeeID" type="text" placeholder="Employee ID" required>
+                            </div>
+                            <div class="input-group mb-2">
+                                <span class="input-group-text"><i class="bi bi-lock"></i></span>
+                                <input class="form-control" id="password" type="password" placeholder="Password" required>
+                            </div>
+                            <button type="submit" class="verify-nurse">Verify</button>
+                        </form>
                     </div>
+                    <!--pop up for admin-->
+                    <div class="modal fade" id="verifyAdmin" tabindex="-1" aria-labelledby="successModalLabel" aria-hidden="true">
+                        <div class="modal-dialog modal-dialog-centered">
+                            <div class="modal-content">
+                                <div class="modal-header">
+                                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close">×</button>
+                                    <h5 class="modal-title" id="successModalLabel">A code has been sent to your phone. Please enter the code to verify (admin)</h5>
+                                </div>
+                                <div class="modal-body">
+                                    <input class="form-control" id="verify-code-admin" type="text" placeholder="Enter code" required>
+                                </div>
+                                <div class="modal-footer">
+                                    <button type="button" class="btn btn-success" data-bs-dismiss="modal">Confirm</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <!--pop up nurse-->
+                    <div class="modal fade" id="verifyNurse" tabindex="-1" aria-labelledby="successModalLabel" aria-hidden="true">
+                        <div class="modal-dialog modal-dialog-centered">
+                            <div class="modal-content">
+                                <div class="modal-header">
+                                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close">×</button>
+                                    <h5 class="modal-title" id="successModalLabel">A code has been sent to your phone. Please enter the code to verify (nurse)</h5>
+                                </div>
+                                <div class="modal-body">
+                                    <input class="form-control" id="verify-code-nurse" type="text" placeholder="Enter code" required>
+                                </div>
+                                <div class="modal-footer">
+                                    <button type="button" class="btn btn-success" data-bs-dismiss="modal">Confirm</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
                 </div>
             </div>
             <p class="existing-acc"><a href="{% url 'index' %}">Already have an account</a></p>
         </div>
-        <script src="{% static 'js/signup.js' %}"></script>
+        <!--popup-->
+        <script defer src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script> 
+        <!--JS script file-->
+        <script defer src="{% static 'js/signup.js' %}"></script>
     </body>
 </html>

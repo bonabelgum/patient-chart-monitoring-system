@@ -31,6 +31,9 @@ html, body {
         width: 40%;
         max-width: 130px;
     }
+    .create-account{
+        top: 0px;
+    }
 }
 
 
@@ -147,14 +150,18 @@ button {
     background: #7585ff;
     color: white;
     border: none;
-    border-radius: 5px;
+    border-radius: 5px !important;
     cursor: pointer;
 }
+.input-group{
+    margin-bottom: 20px !important;
+}
+
 
 /*create-account*/
 .create-account {
     position: relative;
-    top: -70px;
+    top: -50px;
     transition: transform 0.3s ease-in-out;
     cursor: pointer;
 }

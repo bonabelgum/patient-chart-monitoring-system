@@ -19,6 +19,9 @@ html, body {
         width: 50%;
         max-width: 350px;
     }
+    .modal-dialog {
+        min-width: 60%;
+    }
 }
 @media (max-width: 480px) {
     .signup-page {
@@ -42,6 +45,10 @@ html, body {
     .divider {
         width: 40%;
         max-width: 130px;
+    }
+    .modal-dialog {
+        max-width: 85%;
+        margin: 15px;
     }
 }
 
@@ -199,7 +206,7 @@ html, body {
 .signup-details{
     display: none;
     flex-direction: column;
-    width:75%;
+    width:55%;
     position: relative;
     background: rgba(89, 107, 248, 0.5);
     border-radius: 10px;
@@ -208,6 +215,7 @@ html, body {
     display: flex;
     flex-direction: column;
     margin-top: 40px;
+    align-items: center;
 }
 .admin-details, .nurse-details{
     display:none;
@@ -227,5 +235,58 @@ html, body {
 .back-arrow:hover {
     transform: scale(1.2);
 }
-/*signup details for admin*/
-/*signup details for nurse*/
+form {
+    display: flex;
+    flex-direction: column;
+}
+input {
+    margin: 10px;
+    padding: 10px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+}
+button {
+    padding: 10px !important;
+    background: #ffffff !important;
+    color: #7585ff !important;
+    border: none !important;
+    border-radius: 5px !important;
+    cursor: pointer !important;
+    margin-bottom: 15px !important;
+}
+.input-group{
+    width:100% !important;
+}
+/*signup details for admin and nurse*/
+.modal-dialog {
+    min-width: 300px !important;
+    width: 70% !important;
+    max-width: 500px !important;
+    margin: auto !important;
+}
+.modal-header {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+}
+.btn-close {
+    display: flex;
+    font-size: 1.8rem;
+}
+.admin-details, .nurse-details {
+    width:100%;
+    padding-left: 20px;
+    padding-right: 20px;
+    margin-top: 10px;
+    display: flex;
+    flex-direction: column;
+    align-items: center !important;
+    text-align: center;
+}
+.admin-icon, .nurse-icon {
+    width: 90px;
+    height: 90px;
+    object-fit: contain;
+    margin-bottom: 20px;
+    filter: brightness(0) invert(1);
+}
