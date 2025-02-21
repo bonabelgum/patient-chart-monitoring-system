@@ -32,7 +32,7 @@ html, body {
         max-width: 130px;
     }
     .create-account{
-        top: 30px;
+        top: 50px !important;
     }
 }
 
