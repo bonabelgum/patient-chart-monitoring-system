@@ -1,4 +1,169 @@
-*{
-    background-color: black;
-    color:azure;
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap');
+html, body {
+    margin: 0;
+    padding: 0;
+}
+/*for smaller screens */
+@media (max-width: 768px) {
+    .login-page{
+        background-size: 
+            420px,
+            270px,
+            contain;
+    }
+    .divider {
+        width: 50%;
+        max-width: 350px;
+    }
+}
+@media (max-width: 480px) {
+    .login-page {
+        background-image:
+            url("../images/bkg-elem1.png"), 
+            url("../images/bkg-elem2.png"),
+            url("../images/bkg-mobile.jpg") !important;
+        background-size: 
+            250px,
+            100px,
+            cover;
+    }
+    .divider {
+        width: 40%;
+        max-width: 130px;
+    }
+    .create-account{
+        top: 50px !important;
+    }
+}
+
+
+/*for login page*/
+.login-page{
+    background-image: 
+        url("../images/bkg-elem1.png"), 
+        url("../images/bkg-elem2.png"),
+        url("../images/bkg.jpg");
+    background-size: 
+        450px,
+        300px,
+        cover;
+    background-position: 
+        bottom left,
+        top right,
+        top;
+    background-repeat: 
+        no-repeat, 
+        no-repeat, 
+        no-repeat;
+
+    margin:0;
+    padding:0;
+    min-height: 100vh;
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: flex-start;
+    padding-top: 0;
+    padding-bottom: 30px;
+}
+.title-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+h1{
+    display: inline-block;
+    font-size: 2.5rem;
+    padding-top: 50px;
+    color: white;
+}
+.divider {
+    width: 92%;
+    height: 1px;
+    background-color: white;
+    padding: 0 20px;
+}
+.title-container .login-page h2{
+    font-size: 2rem;
+    color: #7585ff !important;
+}
+.login-page p{
+    font-size: 1rem;
+    max-width: 55%;
+    margin: 0 auto;
+    text-align: center;
+    color: #7585ff !important;
+}
+.login-page h1, .login-page h2, .login-page p {
+    width: 100%;
+    text-align: center;
+    margin:0 auto;
+    margin-bottom: 25px;
+    font-family: 'Poppins', sans-serif;
+}
+
+
+/*login details*/
+.login-details{
+    display: flex;
+    flex-direction: row;
+    width:75%;
+    position: relative;
+    background-color: rgba(89, 107, 248, 0.5);
+    border-radius: 10px;
+    overflow: hidden;
+    margin: auto;
+    margin-top: 25px;
+}
+.login-right {
+    flex: 2;
+    padding: 20px;
+    background: white;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+}
+.login-left {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+form {
+    display: flex;
+    flex-direction: column;
+}
+input {
+    margin: 10px 0;
+    padding: 10px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+}
+button {
+    padding: 10px;
+    background: #7585ff;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+}
+.input-group{
+    margin-bottom: 20px;
+}
+
+
+/*create-account*/
+.create-account {
+    position: relative;
+    top: -50px;
+    transition: transform 0.3s ease-in-out;
+    cursor: pointer;
+}
+.create-account a {
+    text-decoration: none;
+    color:rgba(9, 36, 255, 0.5);
+}
+.create-account:hover {
+    transform: scale(1.2);
 }

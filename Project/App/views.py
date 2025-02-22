@@ -15,3 +15,9 @@ def index(request):
 def signup(request):
     template = "main/signup.html"
     return render(request, template)
+def admin(request):
+    template = "main/admin.html"
+    return render(request, template)
+def on_duty(request):
+    template = "main/on_duty.html"
+    return render(request, template)

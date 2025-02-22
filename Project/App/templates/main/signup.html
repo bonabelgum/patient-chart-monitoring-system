@@ -20,7 +20,7 @@
                 <h1 class="page-title">Patient Monitoring and Management System</h1>
                 <div class="divider"></div>
             </div>
-            <h2 class="signup-title">Signup</h2>
+            <h2 class="signup-title">Registration</h2>
             <div class = user-types>
                 <p class="signup-p">Choose your type of user and enter details to create account</p>
                 <div class="signup-user">
@@ -32,29 +32,43 @@
                 <img src="{% static 'images/left-arrow.png' %}" alt="Back" class="back-arrow">
                 <div class="details-container">
                     <div class ="admin-details">
-                        <img src="../static/images/admin.png" alt="Admin Icon" class="admin-icon">
                         <form id="verifyAdminForm">
                             <div class="input-group mb-2">
                                 <span class="input-group-text"><i class="bi bi-person"></i></span>
-                                <input class="form-control" id="employeeID" type="text" placeholder="Employee ID" required>
+                                <input class="form-control" id="name" type="text" placeholder="Name" required>
                             </div>
                             <div class="input-group mb-2">
-                                <span class="input-group-text"><i class="bi bi-lock"></i></span>
-                                <input class="form-control" id="password" type="password" placeholder="Password" required>
+                                <span class="input-group-text"><i class="bi bi-calendar"></i></span>
+                                <input class="form-control" id="birthdate" type="date" required>
+                            </div>
+                            <div class="input-group mb-2">
+                                <span class="input-group-text"><i class="bi bi-card-checklist"></i></span>
+                                <input class="form-control" id="adminID" type="text" placeholder="Employee ID" required>
+                            </div>
+                            <div class="input-group mb-2">
+                                <span class="input-group-text"><i class="bi bi-envelope"></i></span>
+                                <input class="form-control" id="email" type="email" placeholder="Email" required>
                             </div>
                             <button type="submit" class="verify-admin">Verify</button>
                         </form>
                     </div>
                     <div class="nurse-details mt-4">
-                        <img src="../static/images/nurse.png" alt="Nurse Icon" class="nurse-icon">
                         <form id="verifyNurseForm">
                             <div class="input-group mb-2">
                                 <span class="input-group-text"><i class="bi bi-person"></i></span>
-                                <input class="form-control" id="employeeID" type="text" placeholder="Employee ID" required>
+                                <input class="form-control" id="name" type="text" placeholder="Name" required>
                             </div>
                             <div class="input-group mb-2">
-                                <span class="input-group-text"><i class="bi bi-lock"></i></span>
-                                <input class="form-control" id="password" type="password" placeholder="Password" required>
+                                <span class="input-group-text"><i class="bi bi-calendar"></i></span>
+                                <input class="form-control" id="birthdate" type="date" required>
+                            </div>
+                            <div class="input-group mb-2">
+                                <span class="input-group-text"><i class="bi bi-card-checklist"></i></span>
+                                <input class="form-control" id="nurseID" type="text" placeholder="Employee ID" required>
+                            </div>
+                            <div class="input-group mb-2">
+                                <span class="input-group-text"><i class="bi bi-envelope"></i></span>
+                                <input class="form-control" id="email" type="email" placeholder="Email" required>
                             </div>
                             <button type="submit" class="verify-nurse">Verify</button>
                         </form>
@@ -65,13 +79,13 @@
                             <div class="modal-content">
                                 <div class="modal-header">
                                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close">×</button>
-                                    <h5 class="modal-title" id="successModalLabel">A code has been sent to your phone. Please enter the code to verify (admin)</h5>
+                                    <h5 class="modal-title" id="successModalLabel">A code has been sent to your phone. Please enter the code to verify</h5>
                                 </div>
                                 <div class="modal-body">
                                     <input class="form-control" id="verify-code-admin" type="text" placeholder="Enter code" required>
                                 </div>
                                 <div class="modal-footer">
-                                    <button type="button" class="btn btn-success" data-bs-dismiss="modal">Confirm</button>
+                                    <button type="button" class="btn btn-success" data-bs-dismiss="modal"><a href="{% url 'admin' %}">Confirm</a></button>
                                 </div>
                             </div>
                         </div>
@@ -82,13 +96,13 @@
                             <div class="modal-content">
                                 <div class="modal-header">
                                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close">×</button>
-                                    <h5 class="modal-title" id="successModalLabel">A code has been sent to your phone. Please enter the code to verify (nurse)</h5>
+                                    <h5 class="modal-title" id="successModalLabel">A code has been sent to your phone. Please enter the code to verify</h5>
                                 </div>
                                 <div class="modal-body">
                                     <input class="form-control" id="verify-code-nurse" type="text" placeholder="Enter code" required>
                                 </div>
                                 <div class="modal-footer">
-                                    <button type="button" class="btn btn-success" data-bs-dismiss="modal">Confirm</button>
+                                    <button type="button" class="btn btn-success" data-bs-dismiss="modal"><a href="{% url 'on_duty' %}">Confirm</a></button>
                                 </div>
                             </div>
                         </div>
