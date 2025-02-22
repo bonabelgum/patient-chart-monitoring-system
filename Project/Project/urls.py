@@ -19,6 +19,7 @@ from django.urls import path
 from django.conf import settings
 from django.conf.urls.static import static
 from App import views
+from App.views import send_otp 
 
 urlpatterns = [
     path('admin/', admin.site.urls),
@@ -26,4 +27,5 @@ urlpatterns = [
     path('signup', views.signup, name='signup'),
     path('admin', views.admin, name='admin'),
     path('on_duty', views.on_duty, name='on_duty'),
+    path("send-otp/", send_otp, name="send_otp"), 
 ]

@@ -30,10 +30,23 @@ DEBUG = True
 load_dotenv()
 
 ALLOWED_HOSTS = [
+    "127.0.0.1",
+    "localhost",
     "patient-chart-monitoring-and-management.onrender.com", 
     "0.0.0.0",
     os.getenv('ALLOWED_HOSTS'), #env variable
 ]
+
+
+
+
+EMAIL_BACKEND = "django.core.mail.backends.smtp.EmailBackend"
+EMAIL_HOST = "smtp.gmail.com"  # Use your email provider's SMTP server
+EMAIL_PORT = 587
+EMAIL_USE_TLS = True  # Enable TLS encryption
+EMAIL_HOST_USER = "aundraytafalla@gmail.com"  # Replace with your email
+EMAIL_HOST_PASSWORD = "mhln ckrh spiq nbsj"  # Use App Password, NOT your actual email password
+DEFAULT_FROM_EMAIL = EMAIL_HOST_USER
 
 
 # Application definition
