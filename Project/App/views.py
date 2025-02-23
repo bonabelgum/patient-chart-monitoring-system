@@ -1,6 +1,8 @@
 import os
+import json
 
 from django.shortcuts import render
+from django.http import JsonResponse
 
 from django.core.mail import send_mail
 from django.http import JsonResponse
