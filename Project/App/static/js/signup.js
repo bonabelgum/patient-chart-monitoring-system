@@ -47,18 +47,17 @@ document.addEventListener("DOMContentLoaded", function () { //for popup
         verifyAdmin.show();
     });
 
-    //testing
+    
+    //from frontend to django
     document.getElementById("verifyAdminForm").addEventListener("submit", function (event) {
         event.preventDefault();
-        //collect form data
-        let formData = {
+        let formData = { //collect form data
             name: document.getElementById("name").value,
             birthdate: document.getElementById("birthdate").value,
             adminID: document.getElementById("adminID").value,
             email: document.getElementById("email").value
         };
-        //sending data to django (using fetch API?)
-        fetch("/verify-admin/", {
+        fetch("/verify-admin/", { //sending data to django (using fetch API?)
             method: "POST",
             headers: {
                 "Content-Type": "application/json",
@@ -70,11 +69,18 @@ document.addEventListener("DOMContentLoaded", function () { //for popup
         .then(data => {
             console.log(data); //log response from Django
             alert(data.message || data.error);
-        })
-        .catch(error => console.error("Error:", error));
+
+            //from django to frontend
+            fetch("/get_admin_details/")
+            .then(response => response.json())
+            .then(data2 => {
+                console.log("From Django:", data2);
+            })
+            .catch(error => console.error("Error fetching admin details:", error));
+
+        }).catch(error => console.error("Error:", error));
     });
-    //function to get CSRF token from cookies
-    function getCSRFToken() {
+    function getCSRFToken() {//function to get CSRF token from cookies
         let cookieValue = null;
         if (document.cookie && document.cookie !== "") {
             let cookies = document.cookie.split(";");

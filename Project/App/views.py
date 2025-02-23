@@ -24,7 +24,7 @@ def on_duty(request):
     template = "main/on_duty.html"
     return render(request, template)
 
-def verify_admin(request): #testing hihihi
+def verify_admin(request): #from frontend to django
     if request.method == "POST":
         try:
             data = json.loads(request.body)  #getting data from request
@@ -39,3 +39,14 @@ def verify_admin(request): #testing hihihi
         except json.JSONDecodeError:
             return JsonResponse({"error": "Invalid JSON data"}, status=400)
     return JsonResponse({"error": "Invalid request method"}, status=405)
+
+
+def get_admin_details(request): #from django to frontend (a test)
+    data2 = {
+        "admin_name": "fromdjango",
+        "admin_id": "fromdjango",
+        "email": "fromdjango@example.com",
+        "birthdate": "0000-00-00",
+    }
+    print("Sending Data to Frontend:", data2)
+    return JsonResponse(data2)
