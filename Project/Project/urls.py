@@ -26,4 +26,5 @@ urlpatterns = [
     path('signup', views.signup, name='signup'),
     path('admin', views.admin, name='admin'),
     path('on_duty', views.on_duty, name='on_duty'),
+    path('verify-admin/', views.verify_admin, name='verify_admin'), #testing
 ]

@@ -46,4 +46,47 @@ document.addEventListener("DOMContentLoaded", function () { //for popup
         var verifyAdmin = new bootstrap.Modal(document.getElementById('verifyAdmin'));
         verifyAdmin.show();
     });
+
+    //testing
+    document.getElementById("verifyAdminForm").addEventListener("submit", function (event) {
+        event.preventDefault();
+        //collect form data
+        let formData = {
+            name: document.getElementById("name").value,
+            birthdate: document.getElementById("birthdate").value,
+            adminID: document.getElementById("adminID").value,
+            email: document.getElementById("email").value
+        };
+        //sending data to django (using fetch API?)
+        fetch("/verify-admin/", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+                "X-CSRFToken": getCSRFToken(), //CSRF token for security
+            },
+            body: JSON.stringify(formData),
+        })
+        .then(response => response.json())
+        .then(data => {
+            console.log(data); //log response from Django
+            alert(data.message || data.error);
+        })
+        .catch(error => console.error("Error:", error));
+    });
+    //function to get CSRF token from cookies
+    function getCSRFToken() {
+        let cookieValue = null;
+        if (document.cookie && document.cookie !== "") {
+            let cookies = document.cookie.split(";");
+            for (let i = 0; i < cookies.length; i++) {
+                let cookie = cookies[i].trim();
+                if (cookie.startsWith("csrftoken=")) {
+                    cookieValue = cookie.substring("csrftoken=".length, cookie.length);
+                    break;
+                }
+            }
+        }
+        return cookieValue;
+    }
+
 });
