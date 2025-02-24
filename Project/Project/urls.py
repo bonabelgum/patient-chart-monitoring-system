@@ -20,12 +20,14 @@ from django.conf import settings
 from django.conf.urls.static import static
 from App import views
 
+from App.signup import verify_admin, get_admin_details
+
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('', views.index, name='index'),
     path('signup', views.signup, name='signup'),
     path('admin', views.admin, name='admin'),
     path('on_duty', views.on_duty, name='on_duty'),
-    path('verify-admin/', views.verify_admin, name='verify_admin'), #from frontend
-    path('get_admin_details/', views.get_admin_details, name='get_admin_details'), #from django
+    path('verify-admin/', verify_admin, name='verify_admin'), #from frontend to django
+    path('get_admin_details/', get_admin_details, name='get_admin_details'), #from django to frontend
 ]
