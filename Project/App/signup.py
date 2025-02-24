@@ -1,4 +1,5 @@
 import json, random
+import os
 from django.http import JsonResponse
 from django.shortcuts import render, redirect
 from django.core.mail import send_mail
@@ -18,7 +19,7 @@ def send_email_otp(email):
     cache.set(email, otp, timeout=300)  # Store OTP for 5 minutes
     subject = "Your OTP Code"
     message = f"Your OTP code is: {otp}. Please enter this to verify your account."
-    from_email = "aundraytafalla@gmail.com"  # Should match the email in settings.py
+    from_email = os.environ.get('EMAIL_HOST_USER')  # Should match the email in settings.py
 
     send_mail(subject, message, from_email, [email])
     #print('email sent')

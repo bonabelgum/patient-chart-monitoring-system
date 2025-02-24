@@ -38,7 +38,8 @@ ALLOWED_HOSTS = [
 ]
 
 
-
+secret_test = os.getenv("SECRET_TEST", "Not Found")
+print("Environment Variable froom settings.py:", secret_test)
 
 EMAIL_BACKEND = "django.core.mail.backends.smtp.EmailBackend"
 EMAIL_HOST = "smtp.gmail.com"  # Use your email provider's SMTP server
