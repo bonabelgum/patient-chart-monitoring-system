@@ -34,6 +34,9 @@ html, body {
             100px,
             cover;
     }
+    .signup-details{
+        width:75% !important;
+    }
     .signup-user {
         flex-direction: column;
         gap: 25px;
@@ -251,12 +254,12 @@ a {
 }
 button {
     padding: 10px !important;
-    background: #394ac9 !important;
+    background: #ffffff !important;
     border: none !important;
     border-radius: 5px !important;
     cursor: pointer !important;
     margin-bottom: 15px !important;
-    color: white !important;
+    color: #7585ff !important;
 }
 .input-group{
     width:100% !important;
