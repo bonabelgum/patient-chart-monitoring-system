@@ -20,7 +20,11 @@ from django.conf import settings
 from django.conf.urls.static import static
 from App import views
 
+<<<<<<< HEAD
 from App.signup import verify_admin, get_admin_details, admin_code_verification
+=======
+from App.signup import verify_admin, get_admin_details
+>>>>>>> 9b84290 (separate some func from views to diff files for better project structure)
 
 urlpatterns = [
     path('admin/', admin.site.urls),
@@ -28,6 +32,7 @@ urlpatterns = [
     path('signup', views.signup, name='signup'),
     path('admin', views.admin, name='admin'),
     path('on_duty', views.on_duty, name='on_duty'),
+<<<<<<< HEAD
 <<<<<<< HEAD
     
     path('verify-admin/', verify_admin, name='verify_admin'), #from frontend to django
@@ -37,4 +42,8 @@ urlpatterns = [
     path('verify-admin/', views.verify_admin, name='verify_admin'), #from frontend
     path('get_admin_details/', views.get_admin_details, name='get_admin_details'), #from django
 >>>>>>> 79e15d3 (sending data from django to js)
+=======
+    path('verify-admin/', verify_admin, name='verify_admin'), #from frontend to django
+    path('get_admin_details/', get_admin_details, name='get_admin_details'), #from django to frontend
+>>>>>>> 9b84290 (separate some func from views to diff files for better project structure)
 ]

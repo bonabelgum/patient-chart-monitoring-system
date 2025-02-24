@@ -31,9 +31,19 @@ document.addEventListener("DOMContentLoaded", function () {
     document.querySelector(".back-arrow").addEventListener("click", showSignUpUser);
 });
 
+<<<<<<< HEAD
 //sending data 
 document.addEventListener("DOMContentLoaded", function () {
     //from frontend to django
+=======
+document.addEventListener("DOMContentLoaded", function () {
+    //for popup
+    document.getElementById("verifyNurseForm").addEventListener("submit", function (event) {
+        event.preventDefault();
+        var verifyNurse = new bootstrap.Modal(document.getElementById('verifyNurse'));
+        verifyNurse.show();
+    });
+>>>>>>> 9b84290 (separate some func from views to diff files for better project structure)
     document.getElementById("verifyAdminForm").addEventListener("submit", function (event) {
         event.preventDefault();
 <<<<<<< HEAD

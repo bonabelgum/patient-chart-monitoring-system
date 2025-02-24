@@ -1,8 +1,6 @@
 import os
-import json
 
 from django.shortcuts import render
-from django.http import JsonResponse
 
 from django.core.mail import send_mail
 from django.http import JsonResponse
@@ -28,6 +26,7 @@ def on_duty(request):
     template = "main/on_duty.html"
     return render(request, template)
 
+<<<<<<< HEAD
 <<<<<<< HEAD
 =======
 def verify_admin(request): #from frontend to django
@@ -57,3 +56,5 @@ def get_admin_details(request): #from django to frontend (a test)
     print("Sending Data to Frontend:", data2)
     return JsonResponse(data2)
 >>>>>>> 79e15d3 (sending data from django to js)
+=======
+>>>>>>> 9b84290 (separate some func from views to diff files for better project structure)

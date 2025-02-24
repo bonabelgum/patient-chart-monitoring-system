@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 import json, random
 from django.http import JsonResponse
 from django.shortcuts import render, redirect
@@ -54,6 +55,10 @@ def admin_code_verification(request):
     
 ###
 
+=======
+import json
+from django.http import JsonResponse
+>>>>>>> 9b84290 (separate some func from views to diff files for better project structure)
 
 def verify_admin(request): #from frontend to django
     if request.method == "POST":
@@ -64,6 +69,7 @@ def verify_admin(request): #from frontend to django
             adminID = data.get("adminID")
             email = data.get("email")
 
+<<<<<<< HEAD
             send_email_otp(email)
             
              # Store admin data in session for later verification
@@ -74,6 +80,8 @@ def verify_admin(request): #from frontend to django
                 "email": email,
             }
             
+=======
+>>>>>>> 9b84290 (separate some func from views to diff files for better project structure)
             print(f"Received Data - Name: {name}, Birthdate: {birthdate}, Admin ID: {adminID}, Email: {email}")
 
             return JsonResponse({"message": "Admin verified successfully!"})
