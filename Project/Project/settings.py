@@ -39,7 +39,6 @@ ALLOWED_HOSTS = [
 
 
 
-
 EMAIL_BACKEND = "django.core.mail.backends.smtp.EmailBackend"
 EMAIL_HOST = "smtp.gmail.com"  # Use your email provider's SMTP server
 EMAIL_PORT = 587
