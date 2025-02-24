@@ -1,5 +1,4 @@
 document.addEventListener("DOMContentLoaded", function () {
-
     function toggleSignUpDetails() {
         let signupUser = document.querySelector('.signup-user');
         let signupDetails = document.querySelector('.signup-details');
@@ -12,7 +11,6 @@ document.addEventListener("DOMContentLoaded", function () {
         adminDetails.style.display = 'block';
         nurseDetails.style.display = 'none';
     }
-
     function showNurseDetails() { //when nurse user-circle is clicked
         let adminDetails = document.querySelector('.admin-details');
         let nurseDetails = document.querySelector('.nurse-details');
@@ -25,17 +23,66 @@ document.addEventListener("DOMContentLoaded", function () {
         signupUser.style.display = 'flex'; // show signup-user
         signupDetails.style.display = 'none'; // hide signup-details
     }
-
     document.querySelectorAll(".user-circle").forEach(circle => {
         circle.addEventListener("click", toggleSignUpDetails);
     });
-    
     document.querySelector(".admin").addEventListener("click", showAdminDetails);
     document.querySelector(".nurse").addEventListener("click", showNurseDetails);
     document.querySelector(".back-arrow").addEventListener("click", showSignUpUser);
 });
 
-document.addEventListener("DOMContentLoaded", function () { //for popup
+//sending data 
+document.addEventListener("DOMContentLoaded", function () {
+    //from frontend to django
+    document.getElementById("verifyAdminForm").addEventListener("submit", function (event) {
+        event.preventDefault();
+        let formData = { //collect form data
+            name: document.getElementById("name").value,
+            birthdate: document.getElementById("birthdate").value,
+            adminID: document.getElementById("adminID").value,
+            email: document.getElementById("email").value
+        };
+        fetch("/verify-admin/", { //sending data to django (using fetch API?)
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+                "X-CSRFToken": getCSRFToken(), //CSRF token for security
+            },
+            body: JSON.stringify(formData),
+        })
+        .then(response => response.json())
+        .then(data => {
+            console.log(data); //log response from Django
+            //alert(data.message || data.error);
+
+            //from django to frontend
+            fetch("/get_admin_details/")
+            .then(response => response.json())
+            .then(data2 => {
+                console.log("From Django:", data2);
+            })
+            .catch(error => console.error("Error fetching admin details:", error));
+
+        }).catch(error => console.error("Error:", error));
+    });
+    function getCSRFToken() {//function to get CSRF token from cookies
+        let cookieValue = null;
+        if (document.cookie && document.cookie !== "") {
+            let cookies = document.cookie.split(";");
+            for (let i = 0; i < cookies.length; i++) {
+                let cookie = cookies[i].trim();
+                if (cookie.startsWith("csrftoken=")) {
+                    cookieValue = cookie.substring("csrftoken=".length, cookie.length);
+                    break;
+                }
+            }
+        }
+        return cookieValue;
+    }
+});
+
+//for popup
+document.addEventListener("DOMContentLoaded", function () {
     document.getElementById("verifyNurseForm").addEventListener("submit", function (event) {
         event.preventDefault();
         var verifyNurse = new bootstrap.Modal(document.getElementById('verifyNurse'));
@@ -45,5 +92,14 @@ document.addEventListener("DOMContentLoaded", function () { //for popup
         event.preventDefault();
         var verifyAdmin = new bootstrap.Modal(document.getElementById('verifyAdmin'));
         verifyAdmin.show();
+    });
+});
+
+
+// Verify button of admin
+document.addEventListener("DOMContentLoaded", function () {
+    document.getElementById("verify-admin-button").addEventListener("click", function (event) {
+        event.preventDefault(); // Prevent default form submission
+
     });
 });
