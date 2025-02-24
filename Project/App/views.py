@@ -2,6 +2,10 @@ import os
 
 from django.shortcuts import render
 
+from django.core.mail import send_mail
+from django.http import JsonResponse
+from django.views.decorators.csrf import csrf_exempt
+
 # Create your views here.
 
 def test_env(): #just testing env

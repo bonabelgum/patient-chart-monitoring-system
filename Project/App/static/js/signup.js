@@ -53,7 +53,7 @@ document.addEventListener("DOMContentLoaded", function () {
         .then(response => response.json())
         .then(data => {
             console.log(data); //log response from Django
-            alert(data.message || data.error);
+            //alert(data.message || data.error);
 
             //from django to frontend
             fetch("/get_admin_details/")
@@ -92,5 +92,14 @@ document.addEventListener("DOMContentLoaded", function () {
         event.preventDefault();
         var verifyAdmin = new bootstrap.Modal(document.getElementById('verifyAdmin'));
         verifyAdmin.show();
+    });
+});
+
+
+// Verify button of admin
+document.addEventListener("DOMContentLoaded", function () {
+    document.getElementById("verify-admin-button").addEventListener("click", function (event) {
+        event.preventDefault(); // Prevent default form submission
+
     });
 });

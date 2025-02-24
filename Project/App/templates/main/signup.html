@@ -81,17 +81,21 @@
                     <div class="modal fade" id="verifyAdmin" tabindex="-1" aria-labelledby="successModalLabel" aria-hidden="true">
                         <div class="modal-dialog modal-dialog-centered">
                             <div class="modal-content">
-                                <div class="modal-header">
-                                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close">×</button>
-                                    <h5 class="modal-title" id="successModalLabel">A code has been sent to your phone. Please enter the code to verify</h5>
-                                </div>
-                                <div class="modal-body">
-                                    <input class="form-control" id="verify-code-admin" type="text" placeholder="Enter code" required>
-                                </div>
-                                <div class="modal-footer">
-                                    <button type="button" class="btn btn-success" data-bs-dismiss="modal"><a href="{% url 'admin' %}">Confirm</a></button>
-                                </div>
+                                <form method="POST" action="{% url 'admin_code_verification' %}">
+                                    {% csrf_token %}
+                                    <div class="modal-header">
+                                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close">×</button>
+                                        <h5 class="modal-title" id="successModalLabel">A code has been sent to your phone. Please enter the code to verify</h5>
+                                    </div>
+                                    <div class="modal-body">
+                                        <input class="form-control" name="verification_code" id="verify-code-admin" type="text" placeholder="Enter code" required>
+                                    </div>
+                                    <div class="modal-footer">
+                                        <button type="submit" id="confirm-verify-code-admin" class="btn btn-success">Confirm</button>
+                                    </div>
+                                </form>
                             </div>
+                            
                         </div>
                     </div>
                     <!--pop up nurse-->

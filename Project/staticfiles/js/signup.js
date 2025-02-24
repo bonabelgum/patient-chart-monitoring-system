@@ -43,6 +43,7 @@ document.addEventListener("DOMContentLoaded", function () { //for popup
     });
     document.getElementById("verifyAdminForm").addEventListener("submit", function (event) {
         event.preventDefault();
+        console.log("hello")
         var verifyAdmin = new bootstrap.Modal(document.getElementById('verifyAdmin'));
         verifyAdmin.show();
     });
