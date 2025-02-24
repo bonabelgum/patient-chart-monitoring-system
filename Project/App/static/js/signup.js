@@ -31,20 +31,8 @@ document.addEventListener("DOMContentLoaded", function () {
     document.querySelector(".back-arrow").addEventListener("click", showSignUpUser);
 });
 
+//sending data 
 document.addEventListener("DOMContentLoaded", function () {
-    //for popup
-    document.getElementById("verifyNurseForm").addEventListener("submit", function (event) {
-        event.preventDefault();
-        var verifyNurse = new bootstrap.Modal(document.getElementById('verifyNurse'));
-        verifyNurse.show();
-    });
-    document.getElementById("verifyAdminForm").addEventListener("submit", function (event) {
-        event.preventDefault();
-        var verifyAdmin = new bootstrap.Modal(document.getElementById('verifyAdmin'));
-        verifyAdmin.show();
-    });
-
-    
     //from frontend to django
     document.getElementById("verifyAdminForm").addEventListener("submit", function (event) {
         event.preventDefault();
@@ -91,5 +79,18 @@ document.addEventListener("DOMContentLoaded", function () {
         }
         return cookieValue;
     }
+});
 
+//for popup
+document.addEventListener("DOMContentLoaded", function () {
+    document.getElementById("verifyNurseForm").addEventListener("submit", function (event) {
+        event.preventDefault();
+        var verifyNurse = new bootstrap.Modal(document.getElementById('verifyNurse'));
+        verifyNurse.show();
+    });
+    document.getElementById("verifyAdminForm").addEventListener("submit", function (event) {
+        event.preventDefault();
+        var verifyAdmin = new bootstrap.Modal(document.getElementById('verifyAdmin'));
+        verifyAdmin.show();
+    });
 });

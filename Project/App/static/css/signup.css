@@ -251,11 +251,12 @@ a {
 }
 button {
     padding: 10px !important;
-    background: #ffffff !important;
+    background: #394ac9 !important;
     border: none !important;
     border-radius: 5px !important;
     cursor: pointer !important;
     margin-bottom: 15px !important;
+    color: white !important;
 }
 .input-group{
     width:100% !important;
