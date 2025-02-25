@@ -37,8 +37,11 @@ ALLOWED_HOSTS = [
     os.getenv('ALLOWED_HOSTS'), #env variable
 ]
 
+<<<<<<< HEAD
 
 
+=======
+>>>>>>> 0af1ebc (Add procfile and tries switching hosting platform)
 EMAIL_BACKEND = "django.core.mail.backends.smtp.EmailBackend"
 EMAIL_HOST = "smtp.gmail.com"  # Use your email provider's SMTP server
 EMAIL_PORT = 587
@@ -62,7 +65,7 @@ INSTALLED_APPS = [
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
-    'whitenoise.middleware.WhiteNoiseMiddleware', #render webhost
+    'whitenoise.middleware.WhiteNoiseMiddleware', #webhost
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
@@ -142,7 +145,7 @@ MEDIA_URL = 'images/'
 
 STATICFILES_DIRS = (os.path.join(BASE_DIR,'App' ,'static'),)
 
-STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles') #render webhost "run python manage.py collectstatic --noinput" for update in css
+STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles') #webhost "run python manage.py collectstatic --noinput" for update in css
 STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
 
 # Default primary key field type
