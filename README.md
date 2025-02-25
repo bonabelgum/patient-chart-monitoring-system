@@ -1,7 +1,7 @@
 # patient-chart-monitoring-system
 Patient Chart Monitoring and Management System
 
-Link (it may take some time to load): https://patient-chart-monitoring-and-management.onrender.com
+Link (it may take some time to load): patient-chart-monitoring-system-production.up.railway.app
 
 Instructions to run:
 1. After cloning, set up virtual environment
