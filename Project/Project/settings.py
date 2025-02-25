@@ -32,7 +32,7 @@ load_dotenv()
 ALLOWED_HOSTS = [
     "127.0.0.1",
     "localhost",
-    "patient-chart-monitoring-and-management.onrender.com", 
+    #"patient-chart-monitoring-and-management.onrender.com", #render blocks gmail smtp :/
     "0.0.0.0",
     os.getenv('ALLOWED_HOSTS'), #env variable
 ]
