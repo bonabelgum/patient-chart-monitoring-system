@@ -31,32 +31,11 @@ document.addEventListener("DOMContentLoaded", function () {
     document.querySelector(".back-arrow").addEventListener("click", showSignUpUser);
 });
 
-<<<<<<< HEAD
 //sending data 
 document.addEventListener("DOMContentLoaded", function () {
     //from frontend to django
-=======
-document.addEventListener("DOMContentLoaded", function () {
-    //for popup
-    document.getElementById("verifyNurseForm").addEventListener("submit", function (event) {
-        event.preventDefault();
-        var verifyNurse = new bootstrap.Modal(document.getElementById('verifyNurse'));
-        verifyNurse.show();
-    });
->>>>>>> 9b84290 (separate some func from views to diff files for better project structure)
     document.getElementById("verifyAdminForm").addEventListener("submit", function (event) {
         event.preventDefault();
-<<<<<<< HEAD
-=======
-        var verifyAdmin = new bootstrap.Modal(document.getElementById('verifyAdmin'));
-        verifyAdmin.show();
-    });
-
-    
-    //from frontend to django
-    document.getElementById("verifyAdminForm").addEventListener("submit", function (event) {
-        event.preventDefault();
->>>>>>> 79e15d3 (sending data from django to js)
         let formData = { //collect form data
             name: document.getElementById("name").value,
             birthdate: document.getElementById("birthdate").value,
@@ -74,11 +53,7 @@ document.addEventListener("DOMContentLoaded", function () {
         .then(response => response.json())
         .then(data => {
             console.log(data); //log response from Django
-<<<<<<< HEAD
             //alert(data.message || data.error);
-=======
-            alert(data.message || data.error);
->>>>>>> 79e15d3 (sending data from django to js)
 
             //from django to frontend
             fetch("/get_admin_details/")
