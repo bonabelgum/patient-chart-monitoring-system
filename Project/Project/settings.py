@@ -16,6 +16,7 @@ from dotenv import load_dotenv #env file
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
+CSRF_TRUSTED_ORIGINS= ["https://patient-chart-monitoring-system-production.up.railway.app"]
 
 
 # Quick-start development settings - unsuitable for production
@@ -32,7 +33,8 @@ load_dotenv()
 ALLOWED_HOSTS = [
     "127.0.0.1",
     "localhost",
-    "patient-chart-monitoring-and-management.onrender.com", 
+    "patient-chart-monitoring-system-production.up.railway.app",
+    #"patient-chart-monitoring-and-management.onrender.com", #render blocks gmail smtp :/
     "0.0.0.0",
     os.getenv('ALLOWED_HOSTS'), #env variable
 ]
@@ -69,7 +71,7 @@ INSTALLED_APPS = [
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
-    'whitenoise.middleware.WhiteNoiseMiddleware', #render webhost
+    'whitenoise.middleware.WhiteNoiseMiddleware', #webhost
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
@@ -149,7 +151,7 @@ MEDIA_URL = 'images/'
 
 STATICFILES_DIRS = (os.path.join(BASE_DIR,'App' ,'static'),)
 
-STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles') #render webhost "run python manage.py collectstatic --noinput" for update in css
+STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles') #webhost "run python manage.py collectstatic --noinput" for update in css
 STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
 
 # Default primary key field type

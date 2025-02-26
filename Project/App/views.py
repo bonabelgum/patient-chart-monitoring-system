@@ -25,4 +25,3 @@ def admin(request):
 def on_duty(request):
     template = "main/on_duty.html"
     return render(request, template)
-

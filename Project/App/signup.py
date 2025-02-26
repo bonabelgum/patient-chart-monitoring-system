@@ -34,6 +34,7 @@ def send_email_otp(email):
     subject = "Your OTP Code"
     message = f"Your OTP code is: {otp}. Please enter this to verify your account."
     from_email = os.environ.get('EMAIL_HOST_USER')  # Should match the email in settings.py
+    from_email = os.environ.get('EMAIL_HOST_USER')  # Should match the email in settings.py
 
     send_mail(subject, message, from_email, [email])
     #print('email sent')    
