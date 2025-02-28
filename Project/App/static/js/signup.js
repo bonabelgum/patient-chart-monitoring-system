@@ -31,18 +31,33 @@ document.addEventListener("DOMContentLoaded", function () {
     document.querySelector(".back-arrow").addEventListener("click", showSignUpUser);
 });
 
+
+
 //sending data 
 document.addEventListener("DOMContentLoaded", function () {
-    //from frontend to django
+    function showLoading() { //show loading screen
+        document.getElementById("loadingIndicator").style.display = "flex";
+        //console.log("Loading screen shown");
+    }
+    function hideLoading() { //hides loading screen
+        document.getElementById("loadingIndicator").style.display = "none";
+    }
+
+
+    //from frontend to django (ADMIN)
     document.getElementById("verifyAdminForm").addEventListener("submit", function (event) {
         event.preventDefault();
+        showLoading();
         let formData = { //collect form data
             name: document.getElementById("name").value,
             birthdate: document.getElementById("birthdate").value,
+            sex: document.getElementById("sex").value,
             adminID: document.getElementById("adminID").value,
-            email: document.getElementById("email").value
+            phone_number: document.getElementById("phone_number").value,
+            email: document.getElementById("email").value,
+            role: "admin"
         };
-        fetch("/verify-admin/", { //sending data to django (using fetch API?)
+        fetch("/verify-admin/", { //sending data to django
             method: "POST",
             headers: {
                 "Content-Type": "application/json",
@@ -54,17 +69,28 @@ document.addEventListener("DOMContentLoaded", function () {
         .then(data => {
             console.log(data); //log response from Django
             //alert(data.message || data.error);
-
+            if (data.success) {
+                hideLoading();
+                showVerificationModal(); //if no duplicates
+            } else {
+                hideLoading();
+                showErrorModal(data.errors); //if duplicates found
+            }
             //from django to frontend
             fetch("/get_admin_details/")
             .then(response => response.json())
-            .then(data2 => {
+            /*.then(data2 => { //test for getting data from django to here
                 console.log("From Django:", data2);
-            })
-            .catch(error => console.error("Error fetching admin details:", error));
-
-        }).catch(error => console.error("Error:", error));
+            })*/
+            .catch(error => {hideLoading(); console.error("Error fetching admin details:", error);});
+        }).catch(error => {hideLoading(); console.error("Error:", error)});
     });
+
+
+    //from frontend to django (NURSE)
+    //...code...
+
+
     function getCSRFToken() {//function to get CSRF token from cookies
         let cookieValue = null;
         if (document.cookie && document.cookie !== "") {
@@ -79,7 +105,32 @@ document.addEventListener("DOMContentLoaded", function () {
         }
         return cookieValue;
     }
+    //popup or modal
+    //function to show verification modal
+    function showVerificationModal() {
+        var verifyAdmin = new bootstrap.Modal(document.getElementById('verifyAdmin'));
+        verifyAdmin.show();
+    }
+    //function to show error modal
+    function showErrorModal(errors) {
+        let errorModal = new bootstrap.Modal(document.getElementById('errorModal'));
+        document.getElementById("error-message").innerHTML = errors.join("<br>");
+        errorModal.show();
+    }
 });
+//phone number
+document.addEventListener("DOMContentLoaded", function () {
+    var inputs = document.querySelectorAll("#phone_number"); // Select all phone inputs
+    inputs.forEach(function (input) {
+        var iti = window.intlTelInput(input, {
+            initialCountry: "ph",
+            preferredCountries: ["ph", "us", "gb"],
+            separateDialCode: true,
+            utilsScript: "https://cdnjs.cloudflare.com/ajax/libs/intl-tel-input/17.0.8/js/utils.js"
+        });
+    });
+});
+
 
 //for popup
 document.addEventListener("DOMContentLoaded", function () {
@@ -88,18 +139,5 @@ document.addEventListener("DOMContentLoaded", function () {
         var verifyNurse = new bootstrap.Modal(document.getElementById('verifyNurse'));
         verifyNurse.show();
     });
-    document.getElementById("verifyAdminForm").addEventListener("submit", function (event) {
-        event.preventDefault();
-        var verifyAdmin = new bootstrap.Modal(document.getElementById('verifyAdmin'));
-        verifyAdmin.show();
-    });
 });
 
-
-// Verify button of admin
-// document.addEventListener("DOMContentLoaded", function () {
-//     document.getElementById("verify-admin-button").addEventListener("click", function (event) {
-//         event.preventDefault(); // Prevent default form submission
-
-//     });
-// });

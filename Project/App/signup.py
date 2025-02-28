@@ -34,7 +34,6 @@ def send_email_otp(email):
     subject = "Your OTP Code"
     message = f"Your OTP code is: {otp}. Please enter this to verify your account."
     from_email = os.environ.get('EMAIL_HOST_USER')  # Should match the email in settings.py
-    from_email = os.environ.get('EMAIL_HOST_USER')  # Should match the email in settings.py
 
     send_mail(subject, message, from_email, [email])
     #print('email sent')    
@@ -67,15 +66,15 @@ def admin_code_verification(request):
             employee = Employee.objects.create(
                 name=admin_data.get("name"),
                 birthdate=admin_data.get("birthdate"),
-                # sex=sex,
+                sex = admin_data.get("sex"),
                 employee_id=admin_data.get("adminID"),
-                # role=role,
+                role=admin_data.get("role"),
                 email=admin_data.get("email"),
-                # phone_number=phone_number
+                phone_number = admin_data.get("phone_number"),
                 master_key=encrypted_text
             )
             send_master_key(master_key, admin_data.get("email"))
-            return redirect("signup")  # Redirect to admin page after success
+            return redirect("admin")  # Redirect to admin page after success
         else:   
             return redirect("signup")  # Redirect back if failed
 
@@ -90,25 +89,48 @@ def verify_admin(request): #from frontend to django
             data = json.loads(request.body)  #getting data from request
             name = data.get("name")
             birthdate = data.get("birthdate")
+            sex = data.get("sex")
             adminID = data.get("adminID")
+            phone_number = data.get("phone_number")
             email = data.get("email")
+            role = data.get("role")
 
+            errors = []
+            #cCheck for existing employee ID
+            if Employee.objects.filter(employee_id=adminID).exists():
+                errors.append("A user with the same Employee ID already exists.")
+
+            #check for existing email
+            if Employee.objects.filter(email=email).exists():
+                errors.append("A user with the same Email already exists.")
+
+            #check for existing phone number
+            phone_number = data.get("phone_number")
+            if phone_number and Employee.objects.filter(phone_number=phone_number).exists():
+                errors.append("A user with the same Phone Number already exists.")
+
+            if errors: #send errors back to frontend
+                return JsonResponse({"success": False, "errors": errors})
+            
             send_email_otp(email)
             
-             # Store admin data in session for later verification
+             #if no duplicates, store admin data in session for later verification
             request.session["admin_data"] = {
                 "name": name,
                 "birthdate": birthdate,
+                "sex":sex,
                 "adminID": adminID,
+                "phone_number": phone_number,
                 "email": email,
+                "role":role,
             }
             
-            # print(f"Received Data - Name: {name}, Birthdate: {birthdate}, Admin ID: {adminID}, Email: {email}")
+            print(f"Received Data - Name: {name}, Birthdate: {birthdate}, role: {role}, Admin ID: {adminID}, Email: {email}")
 
-            return JsonResponse({"message": "Admin verified successfully!"})
+            return JsonResponse({"success": True, "message": "Admin verified successfully!"})
         except json.JSONDecodeError:
-            return JsonResponse({"error": "Invalid JSON data"}, status=400)
-    return JsonResponse({"error": "Invalid request method"}, status=405)
+            return JsonResponse({"success": False, "errors": ["Invalid JSON data"]}, status=400)
+    return JsonResponse({"success": False, "errors": ["Invalid request method"]}, status=405)
 
 def get_admin_details(request): #from django to frontend (a test)
     data2 = {
