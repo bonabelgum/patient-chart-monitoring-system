@@ -97,9 +97,9 @@ document.addEventListener("DOMContentLoaded", function () {
 
 
 // Verify button of admin
-document.addEventListener("DOMContentLoaded", function () {
-    document.getElementById("verify-admin-button").addEventListener("click", function (event) {
-        event.preventDefault(); // Prevent default form submission
+// document.addEventListener("DOMContentLoaded", function () {
+//     document.getElementById("verify-admin-button").addEventListener("click", function (event) {
+//         event.preventDefault(); // Prevent default form submission
 
-    });
-});
+//     });
+// });

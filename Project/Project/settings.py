@@ -39,6 +39,15 @@ ALLOWED_HOSTS = [
     os.getenv('ALLOWED_HOSTS'), #env variable
 ]
 
+# Ferney Key for Encryption of masterkey
+FERNET_KEY = os.getenv("FERNET_KEY")
+
+if not FERNET_KEY:
+    raise ValueError("No FERNET_KEY found in .env file")
+
+
+# print("EMAIL_HOST_USER:", os.getenv("EMAIL_HOST_USER")) #test
+
 EMAIL_BACKEND = "django.core.mail.backends.smtp.EmailBackend"
 EMAIL_HOST = "smtp.gmail.com"  # Use your email provider's SMTP server
 EMAIL_PORT = 587
