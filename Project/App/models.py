@@ -1,4 +1,5 @@
 from django.db import models
+from django.contrib.auth.models import User
 
 
 
@@ -9,6 +10,7 @@ class Employee(models.Model):
         ('O', 'Other'),
     ]
 
+    user = models.OneToOneField(User, on_delete=models.CASCADE)  # Link to User model
     name = models.CharField(max_length=255)
     birthdate = models.DateField()
     sex = models.CharField(max_length=1, choices=SEX_CHOICES)

@@ -148,7 +148,7 @@ MEDIA_URL = 'images/'
 
 STATICFILES_DIRS = (os.path.join(BASE_DIR,'App' ,'static'),)
 
-STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles') #webhost "run python manage.py collectstatic --noinput" for update in css
+STATIC_ROOT = os.path.join(BASE_DIR, 'static') #webhost "run python manage.py collectstatic --noinput" for update in css
 STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
 
 # Default primary key field type

@@ -5,7 +5,9 @@ from django.shortcuts import render, redirect
 from django.core.mail import send_mail
 from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
+from django.contrib.auth.decorators import login_required   
 from .models import Employee
+
 
 # Create your views here.
 
@@ -15,6 +17,7 @@ def test_env(): #just testing env
 test_env()
 
 
+@login_required(login_url="login")  # Redirect to login page if not logged in
 def index(request):
     template = "main/index.html"
     return render(request, template)
@@ -23,6 +26,9 @@ def signup(request):
     return render(request, template)
 def admin(request):
     template = "main/admin.html"
+    return render(request, template)
+def nurse(request):
+    template = "main/nurse.html"
     return render(request, template)
 def on_duty(request):
     template = "main/on_duty.html"

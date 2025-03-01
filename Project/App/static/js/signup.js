@@ -89,7 +89,47 @@ document.addEventListener("DOMContentLoaded", function () {
 
     //from frontend to django (NURSE)
     //...code...
+    document.getElementById("verifyNurseForm").addEventListener("submit", function (event) {
+        event.preventDefault();
+        showLoading();
+        let formData = { //collect form data
+            name: document.getElementById("name_nurse").value,
+            birthdate: document.getElementById("birthdate_nurse").value,
+            sex: document.getElementById("sex_nurse").value,
+            nurseID: document.getElementById("nurseID").value,
+            phone_number: document.getElementById("phone_number_nurse").value,
+            email: document.getElementById("email_nurse").value,
+            role: "nurse"
+        };
+        // ✅ Console log before sending to check the collected data
+        console.log("Collected Form Data:", formData);
 
+        
+        fetch("/verify-nurse/", { //sending data to django
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+                "X-CSRFToken": getCSRFToken(), //CSRF token for security
+            },
+            body: JSON.stringify(formData),
+        })
+        .then(response => response.json())
+        .then(data => {
+            // console.log(data); //log response from Django
+            //alert(data.message || data.error);
+            if (data.success) {
+                hideLoading();
+                showVerificationModalNurse(); //if no duplicates
+            } else {
+                hideLoading();
+                showErrorModal(data.errors); //if duplicates found
+            }
+            //from django to frontend
+            
+        }).catch(error => {hideLoading(); console.error("Error:", error)});
+    });
+
+    
 
     function getCSRFToken() {//function to get CSRF token from cookies
         let cookieValue = null;
@@ -110,6 +150,10 @@ document.addEventListener("DOMContentLoaded", function () {
     function showVerificationModal() {
         var verifyAdmin = new bootstrap.Modal(document.getElementById('verifyAdmin'));
         verifyAdmin.show();
+    }
+    function showVerificationModalNurse() {
+        var verifyNurse = new bootstrap.Modal(document.getElementById('verifyNurse'));
+        verifyNurse.show();
     }
     //function to show error modal
     function showErrorModal(errors) {
@@ -140,4 +184,8 @@ document.addEventListener("DOMContentLoaded", function () {
         verifyNurse.show();
     });
 });
+
+
+
+
 
