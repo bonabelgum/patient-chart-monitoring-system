@@ -21,7 +21,7 @@ from django.conf.urls.static import static
 from App import views
 
 from App.signup import verify_admin, verify_nurse, get_admin_details, admin_code_verification, nurse_code_verification
-from App.views import signup_view 
+from App.views import signup_view
 from App.login import handle_request  # Import the function
 
 urlpatterns = [
@@ -30,7 +30,6 @@ urlpatterns = [
     path('signup', views.signup, name='signup'),
     path('admin', views.admin, name='admin'),
     path('nurse', views.nurse, name='nurse'),
-    path('on_duty', views.on_duty, name='on_duty'),
     path("signup/", signup_view, name="signup"), 
     
     path('verify-admin/', verify_admin, name='verify_admin'), #from frontend to django

@@ -1,7 +1,6 @@
 import os
 
-from django.shortcuts import render, redirect
-
+from django.shortcuts import render
 from django.core.mail import send_mail
 from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
@@ -16,11 +15,8 @@ def test_env(): #just testing env
     print("Environment Variable:", secret_test)
 test_env()
 
-
-@login_required(login_url="login")  # Redirect to login page if not logged in
 def index(request):
-    template = "main/index.html"
-    return render(request, template)
+    return render(request, "main/index.html")
 def signup(request):
     template = "main/signup.html"
     return render(request, template)

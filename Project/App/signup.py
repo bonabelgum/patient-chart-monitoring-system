@@ -7,7 +7,6 @@ from django.shortcuts import render, redirect
 from django.core.mail import send_mail
 from django.core.cache import cache
 from django.contrib import messages
-from django.contrib.auth.hashers import make_password, check_password
 
 from cryptography.fernet import Fernet
 from .models import Employee
@@ -83,7 +82,7 @@ def admin_code_verification(request):
             )
 
             send_master_key(master_key, admin_data.get("email"))
-            return redirect("admin")  # Redirect to admin page after success
+            return redirect("index")  # Redirect to login page after success
         else:
             return redirect("signup")  # Redirect back if failed
 
@@ -120,7 +119,7 @@ def nurse_code_verification(request):
             )
 
             send_master_key(master_key, nurse_data.get("email"))
-            return redirect("nurse")  # Redirect to nurse page after success
+            return redirect("index")  # Redirect to login page after success
         else:
             return redirect("signup")  # Redirect back if failed
 
@@ -144,20 +143,19 @@ def verify_admin(request): #from frontend to django
             role = data.get("role")
 
             errors = []
-            #cCheck for existing employee ID
+            conflicting_fields = []
+            #check for existing employee ID
             if Employee.objects.filter(employee_id=adminID).exists():
-                errors.append("A user with the same Employee ID already exists.")
-
+                conflicting_fields.append("Employee ID")
             #check for existing email
             if Employee.objects.filter(email=email).exists():
-                errors.append("A user with the same Email already exists.")
-
+                conflicting_fields.append("Email")
             #check for existing phone number
             phone_number = data.get("phone_number")
             if phone_number and Employee.objects.filter(phone_number=phone_number).exists():
-                errors.append("A user with the same Phone Number already exists.")
-
-            if errors: #send errors back to frontend
+                conflicting_fields.append("Phone Number")
+            if conflicting_fields: #send result back to frontend
+                errors.append(f"A user with the same {', '.join(conflicting_fields)} already exists.")
                 return JsonResponse({"success": False, "errors": errors})
             
             send_email_otp(email)
@@ -193,22 +191,21 @@ def verify_nurse(request): #from frontend to django
             phone_number = data.get("phone_number")
             email = data.get("email")
             role = data.get("role")
-
+            
             errors = []
-            #cCheck for existing employee ID
+            conflicting_fields = []
+            #check for existing employee ID
             if Employee.objects.filter(employee_id=nurseID).exists():
-                errors.append("A user with the same Employee ID already exists.")
-
+                conflicting_fields.append("Employee ID")
             #check for existing email
             if Employee.objects.filter(email=email).exists():
-                errors.append("A user with the same Email already exists.")
-
+                conflicting_fields.append("Email")
             #check for existing phone number
             phone_number = data.get("phone_number")
             if phone_number and Employee.objects.filter(phone_number=phone_number).exists():
-                errors.append("A user with the same Phone Number already exists.")
-
-            if errors: #send errors back to frontend
+                conflicting_fields.append("Phone Number")
+            if conflicting_fields: #send result back to frontend
+                errors.append(f"A user with the same {', '.join(conflicting_fields)} already exists.")
                 return JsonResponse({"success": False, "errors": errors})
             
             send_email_otp(email)
@@ -225,7 +222,7 @@ def verify_nurse(request): #from frontend to django
                 "role":role,
             }
             
-            print(f"Received Data - Name: {name}, Birthdate: {birthdate}, role: {role}, Nurse ID: {nurseID}, Email: {email}")
+            print(f"Received Data - Name: {name}, Birthdate: {birthdate}, phone: {phone_number}, Nurse ID: {nurseID}, Email: {email}")
 
             return JsonResponse({"success": True, "message": "Nurse verified successfully!"})
         except json.JSONDecodeError:

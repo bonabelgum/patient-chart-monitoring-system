@@ -26,11 +26,27 @@ document.addEventListener("DOMContentLoaded", function () {
     document.querySelectorAll(".user-circle").forEach(circle => {
         circle.addEventListener("click", toggleSignUpDetails);
     });
+
+    //clears form
+    function clearForms() {
+        const adminForm = document.getElementById("verifyAdminForm");
+        const nurseForm = document.getElementById("verifyNurseForm");
+        if (adminForm) adminForm.reset();
+        if (nurseForm) nurseForm.reset();
+    }
+    const backArrow = document.querySelector(".back-arrow");
+    if (backArrow) {
+        backArrow.addEventListener("click", clearForms);
+    }
+    const existingAccLink = document.querySelector(".existing-acc a");
+    if (existingAccLink) {
+        existingAccLink.addEventListener("click", clearForms);
+    }
+
     document.querySelector(".admin").addEventListener("click", showAdminDetails);
     document.querySelector(".nurse").addEventListener("click", showNurseDetails);
     document.querySelector(".back-arrow").addEventListener("click", showSignUpUser);
 });
-
 
 
 //sending data 
@@ -42,7 +58,6 @@ document.addEventListener("DOMContentLoaded", function () {
     function hideLoading() { //hides loading screen
         document.getElementById("loadingIndicator").style.display = "none";
     }
-
 
     //from frontend to django (ADMIN)
     document.getElementById("verifyAdminForm").addEventListener("submit", function (event) {
@@ -67,7 +82,7 @@ document.addEventListener("DOMContentLoaded", function () {
         })
         .then(response => response.json())
         .then(data => {
-            console.log(data); //log response from Django
+            console.log(data);
             //alert(data.message || data.error);
             if (data.success) {
                 hideLoading();
@@ -88,7 +103,6 @@ document.addEventListener("DOMContentLoaded", function () {
 
 
     //from frontend to django (NURSE)
-    //...code...
     document.getElementById("verifyNurseForm").addEventListener("submit", function (event) {
         event.preventDefault();
         showLoading();
@@ -115,21 +129,15 @@ document.addEventListener("DOMContentLoaded", function () {
         })
         .then(response => response.json())
         .then(data => {
-            // console.log(data); //log response from Django
-            //alert(data.message || data.error);
             if (data.success) {
                 hideLoading();
                 showVerificationModalNurse(); //if no duplicates
             } else {
                 hideLoading();
                 showErrorModal(data.errors); //if duplicates found
-            }
-            //from django to frontend
-            
+            } 
         }).catch(error => {hideLoading(); console.error("Error:", error)});
     });
-
-    
 
     function getCSRFToken() {//function to get CSRF token from cookies
         let cookieValue = null;
@@ -145,6 +153,7 @@ document.addEventListener("DOMContentLoaded", function () {
         }
         return cookieValue;
     }
+
     //popup or modal
     //function to show verification modal
     function showVerificationModal() {
@@ -162,9 +171,10 @@ document.addEventListener("DOMContentLoaded", function () {
         errorModal.show();
     }
 });
+
 //phone number
 document.addEventListener("DOMContentLoaded", function () {
-    var inputs = document.querySelectorAll("#phone_number"); // Select all phone inputs
+    var inputs = document.querySelectorAll("#phone_number, #phone_number_nurse"); //select all phone inputs
     inputs.forEach(function (input) {
         var iti = window.intlTelInput(input, {
             initialCountry: "ph",
@@ -177,13 +187,13 @@ document.addEventListener("DOMContentLoaded", function () {
 
 
 //for popup
-document.addEventListener("DOMContentLoaded", function () {
+/*document.addEventListener("DOMContentLoaded", function () {
     document.getElementById("verifyNurseForm").addEventListener("submit", function (event) {
         event.preventDefault();
         var verifyNurse = new bootstrap.Modal(document.getElementById('verifyNurse'));
         verifyNurse.show();
     });
-});
+});*/
 
 
 
