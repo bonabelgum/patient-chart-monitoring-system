@@ -22,3 +22,11 @@ class Employee(models.Model):
 
     def __str__(self):
         return f"{self.name} ({self.role})"
+
+    @classmethod
+    def get_by_employee_id(cls, employee_id):
+        """Fetch an employee by employee_id."""
+        try:
+            return cls.objects.get(employee_id=employee_id)
+        except cls.DoesNotExist:
+            return None  # Return None if no employee is found

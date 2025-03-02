@@ -25,6 +25,14 @@ CSRF_TRUSTED_ORIGINS= ["https://patient-chart-monitoring-system-production.up.ra
 # SECURITY WARNING: keep the secret key used in production secret!
 SECRET_KEY = 'django-insecure-!#o5g*stc)^mmk^ds1&9#2qo=bpi7j+fjfr7*ki#==105!7&+*'
 
+SESSION_ENGINE = "django.contrib.sessions.backends.db"  # ✅ Default session engine
+SESSION_EXPIRE_AT_BROWSER_CLOSE = True
+SESSION_COOKIE_AGE = 1800  # 30 minutes (in seconds)
+SESSION_SAVE_EVERY_REQUEST = True  # Reset session expiry with every request
+
+
+
+
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 

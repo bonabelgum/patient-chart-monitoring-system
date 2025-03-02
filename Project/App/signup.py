@@ -1,5 +1,4 @@
-import json, random, secrets
-import os
+import json, random, secrets, os
 
 from django.contrib.auth.models import User
 from django.http import JsonResponse

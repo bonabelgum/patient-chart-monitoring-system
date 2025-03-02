@@ -40,6 +40,12 @@ document.getElementById("login-btn").addEventListener("click", function () {
     })
     .then(response => response.json())
     .then(data => {
-        document.getElementById("responseMessage").innerText = data.message;
+            console.log("response message ito");
+        if (data.redirect_url) {
+            console.log("🔁 Redirecting to:", data.redirect_url);
+            window.location.href = data.redirect_url; // Redirect to admin page
+        } else {
+            document.getElementById("responseMessage").innerText = data.message || data.error;
+        }
     });
 });
