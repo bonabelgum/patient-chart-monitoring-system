@@ -65,7 +65,7 @@ def admin_code_verification(request):
             encrypted_text = encrypt_string(master_key, ferney_key)
 
             # ✅ Create a new user
-            user = User.objects.create_user(username=email, email=email, password=None)  # No password for now (since OTP is used)
+            user, created = User.objects.get_or_create(username=email, defaults={"email": email})
 
             # ✅ Create the Employee and link it to the User
             employee = Employee.objects.create(
