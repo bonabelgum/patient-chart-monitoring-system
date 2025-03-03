@@ -1,15 +1,11 @@
 
-// console.log("login.js loaded!")
-// document.addEventListener("DOMContentLoaded", function () {
-//     document.getElementById("get-otp-btn").addEventListener("click", function () {
-//         console.log("button click")
-        
-//     });
-// });
-
 document.addEventListener("DOMContentLoaded", function () {
     document.getElementById("get-otp-btn").addEventListener("click", function () {
         let employeeID = document.getElementById("employeeID").value;
+
+        responseMessage.innerText = "Sending OTP...";
+        responseMessage.style.color = "#6c757d";
+
         fetch("/handle-request/", {
             method: "POST",
             headers: {

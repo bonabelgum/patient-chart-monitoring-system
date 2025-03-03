@@ -5,6 +5,7 @@ from django.core.mail import send_mail
 from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
 from django.contrib.auth.decorators import login_required   
+from django.contrib.auth import logout
 from django.urls import reverse_lazy
 from .models import Employee
 
@@ -50,3 +51,10 @@ def signup_view(request):
         'SEX_CHOICES': Employee.SEX_CHOICES
     }
     return render(request, 'main/signup.html', context)
+
+#logout
+def logout_view(request):
+    if request.method == "POST":
+        logout(request)
+        return JsonResponse({"message": "Logged out"}, status=200)
+    return JsonResponse({"error": "Invalid request"}, status=400)

@@ -30,24 +30,32 @@ def handle_request(request):
     if request.method == "POST":
         data = json.loads(request.body)
         action = data.get("action")
-        print("hello")
 
         if action == "get_otp":
             employee_id = data.get("employeeID")
             employee = Employee.get_by_employee_id(employee_id)
-            send_login_otp(employee.email);
-            print(f"Generating OTP for Employee ID: {employee_id}")
+
+            if not employee: #user not found
+                return JsonResponse({"message": "User not found"}, status=404)
+
+            send_login_otp(employee.email)
+            #print(f"Generating OTP for Employee ID: {employee_id}")
             return JsonResponse({"message": "OTP sent successfully!"})
 
         elif action == "login":
-            print("hello")
             employee_id = data.get("employeeID")
             password = data.get("password")
             employee = Employee.get_by_employee_id(employee_id)
+
+            if not employee: #user not found
+                return JsonResponse({"message": "User not found"}, status=404)
+
             stored_otp = cache.get(employee.email)
             if password == stored_otp:
                 # Check if user exists; create only if necessary
-                user, created = User.objects.get_or_create(username=employee_id, defaults={"role": employee.role})
+                #user, created = User.objects.get_or_create(username=employee_id, defaults={"role": employee.role}) #doesn't work for me
+                user, created = User.objects.get_or_create(username=employee_id)
+
 
                 # Log the user in
                 login(request, user)  # ✅ Store user session

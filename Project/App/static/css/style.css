@@ -142,6 +142,10 @@ input {
     border: 1px solid #ccc;
     border-radius: 5px;
 }
+#responseMessage {
+    font-style: italic;
+    color: #8d90a1;
+}
 button {
     padding: 10px;
     background: #7585ff;
