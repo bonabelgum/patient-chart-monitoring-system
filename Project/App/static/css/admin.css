@@ -1,0 +1,7 @@
+#employees tbody tr {
+    cursor: pointer;
+}
+
+#employees tbody tr:hover {
+    background-color: #f5f5f5;
+}
