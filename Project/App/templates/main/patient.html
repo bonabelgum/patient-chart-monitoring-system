@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html lang="en">
+{% load static %}
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Patient Information</title>
+    <link rel="icon" type="image/x-icon" href="{% static 'images/favicon.ico' %}">
+</head>
+<body>
+    <div>
+        <h1>Patient Information</h1>
+        {% block content %}
+        <div id="patient-info">
+            <p><strong>ID:</strong> <span id="data-patient-id">{{ patient_id }}</span></p>
+            <p><strong>Name:</strong> <span id="data-patient-name">{{ patient_name }}</span></p>
+            <p><strong>Ward/Floor:</strong> <span id="data-patient-ward">{{ patient_ward }}</span></p>
+            <p><strong>Status:</strong> <span id="data-patient-status">{{ patient_status }}</span></p>
+        </div>        
+        {% endblock %}
+    </div>
+
+    <script src="{% static 'js/patient.js' %}"></script>
+</body>
+</html>

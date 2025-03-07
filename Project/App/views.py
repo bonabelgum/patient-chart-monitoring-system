@@ -58,3 +58,24 @@ def logout_view(request):
         logout(request)
         return JsonResponse({"message": "Logged out"}, status=200)
     return JsonResponse({"error": "Invalid request"}, status=400)
+
+#populate the employees table
+def get_employees(request):
+    from .models import Employee
+    employees = Employee.objects.all().values('employee_id', 'name', 'role')
+    return JsonResponse(list(employees), safe=False)
+
+#patient
+def patient_detail(request, patient_id):
+    #get data from the URL parameters (temporary for now until we use a database here)
+    patient_name = request.GET.get('name', 'Unknown')
+    patient_ward = request.GET.get('ward', 'Unknown')
+    patient_status = request.GET.get('status', 'Unknown')
+    context = {
+        'patient_id': patient_id,
+        'patient_name': patient_name,
+        'patient_ward': patient_ward,
+        'patient_status': patient_status,
+    }
+
+    return render(request, 'main/patient.html', context)
