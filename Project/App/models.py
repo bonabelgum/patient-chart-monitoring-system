@@ -19,6 +19,7 @@ class Employee(models.Model):
     email = models.EmailField(unique=True)
     phone_number = models.CharField(max_length=15, unique=True)
     master_key = models.CharField(max_length=16, blank=True, null=True, unique=True)  # Optional field
+    status = models.CharField(max_length=100, null=True, blank=True)
 
     def __str__(self):
         return f"{self.name} ({self.role})"

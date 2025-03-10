@@ -37,6 +37,9 @@ def handle_request(request):
 
             if not employee: #user not found
                 return JsonResponse({"message": "User not found"}, status=404)
+            
+            if employee.status == "Pending": #status check if still Pending
+                return JsonResponse({"message": "The account is still pending. Please wait for the confirmation via email."})#, status=403)
 
             send_login_otp(employee.email)
             #print(f"Generating OTP for Employee ID: {employee_id}")
@@ -69,6 +72,6 @@ def handle_request(request):
 
                 return JsonResponse(response_data)  
             else:
-                return JsonResponse({"message": "Incorrect password"})
+                return JsonResponse({"message": "Incorrect password. Request OTP for the password"})
             
     return JsonResponse({"error": "Invalid request"}, status=400)

@@ -1,7 +1,78 @@
+/*smaller sizes*/
+@media (max-width: 576px) {
+    .schedule-row {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+    
+    .schedule-row select,
+    .schedule-row input,
+    .schedule-row button {
+        width: 100%;
+        max-width: none;
+    }
+}/*table*/
 #employees tbody tr {
     cursor: pointer !important;
     transition: background-color 0.2s ease-in-out;
 }
 table.dataTable tbody tr:hover {
     background-color: rgba(242, 242, 242, 0.8) !important; /* not working */
+}
+.table-danger {
+    background-color: #f8d7da !important;
+}
+
+/* Ensure the modal content dynamically adjusts */
+.modal-dialog {
+    max-width: 90%; /* Prevents it from getting too wide */
+    width: auto;
+}
+
+/* Make modal-body scroll vertically if necessary */
+.modal-body {
+    max-height: 70vh; /* 70% of the screen height */
+    overflow-y: auto; /* Allows vertical scrolling */
+    overflow-x: hidden; /* Prevents horizontal scrolling */
+}
+
+/* Make sure schedule inputs and buttons wrap properly */
+#schedule-container {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+/* Ensure each schedule row stays inside the modal */
+.schedule-row {
+    display: flex;
+    flex-wrap: wrap; /* Ensures wrapping instead of horizontal overflow */
+    gap: 8px;
+    align-items: center;
+    width: 100%;
+}
+
+/* Ensure input fields and buttons fit properly */
+.schedule-row select,
+.schedule-row input,
+.schedule-row button {
+    flex: 1; /* Distribute space evenly */
+    min-width: 80px; /* Prevents fields from getting too small */
+    max-width: 150px; /* Prevents excessive stretching */
+}
+
+@media (max-width: 576px) {
+    /* Stack elements vertically on small screens */
+    .schedule-row {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    .schedule-row select,
+    .schedule-row input,
+    .schedule-row button {
+        width: 100%;
+        max-width: none;
+    }
 }

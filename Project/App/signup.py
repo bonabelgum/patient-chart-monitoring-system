@@ -114,7 +114,8 @@ def nurse_code_verification(request):
                 role=nurse_data.get("role"),
                 email=nurse_data.get("email"),
                 phone_number=nurse_data.get("phone_number"),
-                master_key=encrypted_text
+                master_key=encrypted_text,
+                status = "Pending"
             )
 
             send_master_key(master_key, nurse_data.get("email"))
@@ -168,6 +169,7 @@ def verify_admin(request): #from frontend to django
                 "phone_number": phone_number,
                 "email": email,
                 "role":role,
+                "status":"Pending",
             }
             
             # print(f"Received Data - Name: {name}, Birthdate: {birthdate}, role: {role}, Admin ID: {adminID}, Email: {email}")
@@ -193,20 +195,37 @@ def verify_nurse(request): #from frontend to django
             
             errors = []
             conflicting_fields = []
-            #check for existing employee ID
-            if Employee.objects.filter(employee_id=nurseID).exists():
+            pending_status = False
+            #checking existing employee ID
+            existing_employee = Employee.objects.filter(employee_id=nurseID).first()
+            if existing_employee:
                 conflicting_fields.append("Employee ID")
-            #check for existing email
-            if Employee.objects.filter(email=email).exists():
+                if existing_employee.status == "Pending":
+                    pending_status = True
+            #checking existing email
+            existing_employee = Employee.objects.filter(email=email).first()
+            if existing_employee:
                 conflicting_fields.append("Email")
-            #check for existing phone number
+                if existing_employee.status == "Pending":
+                    pending_status = True
+            #checking existing num
             phone_number = data.get("phone_number")
-            if phone_number and Employee.objects.filter(phone_number=phone_number).exists():
-                conflicting_fields.append("Phone Number")
-            if conflicting_fields: #send result back to frontend
-                errors.append(f"A user with the same {', '.join(conflicting_fields)} already exists.")
+            if phone_number:
+                existing_employee = Employee.objects.filter(phone_number=phone_number).first()
+                if existing_employee:
+                    conflicting_fields.append("Phone Number")
+                    if existing_employee.status == "Pending":
+                        pending_status = True
+            #if conflicts exist, send error response
+            if conflicting_fields:
+                error_message = f"A user with the same {', '.join(conflicting_fields)} already exists."
+                if pending_status:
+                    error_message += " The account is still pending. Please wait for the confirmation. An email will be sent."
+
+                errors.append(error_message)
                 return JsonResponse({"success": False, "errors": errors})
             
+            ##############
             send_email_otp(email)
             
              #if no duplicates, store nurse data in session for later verification
@@ -219,11 +238,12 @@ def verify_nurse(request): #from frontend to django
                 "phone_number": phone_number,
                 "email": email,
                 "role":role,
+                "status":"Pending",
             }
             
-            print(f"Received Data - Name: {name}, Birthdate: {birthdate}, phone: {phone_number}, Nurse ID: {nurseID}, Email: {email}")
+            #print(f"Received Data - Name: {name}, Birthdate: {birthdate}, phone: {phone_number}, Nurse ID: {nurseID}, Email: {email}")
 
-            return JsonResponse({"success": True, "message": "Nurse verified successfully!"})
+            return JsonResponse({"success": True, "message": "Nurse added to the employees DB!"})
         except json.JSONDecodeError:
             return JsonResponse({"success": False, "errors": ["Invalid JSON data"]}, status=400)
     return JsonResponse({"success": False, "errors": ["Invalid request method"]}, status=405)
