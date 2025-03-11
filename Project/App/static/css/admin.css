@@ -1,17 +1,32 @@
 /*smaller sizes*/
 @media (max-width: 576px) {
-    .schedule-row {
+    /*shift container*/
+    .shift-row {
         flex-direction: column;
         align-items: flex-start;
     }
     
-    .schedule-row select,
-    .schedule-row input,
-    .schedule-row button {
+    .shift-row select,
+    .shift-row input,
+    .shift-row button {
         width: 100%;
         max-width: none;
     }
-}/*table*/
+
+    /*verification section*/
+    #verification-section {
+        padding: 10px;
+    }
+    #verification-section p {
+        font-size: 14px;
+    }
+    #verification-section button {
+        max-width: 150px;
+    }
+}
+
+
+/*table*/
 #employees tbody tr {
     cursor: pointer !important;
     transition: background-color 0.2s ease-in-out;
@@ -23,56 +38,69 @@ table.dataTable tbody tr:hover {
     background-color: #f8d7da !important;
 }
 
+
+/*modal*/
 /* Ensure the modal content dynamically adjusts */
 .modal-dialog {
-    max-width: 90%; /* Prevents it from getting too wide */
+    max-width: 90%;
     width: auto;
 }
-
-/* Make modal-body scroll vertically if necessary */
 .modal-body {
-    max-height: 70vh; /* 70% of the screen height */
+    max-height: 60vh; 
     overflow-y: auto; /* Allows vertical scrolling */
-    overflow-x: hidden; /* Prevents horizontal scrolling */
+    overflow-x: hidden;
 }
-
-/* Make sure schedule inputs and buttons wrap properly */
-#schedule-container {
+/* Make sure shift inputs and buttons wrap properly */
+#shift-container {
     width: 100%;
     display: flex;
     flex-direction: column;
     gap: 8px;
 }
-
-/* Ensure each schedule row stays inside the modal */
-.schedule-row {
+/* Ensure each shift row stays inside the modal */
+.shift-row {
     display: flex;
-    flex-wrap: wrap; /* Ensures wrapping instead of horizontal overflow */
+    flex-wrap: wrap;
     gap: 8px;
     align-items: center;
     width: 100%;
 }
-
-/* Ensure input fields and buttons fit properly */
-.schedule-row select,
-.schedule-row input,
-.schedule-row button {
-    flex: 1; /* Distribute space evenly */
-    min-width: 80px; /* Prevents fields from getting too small */
-    max-width: 150px; /* Prevents excessive stretching */
+.shift-row select,.shift-row input,.shift-row button {
+    flex: 1;
+    min-width: 80px;
+    max-width: 150px;
 }
 
-@media (max-width: 576px) {
-    /* Stack elements vertically on small screens */
-    .schedule-row {
-        flex-direction: column;
-        align-items: flex-start;
-    }
 
-    .schedule-row select,
-    .schedule-row input,
-    .schedule-row button {
-        width: 100%;
-        max-width: none;
-    }
+/*verification section*/
+#verification-section {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    width: 100%;
 }
+/* Make buttons stack on smaller screens */
+#verification-section button {
+    width: 100%;
+    max-width: 180px;
+}
+
+
+/*dangerzone*/
+#dangerZone {
+    width: 100%;
+    max-width: 100%; /* Ensures it doesn’t exceed modal width */
+}
+#dangerZoneContent {
+    width: 100%;
+    max-width: 100%;
+    text-align: center; 
+}
+#removeUserBtn {
+    width: 100%; 
+    max-width: 200px;
+    margin: auto;
+}
+

@@ -20,7 +20,7 @@ from django.conf import settings
 from django.conf.urls.static import static
 from App import views
 
-from App.signup import verify_admin, verify_nurse, get_admin_details, admin_code_verification, nurse_code_verification
+from App.signup import verify_admin, verify_nurse, get_admin_details, admin_code_verification
 from App.views import signup_view, logout_view, patient_detail, get_employees
 from App.login import handle_request  # Import the function
 
@@ -38,7 +38,6 @@ urlpatterns = [
     path('verify-nurse/', verify_nurse, name='verify_nurse'), #from frontend to django
     path('get_admin_details/', get_admin_details, name='get_admin_details'), #from django to frontend
     path("admin_code_verification/", admin_code_verification, name="admin_code_verification"),
-    path("nurse_code_verification/", nurse_code_verification, name="nurse_code_verification"),
     path("handle-request/", handle_request, name="handle_request"),  # Now accessible via /handle-request/
     path('patient/<int:patient_id>/', patient_detail, name='patient_detail'), #patient's info
 ]

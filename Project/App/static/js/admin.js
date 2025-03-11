@@ -30,8 +30,11 @@ document.addEventListener('DOMContentLoaded', function() {
                         data-id="${employee.employee_id}" 
                         data-name="${employee.name}" 
                         data-role="${employee.role}" 
+                        data-email="${employee.email}"
+                        data-phone="${employee.phone_number}"
                         data-status="${status}" 
-                        data-schedule="Monday-Friday">View More</button>`;
+                        data-shift="Monday-Friday"
+                        >View More</button>`;
 
                     employeesTable.row.add([
                         employee.employee_id,
@@ -49,40 +52,83 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
 
-    document.addEventListener("click", function(event) {
+    document.addEventListener("click", function(event) { //user's more details
         if (event.target.classList.contains("view-more")) {
             let button = event.target;
     
             let id = button.getAttribute("data-id");
             let name = button.getAttribute("data-name");
+            let phone = button.getAttribute("data-phone");
+            let email = button.getAttribute("data-email");
             let position = button.getAttribute("data-role");
             let status = button.getAttribute("data-status");
-            let schedule = button.getAttribute("data-schedule");
+            let shift = button.getAttribute("data-shift");
     
             //populate modal fields
             document.getElementById("modal-id").textContent = id;
             document.getElementById("modal-name").textContent = name;
+            document.getElementById("modal-number").textContent = phone;
+            document.getElementById("modal-email").textContent = email;
             document.getElementById("modal-position").textContent = position;
             document.getElementById("modal-status").textContent = status;
-            document.getElementById("modal-schedule").textContent = schedule;
+            document.getElementById("modal-shift").textContent = shift;
 
-            document.getElementById("schedule-container").innerHTML = "";
-    
+            //for confirmation is status is pending
+            let verificationSection = document.getElementById("verification-section");
+            //adding shift
+            let shiftContainer = document.getElementById("shift-container");
+            let addShiftBtn = document.getElementById("addShiftBtn");
+            let shiftRow = document.getElementById("shift-row");
+            //dangerzone
+            let dangerZone = document.getElementById("dangerZone");
+            let dangerZoneContent = document.getElementById("dangerZoneContent");
+
+            shiftContainer.innerHTML = "";
+
+            //show verification section
+            if (status === "Pending") {
+                verificationSection.style.display = "block";
+                dangerZone.style.display = "none";
+                dangerZoneContent.style.display = "none";
+            } else {
+                verificationSection.style.display = "none";
+                dangerZone.style.display = "block";
+            }
+
+            //show shift selection
+            if (position === "admin") {
+                shiftContainer.style.display = "none";
+                addShiftBtn.style.display = "none";
+                shiftRow.style.display = "none";
+            } else {
+                shiftRow.style.display = "block";
+                //show shift section only if status is "Registered" & if nurse
+                if (status === "Registered") {
+                    shiftContainer.style.display = "block";
+                    addShiftBtn.style.display = "block";
+                }
+                else {
+                    shiftContainer.style.display = "none";
+                    addShiftBtn.style.display = "none";
+                }
+            }
             //show modal
             let modal = new bootstrap.Modal(document.getElementById("employeeModal"));
             modal.show();
+
+            
         }
     });
 //ADDING SCHED
-    document.getElementById("addScheduleBtn").addEventListener("click", function () {
-        let scheduleContainer = document.getElementById("schedule-container");
+    document.getElementById("addShiftBtn").addEventListener("click", function () {
+        let shiftContainer = document.getElementById("shift-container");
 
         //create a new schedule row
-        let newSchedule = document.createElement("div");
-        newSchedule.classList.add("schedule-row");
+        let newShift = document.createElement("div");
+        newShift.classList.add("shift-row");
 
-        newSchedule.innerHTML = `
-            <select class="form-select form-select-sm schedule-day">
+        newShift.innerHTML = `
+            <select class="form-select form-select-sm shift-day">
                 <option value="Monday">Monday</option>
                 <option value="Tuesday">Tuesday</option>
                 <option value="Wednesday">Wednesday</option>
@@ -92,20 +138,20 @@ document.addEventListener('DOMContentLoaded', function() {
                 <option value="Sunday">Sunday</option>
             </select>
             <span>From:</span>
-            <input type="time" class="form-control form-control-sm schedule-from">
+            <input type="time" class="form-control form-control-sm shift-from">
             <span>To:</span>
-            <input type="time" class="form-control form-control-sm schedule-to">
-            <button class="btn btn-primary btn-sm saveScheduleBtn">Save</button>
-            <button class="btn btn-danger btn-sm cancelScheduleBtn">Cancel</button>
+            <input type="time" class="form-control form-control-sm shift-to">
+            <button class="btn btn-primary btn-sm saveShiftBtn">Save</button>
+            <button class="btn btn-danger btn-sm cancelShiftBtn">Cancel</button>
         `;
-        //appending the new schedule row above the button
-        scheduleContainer.appendChild(newSchedule);
+        //appending the new shift row above the button
+        shiftContainer.appendChild(newShift);
 
         //handle saving the schedule NOT YET DONE
-        newSchedule.querySelector(".saveScheduleBtn").addEventListener("click", function () {
-            let selectedDay = newSchedule.querySelector(".schedule-day")?.value;
-            let fromTime = newSchedule.querySelector(".schedule-from")?.value;
-            let toTime = newSchedule.querySelector(".schedule-to")?.value;
+        newShift.querySelector(".saveShiftBtn").addEventListener("click", function () {
+            let selectedDay = newShift.querySelector(".shift-day")?.value;
+            let fromTime = newShift.querySelector(".shift-from")?.value;
+            let toTime = newShift.querySelector(".shift-to")?.value;
 
             //validate input fields
             if (!selectedDay || !fromTime || !toTime) {
@@ -113,21 +159,94 @@ document.addEventListener('DOMContentLoaded', function() {
                 return;
             }
             //replace input fields with static text //NOT SAVED TO THE DB YET
-            newSchedule.innerHTML = `
+            newShift.innerHTML = `
                 ${selectedDay}: ${fromTime} - ${toTime}
-                <button class="btn btn-danger btn-sm ms-2 deleteScheduleBtn">Delete</button>
+                <button class="btn btn-danger btn-sm ms-2 deleteShiftBtn">Delete</button>
             `;
-            newSchedule.querySelector(".deleteScheduleBtn").addEventListener("click", function () {
-                newSchedule.remove(); //TO BE FIXED <add edit button instead>
+            newShift.querySelector(".deleteShiftBtn").addEventListener("click", function () {
+                newShift.remove(); //TO BE FIXED <add edit button instead>
             });
 
-            alert("Schedule saved!");
+            alert("Shift saved!");
             });
 
-        //cancel the schedule input
-        newSchedule.querySelector(".cancelScheduleBtn").addEventListener("click", function () {
-            newSchedule.remove();
+        //cancel the shift input
+        newShift.querySelector(".cancelShiftBtn").addEventListener("click", function () {
+            newShift.remove();
             });
         });
+//for master key confirmation
+document.getElementById("rejectBtn").addEventListener("click", function() {
+    document.getElementById("rejectKeyInput").style.display = "block";
+    document.getElementById("confirmRejectKeyBtn").style.display = "block";
+    document.getElementById("cancelRejectKeyBtn").style.display = "block";
+
+    document.getElementById("masterKeyInput").style.display = "none";
+    document.getElementById("confirmMasterKeyBtn").style.display = "none";
+    document.getElementById("cancelMasterKeyBtn").style.display = "none";
+});
+document.getElementById("approveBtn").addEventListener("click", function() {
+    document.getElementById("masterKeyInput").style.display = "block";
+    document.getElementById("confirmMasterKeyBtn").style.display = "block";
+    document.getElementById("cancelMasterKeyBtn").style.display = "block";
+
+    document.getElementById("rejectKeyInput").style.display = "none";
+    document.getElementById("confirmRejectKeyBtn").style.display = "none";
+    document.getElementById("cancelRejectKeyBtn").style.display = "none";
+});
+
 
 });
+
+document.addEventListener("DOMContentLoaded", function () {
+    const employeeModal = document.getElementById("employeeModal");
+    const masterKeyInput = document.getElementById("masterKeyInput");
+    const confirmMasterKeyBtn = document.getElementById("confirmMasterKeyBtn");
+    const cancelMasterKeyBtn = document.getElementById("cancelMasterKeyBtn");
+    const rejectKeyInput = document.getElementById("rejectKeyInput");
+    const confirmRejectKeyBtn = document.getElementById("confirmRejectKeyBtn");
+    const cancelRejectKeyBtn = document.getElementById("cancelRejectKeyBtn");
+    const dangerZoneContent = document.getElementById("dangerZoneContent");
+    //event listener for when the modal is shown
+    employeeModal.addEventListener("shown.bs.modal", function () {
+        //console.log("Modal is open");
+    });
+    //event listener for when the modal is hidden
+    employeeModal.addEventListener("hidden.bs.modal", function () {
+        //console.log("Modal is closed");
+        //clear master key input/ btn when modal is closed
+        hideMasterKeyElements();
+        dangerZoneContent.style.display = "none";
+    });
+    //hide elements when the cancel button is clicked
+    cancelMasterKeyBtn.addEventListener("click", function () {
+        hideMasterKeyElements();
+    });
+    cancelRejectKeyBtn.addEventListener("click", function () {
+        hideMasterKeyElements();
+    });
+    //function to hide master key elements
+    function hideMasterKeyElements() {
+        masterKeyInput.style.display = "none";
+        confirmMasterKeyBtn.style.display = "none";
+        cancelMasterKeyBtn.style.display = "none";
+        rejectKeyInput.style.display = "none";
+        confirmRejectKeyBtn.style.display = "none";
+        cancelRejectKeyBtn.style.display = "none";
+    }
+});
+
+//toggle danger zone
+document.addEventListener("DOMContentLoaded", function () {
+    // Toggle danger zone content visibility on button click
+    document.addEventListener("click", function (event) {
+        if (event.target && event.target.id === "toggleDangerZone") {
+            dangerZoneContent.style.display = 
+                (dangerZoneContent.style.display === "none" || dangerZoneContent.style.display === "") 
+                ? "block" 
+                : "none";
+        }
+    });
+});
+
+

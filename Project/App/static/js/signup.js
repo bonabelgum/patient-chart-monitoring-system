@@ -106,6 +106,7 @@ document.addEventListener("DOMContentLoaded", function () {
     document.getElementById("verifyNurseForm").addEventListener("submit", function (event) {
         event.preventDefault();
         showLoading();
+        let form = document.getElementById("verifyNurseForm");
         let formData = { //collect form data
             name: document.getElementById("name_nurse").value,
             birthdate: document.getElementById("birthdate_nurse").value,
@@ -132,6 +133,7 @@ document.addEventListener("DOMContentLoaded", function () {
             if (data.success) {
                 hideLoading();
                 showVerificationModalNurse(); //if no duplicates
+                form.reset();
             } else {
                 hideLoading();
                 showErrorModal(data.errors); //if duplicates found
@@ -184,17 +186,6 @@ document.addEventListener("DOMContentLoaded", function () {
         });
     });
 });
-
-
-//for popup
-/*document.addEventListener("DOMContentLoaded", function () {
-    document.getElementById("verifyNurseForm").addEventListener("submit", function (event) {
-        event.preventDefault();
-        var verifyNurse = new bootstrap.Modal(document.getElementById('verifyNurse'));
-        verifyNurse.show();
-    });
-});*/
-
 
 
 

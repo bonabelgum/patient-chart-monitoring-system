@@ -62,7 +62,7 @@ def logout_view(request):
 #populate the employees table
 def get_employees(request):
     from .models import Employee
-    employees = Employee.objects.all().values('employee_id', 'name', 'role', 'status')
+    employees = Employee.objects.all().values('employee_id', 'name', 'role', 'status', 'email', 'phone_number')
     return JsonResponse(list(employees), safe=False)
 
 #patient

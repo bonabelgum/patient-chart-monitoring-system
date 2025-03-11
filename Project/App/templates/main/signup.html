@@ -125,20 +125,14 @@
                         </div>
                     </div>
                     <!--pop up nurse-->
-                    <div class="modal fade" id="verifyNurse" tabindex="-1" aria-labelledby="successModalLabel" aria-hidden="true" data-bs-backdrop="static" data-bs-keyboard="false">
+                    <div class="modal fade" id="verifyNurse" tabindex="-1" aria-labelledby="successModalLabel" aria-hidden="true" data-bs-keyboard="false">
                         <div class="modal-dialog modal-dialog-centered">
                             <div class="modal-content">
-                                <form method="POST" action="{% url 'nurse_code_verification' %}">
+                                <form>
                                     {% csrf_token %}
                                     <div class="modal-header">
                                         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close">×</button>
-                                        <h5 class="modal-title" id="successModalLabel">A code has been sent to your phone. Please enter the code to verify</h5>
-                                    </div>
-                                    <div class="modal-body">
-                                        <input class="form-control" name="verification_code_nurse" id="verify-code-nurse" type="text" placeholder="Enter code" required>
-                                    </div>
-                                    <div class="modal-footer">
-                                        <button type="submit" class="btn btn-success">Confirm</button>
+                                        <h5 class="modal-title" id="successModalLabel">Wait for a confirmation to be sent to your email</h5>
                                     </div>
                                 </form>
                             </div>

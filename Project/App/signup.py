@@ -77,7 +77,8 @@ def admin_code_verification(request):
                 role=admin_data.get("role"),
                 email=admin_data.get("email"),
                 phone_number=admin_data.get("phone_number"),
-                master_key=encrypted_text
+                master_key=encrypted_text,
+                status = "Registered"
             )
 
             send_master_key(master_key, admin_data.get("email"))
@@ -86,45 +87,6 @@ def admin_code_verification(request):
             return redirect("signup")  # Redirect back if failed
 
     return JsonResponse({"error": "Invalid request"}, status=400)
-
-# verify otp then create and encrypt masterkey
-def nurse_code_verification(request):
-    if request.method == "POST":
-        entered_code = request.POST.get("verification_code_nurse")
-        nurse_data = request.session.get("nurse_data", {})
-        email = nurse_data.get("email")  # Get email from session
-        stored_otp = cache.get(email)
-        print('hello nurse otp'+entered_code)
-
-        if entered_code == stored_otp:
-            master_key = secrets.token_hex(8)  # Create a masterkey (16 characters = 8 bytes)
-            ferney_key = os.environ.get('FERNET_KEY')  # Get the Fernet key from .env
-            encrypted_text = encrypt_string(master_key, ferney_key)
-
-            # ✅ Create a new user
-            user, created = User.objects.get_or_create(username=email, defaults={"email": email})
-
-            # ✅ Create the Employee and link it to the User
-            employee = Employee.objects.create(
-                user=user,  # Link the user to the employee
-                name=nurse_data.get("name"),
-                birthdate=nurse_data.get("birthdate"),
-                sex=nurse_data.get("sex"),
-                employee_id=nurse_data.get("nurseID"),
-                role=nurse_data.get("role"),
-                email=nurse_data.get("email"),
-                phone_number=nurse_data.get("phone_number"),
-                master_key=encrypted_text,
-                status = "Pending"
-            )
-
-            send_master_key(master_key, nurse_data.get("email"))
-            return redirect("index")  # Redirect to login page after success
-        else:
-            return redirect("signup")  # Redirect back if failed
-
-    return JsonResponse({"error": "Invalid request"}, status=400)
-    
     
 ###
 
@@ -144,6 +106,12 @@ def verify_admin(request): #from frontend to django
 
             errors = []
             conflicting_fields = []
+            
+            #check if the maximum number of admins has been reached
+            admin_count = Employee.objects.filter(role="admin").count()
+            if admin_count >= 3:
+                errors.append("The limitation for user admin has been reached.")
+                return JsonResponse({"success": False, "errors": errors})
             #check for existing employee ID
             if Employee.objects.filter(employee_id=adminID).exists():
                 conflicting_fields.append("Employee ID")
@@ -169,7 +137,7 @@ def verify_admin(request): #from frontend to django
                 "phone_number": phone_number,
                 "email": email,
                 "role":role,
-                "status":"Pending",
+                "status":"Registered",
             }
             
             # print(f"Received Data - Name: {name}, Birthdate: {birthdate}, role: {role}, Admin ID: {adminID}, Email: {email}")
@@ -196,6 +164,12 @@ def verify_nurse(request): #from frontend to django
             errors = []
             conflicting_fields = []
             pending_status = False
+
+            # Check if an admin exists
+            admin_exists = Employee.objects.filter(role="admin").exists()
+            if not admin_exists:
+                errors.append("There is no admin available to handle registrations. Please wait until an admin is available.")
+                return JsonResponse({"success": False, "errors": errors})
             #checking existing employee ID
             existing_employee = Employee.objects.filter(employee_id=nurseID).first()
             if existing_employee:
@@ -225,8 +199,20 @@ def verify_nurse(request): #from frontend to django
                 errors.append(error_message)
                 return JsonResponse({"success": False, "errors": errors})
             
-            ##############
-            send_email_otp(email)
+            # ✅ Create a new user in User model (linked to Employee)
+            user, created = User.objects.get_or_create(username=email, defaults={"email": email})
+            # ✅ Create the Employee and link it to the User
+            employee = Employee.objects.create(
+                user=user,
+                name=name,
+                birthdate=birthdate,
+                sex=sex,
+                employee_id=nurseID,
+                role=role,
+                email=email,
+                phone_number=phone_number,
+                status="Pending"
+            )
             
              #if no duplicates, store nurse data in session for later verification
              #possible error (clear nurse_data after using them so no conflict) (not done yet)
