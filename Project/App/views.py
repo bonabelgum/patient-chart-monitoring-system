@@ -21,7 +21,7 @@ def index(request):
     if request.user.is_authenticated:
         role = request.session.get("role")  # ✅ Get role from session
         if role == "admin":
-            return redirect("admin")
+            return redirect("admin_user/")
         elif role == "nurse":
             return redirect("nurse")
     return render(request, "main/index.html")
@@ -30,13 +30,13 @@ def signup(request):
     template = "main/signup.html"
     return render(request, template)
 
-@login_required(login_url='/')  # ✅ Redirect to the index view
+# @login_required(login_url='/')  # ✅ Redirect to the index view
 def admin_page(request):
-    template = "main/admin.html"
+    template = "main/admin_user.html"
     return render(request, template)
 
 
-@login_required(login_url='/')  # ✅ Redirect to the index view
+# @login_required(login_url='/')  # ✅ Redirect to the index view
 def nurse(request):
     template = "main/nurse.html"
     return render(request, template)

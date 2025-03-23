@@ -1,6 +1,4 @@
-document.addEventListener('DOMContentLoaded', function() {
-    new DataTable('#logs'); //initialize DataTable for the second table (#logs)
-
+function fetchEmployees() {
     //initialize DataTable with empty data
     let employeesTable = new DataTable('#employees', {
         destroy: true,
@@ -13,43 +11,59 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         }
     });
+    fetch('/employees/')
+        .then(response => response.json())
+        .then(data => {
+            console.log("Fetched Data:", data); // debugging
+            employeesTable.clear(); // Clear existing table data
+
+            // Add new data
+            data.forEach(employee => {
+                let status = employee.status || "Registered"; 
+                let button = `<button class="btn btn-primary btn-sm view-more" 
+                    data-id="${employee.employee_id}" 
+                    data-name="${employee.name}" 
+                    data-role="${employee.role}" 
+                    data-email="${employee.email}"
+                    data-phone="${employee.phone_number}"
+                    data-status="${status}" 
+                    data-shift="Monday-Friday"
+                    >View More</button>`;
+
+                employeesTable.row.add([
+                    employee.employee_id,
+                    employee.name,
+                    employee.role,
+                    status,
+                    button
+                ]);
+            });
+
+            // Redraw table
+            employeesTable.draw();
+        })
+        .catch(error => console.error('Error loading employee data:', error));
+}
+
+document.addEventListener('DOMContentLoaded', function() {
+    new DataTable('#logs'); //initialize DataTable for the second table (#logs)
+
+    // //initialize DataTable with empty data
+    // let employeesTable = new DataTable('#employees', {
+    //     destroy: true,
+    //     responsive: true,
+    //     autoWidth: false,
+    //     createdRow: function(row, data, dataIndex) {
+    //         //Status column
+    //         if (data[3].trim() === "Pending") {
+    //             row.classList.add("table-danger");
+    //         }
+    //     }
+    // });
 
     //fetch and populate the employee data
     fetchEmployees();
-    function fetchEmployees() {
-        fetch('/employees/')
-            .then(response => response.json())
-            .then(data => {
-                console.log("Fetched Data:", data); // debugging
-                employeesTable.clear(); // Clear existing table data
-
-                // Add new data
-                data.forEach(employee => {
-                    let status = employee.status || "Registered"; 
-                    let button = `<button class="btn btn-primary btn-sm view-more" 
-                        data-id="${employee.employee_id}" 
-                        data-name="${employee.name}" 
-                        data-role="${employee.role}" 
-                        data-email="${employee.email}"
-                        data-phone="${employee.phone_number}"
-                        data-status="${status}" 
-                        data-shift="Monday-Friday"
-                        >View More</button>`;
-
-                    employeesTable.row.add([
-                        employee.employee_id,
-                        employee.name,
-                        employee.role,
-                        status,
-                        button
-                    ]);
-                });
-
-                // Redraw table
-                employeesTable.draw();
-            })
-            .catch(error => console.error('Error loading employee data:', error));
-    }
+    
 
 
     document.addEventListener("click", function(event) { //user's more details
@@ -57,6 +71,24 @@ document.addEventListener('DOMContentLoaded', function() {
             let button = event.target;
     
             let id = button.getAttribute("data-id");
+
+            // Send the ID to the Django backend using fetch
+            fetch(`/get_nurse_data/`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': csrfToken // Include CSRF token for security
+                },
+                body: JSON.stringify({ id: id })
+            })
+            .then(response => response.json())
+            .then(data => {
+                console.log('Success:', data);
+                // Handle the response from the server if needed
+            })
+            .catch((error) => {
+                console.error('Error:', error);
+            });
             let name = button.getAttribute("data-name");
             let phone = button.getAttribute("data-phone");
             let email = button.getAttribute("data-email");
@@ -182,6 +214,7 @@ document.getElementById("rejectBtn").addEventListener("click", function() {
     document.getElementById("cancelRejectKeyBtn").style.display = "block";
 
     document.getElementById("masterKeyInput").style.display = "none";
+    document.getElementById("masterKeyInput").value = ""; //Clear the inside
     document.getElementById("confirmMasterKeyBtn").style.display = "none";
     document.getElementById("cancelMasterKeyBtn").style.display = "none";
 });
@@ -191,6 +224,7 @@ document.getElementById("approveBtn").addEventListener("click", function() {
     document.getElementById("cancelMasterKeyBtn").style.display = "block";
 
     document.getElementById("rejectKeyInput").style.display = "none";
+    document.getElementById("rejectKeyInput").value = ""; //Clear the inside
     document.getElementById("confirmRejectKeyBtn").style.display = "none";
     document.getElementById("cancelRejectKeyBtn").style.display = "none";
 });
@@ -218,6 +252,74 @@ document.addEventListener("DOMContentLoaded", function () {
         hideMasterKeyElements();
         dangerZoneContent.style.display = "none";
     });
+
+    // Get the User input then send to django
+    confirmMasterKeyBtn.addEventListener("click", function () {
+        // Send the input to Django using fetch
+        
+        let masterKey = masterKeyInput.value;
+        fetch("/verify_master_key/", {  // Replace with your Django endpoint
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+                "X-CSRFToken": csrfToken  // Include CSRF token for security
+            },
+            body: JSON.stringify({ master_key: masterKey }),  // Send the master key
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.status === "success") {
+                
+                alert("Master key is valid!");
+                var myModal = bootstrap.Modal.getInstance(document.getElementById('employeeModal'));
+                myModal.hide(); // Hide modal
+                fetchEmployees(); // Repopulate the employees 
+                // Handle success (e.g., redirect or update UI)
+            } else {
+                alert("Invalid master key.");
+                // Handle failure
+            }
+        })
+        .catch(error => {
+            console.error("Error:", error);
+            alert("An error occurred. Please try again.");
+        });
+    });
+
+    // Get the User input then send to django
+    confirmRejectKeyBtn.addEventListener("click", function () {
+        // Send the input to Django using fetch
+        
+        let masterKey = rejectKeyInput.value;
+        console.log(masterKey);
+        fetch("/reject_master_key/", {  // Replace with your Django endpoint
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+                "X-CSRFToken": csrfToken  // Include CSRF token for security
+            },
+            body: JSON.stringify({ master_key: masterKey }),  // Send the master key
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.status === "success") {
+                
+                alert("Master key is valid!");
+                var myModal = bootstrap.Modal.getInstance(document.getElementById('employeeModal'));
+                myModal.hide(); // Hide modal
+                fetchEmployees(); // Repopulate the employees 
+                // Handle success (e.g., redirect or update UI)
+            } else {
+                alert("Invalid master key.");
+                // Handle failure
+            }
+        })
+        .catch(error => {
+            console.error("Error:", error);
+            alert("An error occurred. Please try again.");
+        });
+    });
+
     //hide elements when the cancel button is clicked
     cancelMasterKeyBtn.addEventListener("click", function () {
         hideMasterKeyElements();

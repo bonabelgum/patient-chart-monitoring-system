@@ -156,6 +156,9 @@
 
         <script src="{% static 'js/logout.js' %}"></script>
         <script src="{% static 'js/admin.js' %}"></script>
+        <script>
+            const csrfToken = "{{ csrf_token }}"; // Django template tag to get the CSRF token
+        </script>
     </body>
 </html>
 

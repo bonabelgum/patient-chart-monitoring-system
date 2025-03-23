@@ -23,12 +23,13 @@ from App import views
 from App.signup import verify_admin, verify_nurse, get_admin_details, admin_code_verification
 from App.views import signup_view, logout_view, patient_detail, get_employees
 from App.login import handle_request  # Import the function
+from App.admin_user import get_nurse_data, verify_master_key, reject_master_key  # Import the function
 
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('', views.index, name='index'),
     path('signup', views.signup, name='signup'),
-    path('admin', views.admin_page, name='admin'),
+    path('admin_user/', views.admin_page, name='admin'),
     path('nurse', views.nurse, name='nurse'),
     path("signup/", signup_view, name="signup"), 
     path("logout/", logout_view, name="logout"),
@@ -40,4 +41,7 @@ urlpatterns = [
     path("admin_code_verification/", admin_code_verification, name="admin_code_verification"),
     path("handle-request/", handle_request, name="handle_request"),  # Now accessible via /handle-request/
     path('patient/<int:patient_id>/', patient_detail, name='patient_detail'), #patient's info
+    path('get_nurse_data/', get_nurse_data, name='get_nurse_data'), #nurse's info
+    path("verify_master_key/", verify_master_key, name="verify_master_key"),
+    path("reject_master_key/", reject_master_key, name="reject_master_key"),
 ]
