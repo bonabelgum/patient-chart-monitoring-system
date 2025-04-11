@@ -63,32 +63,17 @@ document.addEventListener('DOMContentLoaded', function() {
 
     //fetch and populate the employee data
     fetchEmployees();
-    
+    let id;
 
 
     document.addEventListener("click", function(event) { //user's more details
         if (event.target.classList.contains("view-more")) {
             let button = event.target;
     
-            let id = button.getAttribute("data-id");
+            id = button.getAttribute("data-id");
 
-            // Send the ID to the Django backend using fetch
-            fetch(`/get_nurse_data/`, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'X-CSRFToken': csrfToken // Include CSRF token for security
-                },
-                body: JSON.stringify({ id: id })
-            })
-            .then(response => response.json())
-            .then(data => {
-                console.log('Success:', data);
-                // Handle the response from the server if needed
-            })
-            .catch((error) => {
-                console.error('Error:', error);
-            });
+            
+
             let name = button.getAttribute("data-name");
             let phone = button.getAttribute("data-phone");
             let email = button.getAttribute("data-email");
@@ -110,7 +95,7 @@ document.addEventListener('DOMContentLoaded', function() {
             //adding shift
             let shiftContainer = document.getElementById("shift-container");
             let addShiftBtn = document.getElementById("addShiftBtn");
-            let shiftRow = document.getElementById("shift-row");
+            let shiftRow = document.getElementById("shift-row"); 
             //dangerzone
             let dangerZone = document.getElementById("dangerZone");
             let dangerZoneContent = document.getElementById("dangerZoneContent");
@@ -144,6 +129,63 @@ document.addEventListener('DOMContentLoaded', function() {
                     addShiftBtn.style.display = "none";
                 }
             }
+
+            // Send the ID to the Django backend using fetch
+            fetch(`/get_nurse_data/`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': csrfToken // Include CSRF token for security
+                },
+                body: JSON.stringify({ id: id })
+            })
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Network response was not ok');
+                }
+                return response.json();
+            })
+            .then(data => {
+                if (data.status === 'success') {
+                    // console.log("hello data");
+                    // console.log('Nurse ID:', data.nurse_id);
+                    // console.log('Shifts:', data.shifts);
+                    // let shiftRowContainer = document.getElementBy
+                    
+                    // // Process each shift from the response
+                    // 3. Access shifts array
+                    // const shifts = data.shifts;
+                    
+                    // // 4. Loop through shifts
+                    // shifts.forEach(shift => {
+                    //     console.log("Shift ID:", shift.id);
+                    //     console.log("Day:", shift.day);          // e.g. "Monday"
+                    //     console.log("Day Number:", shift.day_number);  // e.g. 1
+                    //     console.log("Start Time:", shift.start_time);  // e.g. "09:00"
+                    //     console.log("End Time:", shift.end_time);    // e.g. "17:00"
+                    // });
+                    data.shifts.forEach(shift => {
+                        // console.log("hello data");
+                        const shiftRow = createOrUpdateShiftRow(
+                            // null, // Create new row
+                            shift.day, 
+                            shift.start_time, 
+                            shift.end_time,
+                            shift.id
+                        );
+                        document.getElementById('shift-container').appendChild(shiftRow);
+                    });
+                } else { 
+                    console.error('Error:', data.message);
+                    alert('Error: ' + data.message);
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('Failed to fetch nurse data');
+            });
+
+
             //show modal
             let modal = new bootstrap.Modal(document.getElementById("employeeModal"));
             modal.show();
@@ -151,10 +193,10 @@ document.addEventListener('DOMContentLoaded', function() {
             
         }
     });
-//ADDING SCHED
+    //ADDING SCHED
     document.getElementById("addShiftBtn").addEventListener("click", function () {
         let shiftContainer = document.getElementById("shift-container");
-
+        console.log("hello id "+id);
         //create a new schedule row
         let newShift = document.createElement("div");
         newShift.classList.add("shift-row");
@@ -173,34 +215,71 @@ document.addEventListener('DOMContentLoaded', function() {
             <input type="time" class="form-control form-control-sm shift-from">
             <span>To:</span>
             <input type="time" class="form-control form-control-sm shift-to">
-            <button class="btn btn-primary btn-sm saveShiftBtn">Save</button>
-            <button class="btn btn-danger btn-sm cancelShiftBtn">Cancel</button>
+            <button class="btn btn-primary btn-sm saveShiftBtn" id="saveShiftBtn">Save</button>
+            <button class="btn btn-danger btn-sm cancelShiftBtn id="cancelShiftBtn"">Cancel</button>
         `;
         //appending the new shift row above the button
         shiftContainer.appendChild(newShift);
 
         //handle saving the schedule NOT YET DONE
         newShift.querySelector(".saveShiftBtn").addEventListener("click", function () {
+            console.log("hello success");
             let selectedDay = newShift.querySelector(".shift-day")?.value;
-            let fromTime = newShift.querySelector(".shift-from")?.value;
-            let toTime = newShift.querySelector(".shift-to")?.value;
+            let start_time = newShift.querySelector(".shift-from")?.value;
+            let end_time = newShift.querySelector(".shift-to")?.value;
+
+            const formData = {
+                selectedDay:selectedDay, 
+                start_time:start_time,
+                end_time:end_time
+                // Add CSRF token for Django
+                // csrfmiddlewaretoken: document.querySelector('[name=csrfmiddlewaretoken]').value
+            };
 
             //validate input fields
-            if (!selectedDay || !fromTime || !toTime) {
+            if (!selectedDay || !start_time || !end_time) {
                 alert("Please fill in all fields.");
                 return;
             }
+            
             //replace input fields with static text //NOT SAVED TO THE DB YET
             newShift.innerHTML = `
-                ${selectedDay}: ${fromTime} - ${toTime}
+                ${selectedDay}: ${start_time} - ${end_time}
                 <button class="btn btn-danger btn-sm ms-2 deleteShiftBtn">Delete</button>
             `;
+            
             newShift.querySelector(".deleteShiftBtn").addEventListener("click", function () {
                 newShift.remove(); //TO BE FIXED <add edit button instead>
             });
-
+            
             alert("Shift saved!");
-            });
+
+            // Send POST request
+            // Send POST request
+            fetch('/create_shift/', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': csrfToken
+                },
+                body: JSON.stringify({
+                    day: selectedDay,
+                    start_time: start_time,
+                    end_time: end_time
+                })
+            })
+            .then(function(response) {
+                if (!response.ok) {
+                    return response.json().then(function(err) {
+                        throw new Error(err.message || 'Server error');
+                    });
+                }
+                return response.json();
+            })
+
+        });
+
+
 
         //cancel the shift input
         newShift.querySelector(".cancelShiftBtn").addEventListener("click", function () {
@@ -351,4 +430,70 @@ document.addEventListener("DOMContentLoaded", function () {
     });
 });
 
+function createOrUpdateShiftRow(day, start_time, end_time, shiftId = null) {
+    // Create new div element
+    const shiftRow = document.createElement('div');
+    shiftRow.className = 'shift-row-schedule';
+    
+    // Add data attribute if shift ID is provided
+    if (shiftId) {
+        shiftRow.dataset.shiftId = shiftId;
+    }
+    
+    // Create the shift text content
+    const shiftText = document.createTextNode(`${day}: ${start_time} - ${end_time} `);
+    
+    // Create delete button
+    const deleteBtn = document.createElement('button');
+    deleteBtn.className = 'btn btn-danger btn-sm ms-2 deleteShiftBtn';
+    deleteBtn.textContent = 'Delete';
+    
+    // Add event listener
+    deleteBtn.addEventListener('click', function() {
+        if (confirm('Are you sure you want to delete this shift?')) {
+            shiftRow.remove();
+            console.log("hello id shioft");
+            if (shiftId) {
+                deleteShiftFromBackend(shiftId);
+            }
+        }
+    });
+    
+    // Append elements
+    shiftRow.appendChild(shiftText);    
+    shiftRow.appendChild(deleteBtn);
+    
+    return shiftRow;
+}
 
+function deleteShiftFromBackend(shiftId) {
+    // Get CSRF token
+    // const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+    
+    fetch('/delete_shift/', {  // Your Django URL endpoint
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': csrfToken
+            // 'X-Requested-With': 'XMLHttpRequest'
+        },
+        body: JSON.stringify({
+            'shift_id': shiftId  // Sending the shift ID in request body
+        })
+    })
+    .then(response => {
+        if (!response.ok) {
+            throw new Error('Network response was not ok');
+        }
+        return response.json();
+    })
+    .then(data => {
+        console.log('Server response:', data);
+        if (data.success) {
+            console.log(`Shift ID ${shiftId} was successfully received by Django`);
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+    });
+}

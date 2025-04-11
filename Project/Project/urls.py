@@ -23,7 +23,7 @@ from App import views
 from App.signup import verify_admin, verify_nurse, get_admin_details, admin_code_verification
 from App.views import signup_view, logout_view, patient_detail, get_employees
 from App.login import handle_request  # Import the function
-from App.admin_user import get_nurse_data, verify_master_key, reject_master_key  # Import the function
+from App.admin_user import get_nurse_data, verify_master_key, reject_master_key, create_shift , delete_shift # Import the function
 
 urlpatterns = [
     path('admin/', admin.site.urls),
@@ -44,4 +44,7 @@ urlpatterns = [
     path('get_nurse_data/', get_nurse_data, name='get_nurse_data'), #nurse's info
     path("verify_master_key/", verify_master_key, name="verify_master_key"),
     path("reject_master_key/", reject_master_key, name="reject_master_key"),
+    path('create_shift/', create_shift, name='create_shift'),
+    path('delete_shift/', delete_shift, name='delete_shift'),
+    
 ]

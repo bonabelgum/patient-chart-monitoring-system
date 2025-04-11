@@ -6,7 +6,7 @@ from cryptography.fernet import Fernet, InvalidToken
 
 
 
-class Employee(models.Model):
+class Employee(models.Model): 
     SEX_CHOICES = [
         ('M', 'Male'),
         ('F', 'Female'),
@@ -21,7 +21,7 @@ class Employee(models.Model):
     role = models.CharField(max_length=100)
     email = models.EmailField(unique=True)
     phone_number = models.CharField(max_length=15, unique=True)
-    master_key = models.CharField(max_length=16, blank=True, null=True, unique=True)  # Optional field
+    master_key = models.TextField(blank=True, null=True) # Optional field
     status = models.CharField(max_length=100, null=True, blank=True)
 
     def __str__(self):
@@ -71,3 +71,36 @@ class Employee(models.Model):
             return True
         except cls.DoesNotExist:
             return False  # Employee not found
+        
+
+class Shift_schedule(models.Model):
+    DAYS_OF_WEEK = [
+        (1, 'Monday'),
+        (2, 'Tuesday'),
+        (3, 'Wednesday'),
+        (4, 'Thursday'),
+        (5, 'Friday'),
+        (6, 'Saturday'),
+        (7, 'Sunday'),
+    ]
+    
+    
+    day = models.PositiveSmallIntegerField(choices=DAYS_OF_WEEK)
+    start_time = models.TimeField()
+    end_time = models.TimeField()
+    employee = models.ForeignKey(Employee, on_delete=models.CASCADE, related_name='shifts')
+    
+    @classmethod
+    def get_shifts_by_employee_id(cls, employee_id):
+        return cls.objects.filter(employee__employee_id=employee_id)
+    
+    @classmethod
+    def delete_shift_by_id(cls, shift_id):
+        """Delete a single shift by its ID (primary key)"""
+        try:
+            deleted_count, _ = cls.objects.filter(id=shift_id).delete()
+            return deleted_count
+        except Exception as e:
+            # Log the error if needed
+            print(f"Error deleting shift: {e}")
+            return 0
