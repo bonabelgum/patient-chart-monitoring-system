@@ -8,7 +8,7 @@ from django.core.cache import cache
 from django.contrib import messages
 
 from cryptography.fernet import Fernet
-from .models import Employee
+from .models import Admin_logs, Employee
 
 ###
 
@@ -142,6 +142,7 @@ def verify_admin(request): #from frontend to django
             
             # print(f"Received Data - Name: {name}, Birthdate: {birthdate}, role: {role}, Admin ID: {adminID}, Email: {email}")
 
+            Admin_logs.add_log_activity("Admin: "+name+" Signed up.")
             return JsonResponse({"success": True, "message": "Admin verified successfully!"})
         except json.JSONDecodeError:
             return JsonResponse({"success": False, "errors": ["Invalid JSON data"]}, status=400)
@@ -228,7 +229,8 @@ def verify_nurse(request): #from frontend to django
             }
             
             #print(f"Received Data - Name: {name}, Birthdate: {birthdate}, phone: {phone_number}, Nurse ID: {nurseID}, Email: {email}")
-
+            
+            Admin_logs.add_log_activity("Nurse: "+name+" Signed up and to be approved.")
             return JsonResponse({"success": True, "message": "Nurse added to the employees DB!"})
         except json.JSONDecodeError:
             return JsonResponse({"success": False, "errors": ["Invalid JSON data"]}, status=400)

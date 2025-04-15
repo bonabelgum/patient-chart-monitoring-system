@@ -21,9 +21,9 @@ from django.conf.urls.static import static
 from App import views
 
 from App.signup import verify_admin, verify_nurse, get_admin_details, admin_code_verification
-from App.views import signup_view, logout_view, patient_detail, get_employees
+from App.views import signup_view, logout_view, patient_detail, get_employees, log_activity
 from App.login import handle_request  # Import the function
-from App.admin_user import get_nurse_data, verify_master_key, reject_master_key, create_shift , delete_shift # Import the function
+from App.admin_user import get_nurse_data, verify_master_key, reject_master_key, create_shift , delete_shift, get_all_logs # Import the function
 
 urlpatterns = [
     path('admin/', admin.site.urls),
@@ -46,5 +46,8 @@ urlpatterns = [
     path("reject_master_key/", reject_master_key, name="reject_master_key"),
     path('create_shift/', create_shift, name='create_shift'),
     path('delete_shift/', delete_shift, name='delete_shift'),
+    path('get_all_logs/', get_all_logs, name='get_all_logs'),
+    
+    path("log_activity/", log_activity, name="log_activity"),
     
 ]

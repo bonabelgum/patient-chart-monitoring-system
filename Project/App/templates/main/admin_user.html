@@ -58,13 +58,13 @@
                         <thead>
                             <tr>
                                 <th>Date/Time</th>
-                                <th>ID</th>
+                                {% comment %} <th>ID</th> {% endcomment %}
                                 <th>Activity</th>
                             </tr>
                         </thead>
                         <tbody>
-                            <tr>
-                                <td>sample2</td>
+                            {% comment %} <tr>
+                                <td style="width: 20%;">sample2</td>
                                 <td>sample2</td>
                                 <td>sample2</td>
                             </tr>
@@ -72,7 +72,7 @@
                                 <td>sample3</td>
                                 <td>sample3</td>
                                 <td>sample3</td>
-                            </tr>
+                            </tr> {% endcomment %}
                         </tbody>
                     </table>
                 </div>
@@ -154,11 +154,12 @@
         <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script-->
         <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 
-        <script src="{% static 'js/logout.js' %}"></script>
-        <script src="{% static 'js/admin.js' %}"></script>
+        
         <script>
             const csrfToken = "{{ csrf_token }}"; // Django template tag to get the CSRF token
         </script>
+        <script src="{% static 'js/logout.js' %}"></script>
+        <script src="{% static 'js/admin.js' %}"></script>
     </body>
 </html>
 

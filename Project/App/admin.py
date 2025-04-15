@@ -1,5 +1,6 @@
 from django.contrib import admin
-from .models import Employee, Shift_schedule
+from django.utils.html import format_html
+from .models import Admin_logs, Employee, Shift_schedule
 
 @admin.register(Employee)
 class EmployeeAdmin(admin.ModelAdmin):
@@ -20,3 +21,25 @@ class ShiftScheduleAdmin(admin.ModelAdmin):
         return dict(Shift_schedule.DAYS_OF_WEEK).get(obj.day, 'Unknown')
     get_day_name.short_description = 'Day'
     get_day_name.admin_order_field = 'day'
+    
+@admin.register(Admin_logs)
+class AdminLogsAdmin(admin.ModelAdmin):
+    list_display = ('formatted_date', 'truncated_activity')
+    list_filter = ('date_time',)
+    search_fields = ('activity',)
+    ordering = ('-date_time',)  # Newest first by default
+    readonly_fields = ('date_time',)  # Make datetime non-editable
+    list_per_page = 20  # Items per page
+
+    def formatted_date(self, obj):
+        return obj.date_time.strftime('%Y-%m-%d %H:%M:%S')
+    formatted_date.short_description = 'Date/Time'
+    formatted_date.admin_order_field = 'date_time'
+
+    def truncated_activity(self, obj):
+        return format_html(
+            '<span title="{}">{}</span>',
+            obj.activity,
+            obj.activity[:75] + '...' if len(obj.activity) > 75 else obj.activity
+        )
+    truncated_activity.short_description = 'Activity'

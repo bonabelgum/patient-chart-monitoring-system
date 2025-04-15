@@ -3,7 +3,7 @@ import os
 from django.http import JsonResponse
 from django.core.mail import send_mail
 from django.views.decorators.csrf import csrf_exempt
-from .models import Employee, Shift_schedule
+from .models import  Employee, Shift_schedule, Admin_logs
 
 
 # @csrf_exempt  # Use this decorator if you're not using CSRF token in your AJAX request
@@ -69,6 +69,7 @@ def verify_master_key(request):
                 
                 send_nurse_confirmation(employee.name, employee.email)
                 employee.update_status("Registered")
+                Admin_logs.add_log_activity("Nurse: "+employee.name+" is approved by admin.")
                 return JsonResponse({"status": "success"})
             else:
                 print("Enter 4")
@@ -99,7 +100,8 @@ def reject_master_key(request):
                 # employee.update_status("Registered")
                 return JsonResponse({"status": "success"})
             else:
-                print("Enter 4")
+                # print("Enter 4")
+                Admin_logs.add_log_activity("Nurse: "+employee.name+" is rejected by admin.")
                 return JsonResponse({"message": "Incorrect Masterkey"})
         except Exception as e:
             return JsonResponse({"status": "error", "message": str(e)}, status=500)
@@ -161,6 +163,8 @@ def create_shift(request):
             start_time=shift_start_time,
             end_time=shift_end_time
         )
+        
+        Admin_logs.add_log_activity(data['day']+": "+shift_start_time+" to "+shift_end_time+" schedule is added to "+employee.name)
         # print("hello shift"+shift)
 
         return JsonResponse({
@@ -179,20 +183,18 @@ def create_shift(request):
         
 def delete_shift(request):
     try:
-        # Print raw request body for debugging
-        # print("Raw request body:", request.body)
         
         # Parse JSON data
         data = json.loads(request.body)
         shift_id = data.get('shift_id')
+        employee = Shift_schedule.get_employee_by_shift_id(shift_id)
+        shift = Shift_schedule.get_shift_by_id(shift_id)
         
         # Print to console to verify reception
         print(f"Received shift ID: {shift_id}")
         
         deleted = Shift_schedule.delete_shift_by_id(shift_id)
-        
-        # Here you would normally delete the object
-        # Shift.objects.filter(id=shift_id).delete()
+        Admin_logs.add_log_activity("Admin Deleted "+employee.name+" Shift on "+shift.get_day_display()+": "+shift.start_time+" to "+shift.end_time)
         
         return JsonResponse({
             'success': True,
@@ -204,7 +206,16 @@ def delete_shift(request):
         return JsonResponse({'error': 'Invalid JSON'}, status=400)
     except Exception as e:
         return JsonResponse({'error': str(e)}, status=500)
+    
+def get_all_logs(request):
+    # Get all logs using the class method
+    logs = Admin_logs.get_all_logs()
 
+    return JsonResponse({
+        'status': 'success',
+        'data': logs
+    })
+    
 
 def verify_master_key_for_all_employees(master_key_input):
     for employee in Employee.objects.all():

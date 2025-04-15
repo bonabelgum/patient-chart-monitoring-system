@@ -3,6 +3,7 @@ from django.conf import settings
 from django.db import models
 from django.contrib.auth.models import User
 from cryptography.fernet import Fernet, InvalidToken
+from django.utils import timezone
 
 
 
@@ -91,6 +92,24 @@ class Shift_schedule(models.Model):
     employee = models.ForeignKey(Employee, on_delete=models.CASCADE, related_name='shifts')
     
     @classmethod
+    def get_employee_by_shift_id(cls, shift_id):
+        """Get the employee object corresponding to the given shift_id."""
+        try:
+            shift = cls.objects.get(pk=shift_id)
+            return shift.employee
+        except cls.DoesNotExist:
+            return None
+    
+    @classmethod
+    def get_employee_by_shift_id(cls, shift_id):
+        """Get the employee object corresponding to the given shift_id."""
+        try:
+            shift = cls.objects.get(pk=shift_id)
+            return shift.employee
+        except cls.DoesNotExist:
+            return None
+    
+    @classmethod
     def get_shifts_by_employee_id(cls, employee_id):
         return cls.objects.filter(employee__employee_id=employee_id)
     
@@ -104,3 +123,26 @@ class Shift_schedule(models.Model):
             # Log the error if needed
             print(f"Error deleting shift: {e}")
             return 0
+        
+class Admin_logs(models.Model):
+    date_time = models.DateTimeField(default=timezone.now)
+    activity = models.TextField()
+
+    def __str__(self):
+        return f"[{self.date_time}] {self.activity}"
+
+    @classmethod
+    def add_log_activity(cls, activity_message):
+        """Class method to quickly create a new log entry."""
+        return cls.objects.create(activity=activity_message)
+    
+    @classmethod
+    def get_all_logs(cls):
+        """Class method to return all logs as a list of dicts."""
+        return [
+            {
+                'date_time': log.date_time.strftime('%Y-%m-%d %H:%M:%S'),
+                'activity': log.activity
+            }
+            for log in cls.objects.all().order_by('-date_time')
+        ] 

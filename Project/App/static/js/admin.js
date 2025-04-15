@@ -46,7 +46,8 @@ function fetchEmployees() {
 }
 
 document.addEventListener('DOMContentLoaded', function() {
-    new DataTable('#logs'); //initialize DataTable for the second table (#logs)
+    // new DataTable('#logs'); //initialize DataTable for the second table (#logs)
+    const table = $('#logs').DataTable();  // Assuming you're using DataTable
 
     // //initialize DataTable with empty data
     // let employeesTable = new DataTable('#employees', {
@@ -63,6 +64,35 @@ document.addEventListener('DOMContentLoaded', function() {
 
     //fetch and populate the employee data
     fetchEmployees();
+    // addLogEntry("2025-04-12 14:45", "Shift created for Nurse Aundray");
+    // Function to fetch and display all logs
+
+    fetch('/get_all_logs/')  // Call the URL endpoint to get logs
+        .then(response => response.json())
+        .then(data => {
+            if (data.status === 'success') {
+                const logs = data.data;
+                // Clear existing rows in the table
+                table.clear();
+
+                // Add each log entry to the table
+                logs.forEach(log => {
+                    addLogEntry(table,log.date_time, log.activity)
+                    // table.row.add([
+                    //     `<td>${log.date_time}</td>`,
+                    //     log.activity
+                    // ]).draw(false);
+                });
+            } else {
+                console.error('Failed to load logs:', data.message);
+            }
+        })
+        .catch(error => {
+            console.error('Error fetching logs:', error);
+        });
+
+    
+    // addLogEntry("Sample4", 'Sample4');
     let id;
 
 
@@ -497,3 +527,43 @@ function deleteShiftFromBackend(shiftId) {
         console.error('Error:', error);
     });
 }
+// logActivity("I added activity hehe") = call this to add log activity
+function logActivity(message) {
+    fetch('/log_activity/', {  // Your Django URL endpoint
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': csrfToken
+            // 'X-Requested-With': 'XMLHttpRequest'
+        },
+        body: JSON.stringify({
+            'message': message  // Sending the shift ID in request body
+        })
+    })
+    .then(response => {
+        if (!response.ok) {
+            throw new Error('Network response was not ok');
+        }
+        return response.json();
+    })
+    .then(data => {
+        console.log('Server response:', data);
+        if (data.success) {
+            console.log(`Activity: ${message} was successfully received by Django`);
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+    });
+}
+
+// const table = $('#logs').DataTable();
+
+// Call this to add log
+function addLogEntry(table, dateTime, activity) {
+    table.row.add([
+        dateTime,
+        activity
+    ]).draw(false); // draw(false) keeps current pagination
+}
+

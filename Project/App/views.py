@@ -1,3 +1,4 @@
+import json
 import os
 
 from django.shortcuts import render, redirect
@@ -7,7 +8,7 @@ from django.views.decorators.csrf import csrf_exempt
 from django.contrib.auth.decorators import login_required   
 from django.contrib.auth import logout
 from django.urls import reverse_lazy
-from .models import Employee
+from .models import Admin_logs, Employee
 
 
 # Create your views here.
@@ -79,3 +80,32 @@ def patient_detail(request, patient_id):
     }
 
     return render(request, 'main/patient.html', context)
+
+
+
+def log_activity(request):
+    try:
+        
+        # Parse JSON data
+        data = json.loads(request.body)
+        activity_message = data.get('message')
+        
+        # Print to console to verify reception
+        print(f"Received shift ID: {activity_message}")
+        
+        # deleted = Shift_schedule.delete_shift_by_id(activity_message)
+        
+        Admin_logs.add_log_activity(activity_message)
+        
+        return JsonResponse({
+            'success': True,
+            'message': f'Shift ID {activity_message} received successfully',
+            'received_id': activity_message
+        })
+        
+    except json.JSONDecodeError:
+        return JsonResponse({'error': 'Invalid JSON'}, status=400)
+    except Exception as e:
+        return JsonResponse({'error': str(e)}, status=500)
+    
+# Admin_logs.add_log_activity("hello")

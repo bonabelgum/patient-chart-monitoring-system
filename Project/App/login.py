@@ -8,7 +8,7 @@ from django.contrib.auth import authenticate, login
 
 
 
-from .models import Employee
+from .models import Admin_logs, Employee
 
 print("Helllo worllldd")
 
@@ -66,8 +66,10 @@ def handle_request(request):
                 
                 # Redirect based on role
                 if employee.role == "admin":
+                    Admin_logs.add_log_activity("Admin: "+employee.name+" Logged In")
                     response_data = {"message": "Login successful!", "redirect_url": "admin"}
                 else:
+                    Admin_logs.add_log_activity("Nurse: "+employee.name+" Logged In")
                     response_data = {"message": "Login successful!", "redirect_url": "nurse"}
 
                 return JsonResponse(response_data)  
