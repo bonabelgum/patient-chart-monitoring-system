@@ -8,12 +8,7 @@ from django.views.decorators.csrf import csrf_exempt
 from django.contrib.auth.decorators import login_required   
 from django.contrib.auth import logout
 from django.urls import reverse_lazy
-<<<<<<< HEAD
-from .models import Admin_logs, Employee
-
-=======
-from .models import Admin_logs, Employee, Schedule
->>>>>>> e3db30c (add time table)
+from .models import Admin_logs, Employee, Shift_schedule
 
 # Create your views here.
 
@@ -112,25 +107,25 @@ def log_activity(request):
     except Exception as e:
         return JsonResponse({'error': str(e)}, status=500)
     
-<<<<<<< HEAD
-# Admin_logs.add_log_activity("hello")
-=======
 # Admin_logs.add_log_activity("hello")
 
 #sched
 def timetable_view(request):
-    schedules = Schedule.objects.all().order_by('start_time')
+    schedules = Shift_schedule.objects.all().order_by('start_time')
     days_of_week = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday']
     time_blocks = {}
 
     for schedule in schedules:
+        # Convert day number to weekday string using the choices list
+        day_name = dict(Shift_schedule.DAYS_OF_WEEK).get(schedule.day)
         time_key = f"{schedule.start_time.strftime('%H:%M')} - {schedule.end_time.strftime('%H:%M')}"
+        
         if time_key not in time_blocks:
             time_blocks[time_key] = {day: '' for day in days_of_week}
-        time_blocks[time_key][schedule.day] += f"{schedule.user}<br>"
+
+        time_blocks[time_key][day_name] += f"{schedule.employee.name}<br>" 
     context = {
         'time_blocks': time_blocks,
         'days_of_week': days_of_week
     }
     return render(request, 'admin_user.html', context)
->>>>>>> e3db30c (add time table)

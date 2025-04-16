@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 {% load static %}
+{% load dict_extras %}
     <head>
         <meta charset="UTF-8">
         <meta http-equiv="X-UA-Compatible" content="IE=edge">
@@ -23,11 +24,7 @@
         <div>
             <h1>admin</h1>
             <button id="logoutButton">Logout</button>
-<<<<<<< HEAD
-            <button id="logoutButton">Create new master key</button>
-=======
             <!---button id="logoutButton">Create new master key</button--->
->>>>>>> e3db30c (add time table)
 
             <!-- Tab Navigation -->
             <ul class="nav nav-tabs" id="myTab" role="tablist">
@@ -35,12 +32,9 @@
                     <button class="nav-link active" id="tab1-tab" data-bs-toggle="tab" data-bs-target="#tab1" type="button" role="tab" aria-controls="tab1" aria-selected="true">Employees</button>
                 </li>
                 <li class="nav-item" role="presentation">
-<<<<<<< HEAD
-=======
                     <button class="nav-link" id="tab2-tab" data-bs-toggle="tab" data-bs-target="#tab3" type="button" role="tab" aria-controls="tab3" aria-selected="false">Schedule</button>
                 </li>
                 <li class="nav-item" role="presentation">
->>>>>>> e3db30c (add time table)
                     <button class="nav-link" id="tab2-tab" data-bs-toggle="tab" data-bs-target="#tab2" type="button" role="tab" aria-controls="tab2" aria-selected="false">Logs</button>
                 </li>
             </ul>
@@ -83,7 +77,7 @@
                                     <tr>
                                         <td class="time-column text-center">{{ time }}</td>
                                         {% for day in days_of_week %}
-                                            <td class="text-center">{% autoescape off %}{{ days.day }}{% endautoescape %}</td>
+                                            <td class="text-center">{% autoescape off %}{{ days|get_item:day }}{% endautoescape %}</td>
                                         {% endfor %}
                                     </tr>
                                 {% endfor %}
