@@ -23,7 +23,11 @@
         <div>
             <h1>admin</h1>
             <button id="logoutButton">Logout</button>
+<<<<<<< HEAD
             <button id="logoutButton">Create new master key</button>
+=======
+            <!---button id="logoutButton">Create new master key</button--->
+>>>>>>> e3db30c (add time table)
 
             <!-- Tab Navigation -->
             <ul class="nav nav-tabs" id="myTab" role="tablist">
@@ -31,6 +35,12 @@
                     <button class="nav-link active" id="tab1-tab" data-bs-toggle="tab" data-bs-target="#tab1" type="button" role="tab" aria-controls="tab1" aria-selected="true">Employees</button>
                 </li>
                 <li class="nav-item" role="presentation">
+<<<<<<< HEAD
+=======
+                    <button class="nav-link" id="tab2-tab" data-bs-toggle="tab" data-bs-target="#tab3" type="button" role="tab" aria-controls="tab3" aria-selected="false">Schedule</button>
+                </li>
+                <li class="nav-item" role="presentation">
+>>>>>>> e3db30c (add time table)
                     <button class="nav-link" id="tab2-tab" data-bs-toggle="tab" data-bs-target="#tab2" type="button" role="tab" aria-controls="tab2" aria-selected="false">Logs</button>
                 </li>
             </ul>
@@ -52,8 +62,38 @@
                         </tbody>
                     </table>
                 </div>
+                <!--table 3-->
+                <div class="tab-pane fade" id="tab3" role="tabpanel" aria-labelledby="tab3-tab">
+                    <div class="table-responsive">
+                        <table class="table table-bordered schedule-table">
+                            <thead class="table-dark text-center">
+                                <tr>
+                                    <th>Time</th>
+                                    <th>Monday</th>
+                                    <th>Tuesday</th>
+                                    <th>Wednesday</th>
+                                    <th>Thursday</th>
+                                    <th>Friday</th>
+                                    <th>Saturday</th>
+                                    <th>Sunday</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for time, days in time_blocks.items %}
+                                    <tr>
+                                        <td class="time-column text-center">{{ time }}</td>
+                                        {% for day in days_of_week %}
+                                            <td class="text-center">{% autoescape off %}{{ days.day }}{% endautoescape %}</td>
+                                        {% endfor %}
+                                    </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+                
+                <!--table 2-->
                 <div class="tab-pane fade" id="tab2" role="tabpanel" aria-labelledby="tab2-tab">
-                    <!--table 2-->
                     <table id="logs" class="table table-striped" style="width:100%">
                         <thead>
                             <tr>
