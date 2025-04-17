@@ -18,33 +18,58 @@
         <h1>Patient</h1>
         <button id="logoutButton">Logout</button>
 
-        <!--patient table-->
-        <div>
-            <button id="admit_patient" class="btn btn-primary">Admit Patient</button>
-            <table id="patient" class="table table-striped" style="width:100%">
-                <thead>
-                    <tr>
-                        <th>ID</th>
-                        <th>Name</th>
-                        <th>Ward/Floor</th>
-                        <th>Status</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <tr data-patient-id="1" data-patient-name="namepatient" data-patient-ward="WardA" data-patient-status="Stable">
-                        <td>sample only</td>
-                        <td>sample</td>
-                        <td>sample</td>
-                        <td>sample</td>
-                    </tr>
-                    <tr data-patient-id="1" data-patient-name="namepatient" data-patient-ward="WardA" data-patient-status="Stable">
-                        <td>sample1</td>
-                        <td>sample1</td>
-                        <td>sample1</td>
-                        <td>sample1</td>
-                    </tr>
-                </tbody>
-            </table>
+        <!-- Tab Navigation -->
+        <ul class="nav nav-tabs" id="patient_list" role="tablist">
+            <li class="nav-item" role="presentation">
+                <button class="nav-link active" id="patient-list-tab" data-bs-toggle="tab" data-bs-target="#patient_tab" type="button" role="tab" aria-controls="patient_tab" aria-selected="true">
+                    Patient
+                </button>
+            </li>
+            <li class="nav-item" role="presentation">
+                <button class="nav-link" id="logs-tab" data-bs-toggle="tab" data-bs-target="#logs" type="button" role="tab" aria-controls="logs" aria-selected="false">
+                    Logs
+                </button>
+            </li>
+        </ul>
+
+        <!-- Tab Content -->
+        <div class="tab-content" id="nurse-page">
+            <!-- Patient Tab Content -->
+            <div class="tab-pane fade show active" id="patient_tab" role="tabpanel" aria-labelledby="patient-list-tab">
+                <button id="admit_patient" class="btn btn-primary mt-3">Admit Patient</button>
+                <table id="patient" class="table table-striped mt-3" style="width:100%">
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Name</th>
+                            <th>Ward/Floor</th>
+                            <th>Status</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr data-patient-id="1" data-patient-name="namepatient" data-patient-ward="WardA" data-patient-status="Stable">
+                            <td>sample only</td>
+                            <td>sample</td>
+                            <td>sample</td>
+                            <td>sample</td>
+                        </tr>
+                        <tr data-patient-id="2" data-patient-name="namepatient2" data-patient-ward="WardB" data-patient-status="Stable">
+                            <td>sample1</td>
+                            <td>sample1</td>
+                            <td>sample1</td>
+                            <td>sample1</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Logs Tab Content -->
+            <div class="tab-pane fade" id="logs" role="tabpanel" aria-labelledby="logs-tab">
+                <!-- Your logs content here -->
+            </div>
+        </div>
+
+
         </div>
 
     </div>

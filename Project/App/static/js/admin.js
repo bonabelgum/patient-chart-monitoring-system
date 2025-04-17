@@ -568,7 +568,7 @@ function addLogEntry(table, dateTime, activity) {
 }
 
 
-//sched
+//TIME TABLE/ SCHED
 document.addEventListener('DOMContentLoaded', function () {
     const tab3Button = document.querySelector('#tab3-tab');
 
