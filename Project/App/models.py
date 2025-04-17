@@ -147,12 +147,3 @@ class Admin_logs(models.Model):
             for log in cls.objects.all().order_by('-date_time')
         ] 
     
-#sched
-'''class Schedule(models.Model):
-    user = models.CharField(max_length=100)
-    day = models.CharField(max_length=10, choices=[
-        ('Monday', 'Monday'), ('Tuesday', 'Tuesday'), ('Wednesday', 'Wednesday'),
-        ('Thursday', 'Thursday'), ('Friday', 'Friday'), ('Saturday', 'Saturday'), ('Sunday', 'Sunday')
-    ])
-    start_time = models.TimeField()
-    end_time = models.TimeField()'''

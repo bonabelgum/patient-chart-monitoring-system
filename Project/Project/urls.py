@@ -49,5 +49,7 @@ urlpatterns = [
     path('get_all_logs/', get_all_logs, name='get_all_logs'),
     
     path("log_activity/", log_activity, name="log_activity"),
+
+    path('api/schedule/', views.get_schedule_data, name='schedule-data'),
     
 ]

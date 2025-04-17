@@ -110,22 +110,14 @@ def log_activity(request):
 # Admin_logs.add_log_activity("hello")
 
 #sched
-def timetable_view(request):
-    schedules = Shift_schedule.objects.all().order_by('start_time')
-    days_of_week = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday']
-    time_blocks = {}
-
-    for schedule in schedules:
-        # Convert day number to weekday string using the choices list
-        day_name = dict(Shift_schedule.DAYS_OF_WEEK).get(schedule.day)
-        time_key = f"{schedule.start_time.strftime('%H:%M')} - {schedule.end_time.strftime('%H:%M')}"
-        
-        if time_key not in time_blocks:
-            time_blocks[time_key] = {day: '' for day in days_of_week}
-
-        time_blocks[time_key][day_name] += f"{schedule.employee.name}<br>" 
-    context = {
-        'time_blocks': time_blocks,
-        'days_of_week': days_of_week
-    }
-    return render(request, 'admin_user.html', context)
+def get_schedule_data(request):
+    shifts = Shift_schedule.objects.select_related('employee').all()
+    data = []
+    for shift in shifts:
+        data.append({
+            'day': shift.day,  # Integer (1 = Monday, etc.)
+            'start_time': shift.start_time.strftime('%H:%M'),
+            'end_time': shift.end_time.strftime('%H:%M'),
+            'employee': shift.employee.id, 
+        })
+    return JsonResponse({'shifts': data})

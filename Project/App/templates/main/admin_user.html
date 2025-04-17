@@ -32,7 +32,7 @@
                     <button class="nav-link active" id="tab1-tab" data-bs-toggle="tab" data-bs-target="#tab1" type="button" role="tab" aria-controls="tab1" aria-selected="true">Employees</button>
                 </li>
                 <li class="nav-item" role="presentation">
-                    <button class="nav-link" id="tab2-tab" data-bs-toggle="tab" data-bs-target="#tab3" type="button" role="tab" aria-controls="tab3" aria-selected="false">Schedule</button>
+                    <button class="nav-link" id="tab3-tab" data-bs-toggle="tab" data-bs-target="#tab3" type="button" role="tab" aria-controls="tab3" aria-selected="false">Schedule</button>
                 </li>
                 <li class="nav-item" role="presentation">
                     <button class="nav-link" id="tab2-tab" data-bs-toggle="tab" data-bs-target="#tab2" type="button" role="tab" aria-controls="tab2" aria-selected="false">Logs</button>
@@ -40,8 +40,8 @@
             </ul>
 
             <div class="tab-content p-5" id="myTabContent">
+                <!--table 1-->
                 <div class="tab-pane fade show active" id="tab1" role="tabpanel" aria-labelledby="tab1-tab">
-                    <!--table 1-->
                     <table id="employees" class="table table-striped" style="width:100%">
                         <thead>
                             <tr>
@@ -73,19 +73,10 @@
                                 </tr>
                             </thead>
                             <tbody>
-                                {% for time, days in time_blocks.items %}
-                                    <tr>
-                                        <td class="time-column text-center">{{ time }}</td>
-                                        {% for day in days_of_week %}
-                                            <td class="text-center">{% autoescape off %}{{ days|get_item:day }}{% endautoescape %}</td>
-                                        {% endfor %}
-                                    </tr>
-                                {% endfor %}
-                            </tbody>
+                            </tbody>                            
                         </table>
                     </div>
                 </div>
-                
                 <!--table 2-->
                 <div class="tab-pane fade" id="tab2" role="tabpanel" aria-labelledby="tab2-tab">
                     <table id="logs" class="table table-striped" style="width:100%">
@@ -193,7 +184,7 @@
             const csrfToken = "{{ csrf_token }}"; // Django template tag to get the CSRF token
         </script>
         <script src="{% static 'js/logout.js' %}"></script>
-        <script src="{% static 'js/admin.js' %}"></script>
+        <script src="{% static 'js/admin.js' %}" defer></script>
     </body>
 </html>
 

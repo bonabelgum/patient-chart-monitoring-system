@@ -567,3 +567,93 @@ function addLogEntry(table, dateTime, activity) {
     ]).draw(false); // draw(false) keeps current pagination
 }
 
+
+//sched
+document.addEventListener('DOMContentLoaded', function () {
+    const tab3Button = document.querySelector('#tab3-tab');
+
+    document.querySelectorAll('[data-bs-toggle="tab"]').forEach(tab => {
+        tab.addEventListener('shown.bs.tab', function (event) {
+            if (event.target === tab3Button) {
+                loadScheduleData();
+            }
+        });
+    });
+
+    function loadScheduleData() {
+        fetch('/api/schedule/')
+            .then(response => response.json())
+            .then(data => {
+                populateScheduleTable(data.shifts);
+            })
+            .catch(error => {
+                console.error('Error loading schedule:', error);
+            });
+    }
+
+    function populateScheduleTable(shifts) {
+        const tbody = document.querySelector('#tab3 .schedule-table tbody');
+        tbody.innerHTML = '';
+        const uniqueTimes = new Set();
+        
+        // Collect all unique times from shifts (only for sorting)
+        shifts.forEach(shift => {
+            uniqueTimes.add(shift.start_time);
+            uniqueTimes.add(shift.end_time);
+        });
+        
+        // Convert to sorted array
+        const timeSlots = Array.from(uniqueTimes).sort((a, b) => a.localeCompare(b));
+        
+        // Create table rows for each time slot
+        for (let i = 0; i < timeSlots.length - 1; i++) {
+            const start = timeSlots[i];
+            const end = timeSlots[i + 1];
+            const row = document.createElement('tr');
+            
+            // Time label
+            const timeCell = document.createElement('td');
+            timeCell.textContent = `${start} - ${end}`;
+            row.appendChild(timeCell);
+            
+            // Create cells for each day
+            for (let day = 1; day <= 7; day++) {
+                const cell = document.createElement('td');
+                
+                // STRICT day matching - only show if shift is exactly for this day
+                const dayShifts = shifts.filter(s => s.day === day);
+                
+                // Check if any shift for this day overlaps with current time slot
+                const hasShift = dayShifts.some(shift => {
+                    // Convert all times to minutes for accurate comparison
+                    const slotStart = timeToMinutes(start);
+                    const slotEnd = timeToMinutes(end);
+                    const shiftStart = timeToMinutes(shift.start_time);
+                    const shiftEnd = timeToMinutes(shift.end_time);
+                    
+                    // Check for overlap
+                    return (shiftStart < slotEnd && shiftEnd > slotStart);
+                });
+                
+                if (hasShift) {
+                    const div = document.createElement('div');
+                    div.classList.add('bg-warning', 'p-1', 'rounded', 'mb-1', 'text-center');
+                    div.innerHTML = `<strong>Employee 2</strong><br>`;
+                    cell.appendChild(div);
+                }
+                row.appendChild(cell);
+            }
+            tbody.appendChild(row);
+        }
+    }
+    
+    // Helper function to convert "HH:MM" to minutes
+    function timeToMinutes(time) {
+        const [hours, minutes] = time.split(':').map(Number);
+        return hours * 60 + minutes;
+    }
+});
+
+
+
+
