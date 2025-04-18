@@ -1,3 +1,39 @@
+
+/*med tab*/
+.medication-container {
+    padding: 20px;
+}
+.medication-container h4 {
+    color: #2c3e50;
+    font-weight: 600;
+}
+.medication-container h5 {
+    color: #2c3e50;
+    font-weight: 500;
+    padding-bottom: 8px;
+    border-bottom: 1px solid #dee2e6;
+}
+.medication-container .card {
+    border: 1px solid rgba(0, 0, 0, 0.125);
+    box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
+}
+.medication-container .form-label {
+    font-weight: 500;
+    margin-bottom: 0.5rem;
+}
+.medication-container textarea {
+    min-height: 80px;
+}
+.medication-container table th {
+    background-color: #f8f9fa;
+    font-weight: 600;
+    vertical-align: middle;
+}
+
+.medication-container table td {
+    vertical-align: middle;
+}
+/*memo*/
 body {
     font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
     line-height: 1.6;
@@ -5,7 +41,6 @@ body {
     background-color: #f5f5f5;
     padding: 20px;
 }
-
 .notes-container {
     max-width: 800px;
     margin: 0 auto;
@@ -14,17 +49,14 @@ body {
     border-radius: 8px;
     box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
 }
-
 h1 {
     color: #2c3e50;
     border-bottom: 2px solid #3498db;
     padding-bottom: 10px;
 }
-
 .notes-controls {
     margin-bottom: 20px;
 }
-
 .btn-add {
     background-color: #3498db;
     color: white;
@@ -35,11 +67,9 @@ h1 {
     font-size: 16px;
     transition: background-color 0.3s;
 }
-
 .btn-add:hover {
     background-color: #2980b9;
 }
-
 .note {
     background: #fff;
     border-left: 4px solid #3498db;
@@ -48,25 +78,21 @@ h1 {
     box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
     position: relative;
 }
-
 .note-header {
     display: flex;
     justify-content: space-between;
     align-items: center;
     margin-bottom: 10px;
 }
-
 .note-title {
     font-weight: bold;
     color: #2c3e50;
     font-size: 18px;
 }
-
 .note-time {
     color: #7f8c8d;
     font-size: 14px;
 }
-
 .note-content {
     min-height: 50px;
     padding: 10px;
@@ -75,19 +101,16 @@ h1 {
     background: #f9f9f9;
     white-space: pre-wrap;
 }
-
 .note-content[contenteditable="true"] {
     background: #fff;
     border: 1px solid #ddd;
     min-height: 100px;
 }
-
 .note-actions {
     margin-top: 10px;
     display: flex;
     gap: 10px;
 }
-
 .note-btn {
     padding: 5px 10px;
     border: none;
@@ -95,17 +118,14 @@ h1 {
     cursor: pointer;
     font-size: 14px;
 }
-
 .btn-edit {
     background-color: #f39c12;
     color: white;
 }
-
 .btn-delete {
     background-color: #e74c3c;
     color: white;
 }
-
 .btn-save {
     background-color: #27ae60;
     color: white;

@@ -4,7 +4,6 @@ document.addEventListener('DOMContentLoaded', function () {
     const patientName = sessionStorage.getItem('data-patient-name');
     const patientWard = sessionStorage.getItem('data-patient-ward');
     const patientStatus = sessionStorage.getItem('data-patient-status');
-
     //display the patient data on the page
     if (document.getElementById('patient-id')) {
         document.getElementById('patient-id').textContent = patientId || 'N/A';
@@ -12,9 +11,254 @@ document.addEventListener('DOMContentLoaded', function () {
         document.getElementById('patient-ward').textContent = patientWard || 'N/A';
         document.getElementById('patient-status').textContent = patientStatus || 'N/A';
     }
+    sessionStorage.clear(); //clear the sessionStorage after displaying the data
+    //edit patient details
+    const editBtn = document.getElementById('edit-patient-btn');
+    const saveBtn = document.getElementById('save-patient-btn');
+    const cancelBtn = document.getElementById('cancel-patient-btn');
+    if (editBtn && saveBtn && cancelBtn) {
+        editBtn.addEventListener('click', function() {
+            // Hide all view spans and show edit inputs
+            document.querySelectorAll('[id$="-view"]').forEach(el => el.classList.add('d-none'));
+            document.querySelectorAll('[id$="-edit"]').forEach(el => el.classList.remove('d-none'));
+            // Enable editing (except for ID which remains readonly)
+            document.getElementById('data-patient-name-edit').readOnly = false;
+            document.getElementById('data-patient-ward-edit').readOnly = false;
+            document.getElementById('data-patient-status-edit').readOnly = false;
+            // Toggle buttons
+            editBtn.classList.add('d-none');
+            saveBtn.classList.remove('d-none');
+            cancelBtn.classList.remove('d-none');
+        });
+        saveBtn.addEventListener('click', function() {
+            // Get edited values
+            const editedName = document.getElementById('data-patient-name-edit').value;
+            const editedWard = document.getElementById('data-patient-ward-edit').value;
+            const editedStatus = document.getElementById('data-patient-status-edit').value;
+            // Update view spans
+            document.getElementById('data-patient-name-view').textContent = editedName;
+            document.getElementById('data-patient-ward-view').textContent = editedWard;
+            document.getElementById('data-patient-status-view').textContent = editedStatus;
+            // Here you would typically send the updated data to your server
+            // For example using fetch() or AJAX
+            exitEditMode();
+        });
+        
+        cancelBtn.addEventListener('click', function() {
+            // Reset edit inputs to current values
+            document.getElementById('data-patient-name-edit').value = document.getElementById('data-patient-name-view').textContent;
+            document.getElementById('data-patient-ward-edit').value = document.getElementById('data-patient-ward-view').textContent;
+            document.getElementById('data-patient-status-edit').value = document.getElementById('data-patient-status-view').textContent;
+            
+            exitEditMode();
+        });
+        
+        function exitEditMode() {
+            // Show all view spans and hide edit inputs
+            document.querySelectorAll('[id$="-view"]').forEach(el => el.classList.remove('d-none'));
+            document.querySelectorAll('[id$="-edit"]').forEach(el => el.classList.add('d-none'));
+            
+            // Toggle buttons
+            editBtn.classList.remove('d-none');
+            saveBtn.classList.add('d-none');
+            cancelBtn.classList.add('d-none');
+        }
+    }
 
-    //clear the sessionStorage after displaying the data
-    sessionStorage.clear();
+
+});
+
+//edit patient vs details
+document.addEventListener('DOMContentLoaded', function() {
+    const editBtn = document.getElementById('edit-vs-details-btn');
+    const saveBtn = document.getElementById('save-vs-details-btn');
+    const cancelBtn = document.getElementById('cancel-vs-details-btn');
+    // Store original values in case of cancel
+    let originalValues = {};
+    // Edit button click handler
+    if (editBtn) {
+        editBtn.addEventListener('click', function() {
+            // Store original values
+            originalValues = {
+                name: document.getElementById('data-patient-name-view').textContent,
+                dob: document.getElementById('data-patient-dob-view').textContent,
+                sex: document.getElementById('data-patient-sex-view').textContent,
+                allergies: document.getElementById('data-patient-allergies-view').textContent,
+                familyHistory: document.getElementById('data-patient-family-history-view').textContent,
+                physicalExam: document.getElementById('data-patient-physical-exam-view').textContent,
+                diagnosis: document.getElementById('data-patient-diagnosis-view').textContent
+            };
+
+            // Hide all view elements and show edit elements
+            document.querySelectorAll('[id$="-view"]').forEach(el => el.classList.add('d-none'));
+            document.querySelectorAll('[id$="-edit"]').forEach(el => {
+                el.classList.remove('d-none');
+                // Enable editing (except for ID which should remain readonly)
+                if (!el.id.includes('patient-id-edit')) {
+                    el.readOnly = false;
+                }
+            });
+            // Toggle buttons
+            editBtn.classList.add('d-none');
+            saveBtn.classList.remove('d-none');
+            cancelBtn.classList.remove('d-none');
+        });
+    }
+    // Save button click handler
+    if (saveBtn) {
+        saveBtn.addEventListener('click', function() {
+            // Update view elements with edited values
+            document.getElementById('data-patient-name-view').textContent = 
+                document.getElementById('data-patient-name-edit').value;
+            
+            document.getElementById('data-patient-dob-view').textContent = 
+                formatDate(document.getElementById('data-patient-dob-edit').value);
+            
+            const sexSelect = document.getElementById('data-patient-sex-edit');
+            document.getElementById('data-patient-sex-view').textContent = 
+                sexSelect.options[sexSelect.selectedIndex].text;
+            
+            document.getElementById('data-patient-allergies-view').textContent = 
+                document.getElementById('data-patient-allergies-edit').value;
+            
+            document.getElementById('data-patient-family-history-view').textContent = 
+                document.getElementById('data-patient-family-history-edit').value;
+            
+            document.getElementById('data-patient-physical-exam-view').textContent = 
+                document.getElementById('data-patient-physical-exam-edit').value;
+            
+            document.getElementById('data-patient-diagnosis-view').textContent = 
+                document.getElementById('data-patient-diagnosis-edit').value;
+
+            // savePatientDetails();
+
+            exitEditMode();
+        });
+    }
+
+    // Cancel button click handler
+    if (cancelBtn) {
+        cancelBtn.addEventListener('click', function() {
+            // Restore original values
+            document.getElementById('data-patient-name-edit').value = originalValues.name;
+            document.getElementById('data-patient-dob-edit').value = formatDateForInput(originalValues.dob);
+            
+            // Set the sex select to the original value
+            const sexSelect = document.getElementById('data-patient-sex-edit');
+            for (let i = 0; i < sexSelect.options.length; i++) {
+                if (sexSelect.options[i].text === originalValues.sex) {
+                    sexSelect.selectedIndex = i;
+                    break;
+                }
+            }
+            
+            document.getElementById('data-patient-allergies-edit').value = originalValues.allergies;
+            document.getElementById('data-patient-family-history-edit').value = originalValues.familyHistory;
+            document.getElementById('data-patient-physical-exam-edit').value = originalValues.physicalExam;
+            document.getElementById('data-patient-diagnosis-edit').value = originalValues.diagnosis;
+
+            // Exit edit mode
+            exitEditMode();
+        });
+    }
+    // Function to exit edit mode
+    function exitEditMode() {
+        // Show all view elements and hide edit elements
+        document.querySelectorAll('[id$="-view"]').forEach(el => el.classList.remove('d-none'));
+        document.querySelectorAll('[id$="-edit"]').forEach(el => el.classList.add('d-none'));
+        // Toggle buttons
+        editBtn.classList.remove('d-none');
+        saveBtn.classList.add('d-none');
+        cancelBtn.classList.add('d-none');
+    }
+    // Helper function to format date for display
+    function formatDate(dateString) {
+        if (!dateString) return '';
+        const date = new Date(dateString);
+        return date.toLocaleDateString();
+    }
+    // Helper function to format date for input[type="date"]
+    function formatDateForInput(dateString) {
+        if (!dateString) return '';
+        const date = new Date(dateString);
+        const year = date.getFullYear();
+        const month = String(date.getMonth() + 1).padStart(2, '0');
+        const day = String(date.getDate()).padStart(2, '0');
+        return `${year}-${month}-${day}`;
+    }
+    // Example save function (you'll need to implement this properly)
+    function savePatientDetails() {
+        const patientData = {
+            name: document.getElementById('data-patient-name-edit').value,
+            dob: document.getElementById('data-patient-dob-edit').value,
+            sex: document.getElementById('data-patient-sex-edit').value,
+            allergies: document.getElementById('data-patient-allergies-edit').value,
+            family_history: document.getElementById('data-patient-family-history-edit').value,
+            physical_exam: document.getElementById('data-patient-physical-exam-edit').value,
+            diagnosis: document.getElementById('data-patient-diagnosis-edit').value
+        };
+        fetch('/api/patient/update/', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': getCookie('csrftoken') // For Django CSRF protection
+            },
+            body: JSON.stringify(patientData)
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                console.log('Patient details updated successfully');
+            } else {
+                console.error('Failed to update patient details');
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+        });
+    }
+});
+
+//VS TABLE
+document.addEventListener('DOMContentLoaded', function() {
+    // Initialize Bootstrap Table
+    $('#vitals-table').bootstrapTable();
+    // Variables to track selected row
+    let selectedVitalsId = null;
+    // Row selection handler
+    $('#vitals-table').on('click-row.bs.table', function(e, row, $element) {
+        // Remove highlight from all rows
+        $('#vitals-table tbody tr').removeClass('table-primary');
+        // Highlight selected row
+        $element.addClass('table-primary');
+        // Enable edit/delete buttons
+        $('#edit-vitals-btn').prop('disabled', false);
+        $('#delete-vitals-btn').prop('disabled', false);
+        // Store selected vitals ID
+        selectedVitalsId = $element.attr('data-vitals-id');
+    });
+    // Edit button handler
+    $('#edit-vitals-btn').click(function() {
+       });
+    // Add new button handler
+    $('#add-vitals-btn').click(function() {
+    });
+    // Delete button handler
+    $('#delete-vitals-btn').click(function() {
+    });
+
+});
+
+//MED
+document.addEventListener('DOMContentLoaded', function() {
+    new DataTable('#active');
+    new DataTable('#inactive');
+    
+    // Future functionality to be added here:
+    // - Form submission handling
+    // - Drug order table interactions
+    // - Edit/delete functionality
+    // - Status toggling
 });
 
 //MEMO/NOTES

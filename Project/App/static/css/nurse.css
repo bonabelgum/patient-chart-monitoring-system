@@ -1,3 +1,37 @@
 #patient tbody tr {
     cursor: pointer;
 }
+.patient-field {
+    margin-bottom: 10px;
+}
+
+.patient-field strong {
+    display: inline-block;
+    width: 100px;
+}
+
+/* QR Code Scanning Section Styles */
+.scan-section {
+    padding: 20px;
+    background-color: #f8f9fa;
+    border-radius: 8px;
+    border: 1px dashed #dee2e6;
+}
+.scan-icon {
+    color: #007bff;
+    margin-bottom: 15px;
+}
+#scan_qr {
+    padding: 8px 20px;
+    font-size: 16px;
+}
+#qr-reader {
+    border: 2px solid #007bff;
+    border-radius: 8px;
+    overflow: hidden;
+}
+#qr-reader-results {
+    margin-top: 10px;
+    font-weight: bold;
+    color: #007bff;
+}

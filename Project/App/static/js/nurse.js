@@ -26,4 +26,46 @@ document.addEventListener('DOMContentLoaded', function() {
     admitButton.addEventListener('click', function() {
         addEmployeeModal.show();
     });
+
+    //qr code scanning
+    document.getElementById('scan_qr').addEventListener('click', function() {
+        const qrReader = document.getElementById('qr-reader');
+        const scanButton = this;
+        
+        if (qrReader.style.display === 'none') {
+            // Start scanning
+            qrReader.style.display = 'block';
+            scanButton.textContent = 'Stop Scanning';
+            
+            const html5QrcodeScanner = new Html5QrcodeScanner(
+                "qr-reader", 
+                { 
+                    fps: 10, 
+                    qrbox: 250 
+                },
+                /* verbose= */ false
+            );
+            
+            html5QrcodeScanner.render((decodedText, decodedResult) => {
+                // Successfully scanned
+                alert(`Scanned: ${decodedText}`);
+                html5QrcodeScanner.clear();
+                qrReader.style.display = 'none';
+                scanButton.textContent = 'Scan QR Code';
+                
+                // You can do something with the scanned data here
+                console.log("Scanned:", decodedText);
+            });
+            
+            // Store scanner instance so we can stop it later
+            scanButton.scanner = html5QrcodeScanner;
+        } else {
+            // Stop scanning
+            qrReader.style.display = 'none';
+            scanButton.textContent = 'Scan QR Code';
+            if (scanButton.scanner) {
+                scanButton.scanner.clear();
+            }
+        }
+    });
 });
