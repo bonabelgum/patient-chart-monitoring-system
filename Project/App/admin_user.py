@@ -227,6 +227,43 @@ def delete_shift(request):
         print(f"Error in delete_shift: {str(e)}")  # Detailed error logging
         return JsonResponse({'error': str(e)}, status=500)
     
+# Delete all Employee  
+def remove_user(request):
+    if request.method != 'POST':
+        return JsonResponse({'error': 'Method not allowed'}, status=405)
+    
+    try:
+        data = json.loads(request.body.decode('utf-8'))  # Better decoding
+        master_key = data.get('master_key')
+        
+        if not master_key:
+            return JsonResponse({'error': 'Master key required'}, status=400)
+        
+        
+        
+        employee_id = request.session.get('confirm_nurse_id')
+        print(f"Received master key: {master_key} "+employee_id)  # Debug
+        
+        success, message = Employee.delete_with_master_key(master_key, employee_id)
+        
+        # Replace with your actual key validation
+        if success:  
+            # Add your user deletion logic here
+            return JsonResponse({
+                'status': 'success',
+                'message': 'User removed successfully'
+            })
+        else:
+            return JsonResponse({
+                'status': 'error',
+                'message': message
+            })
+        
+    except json.JSONDecodeError:
+        return JsonResponse({'error': 'Invalid JSON'}, status=400)
+    except Exception as e:
+        return JsonResponse({'error': str(e)}, status=500)
+
 def get_all_logs(request):
     # Get all logs using the class method
     logs = Admin_logs.get_all_logs()

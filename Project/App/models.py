@@ -73,6 +73,50 @@ class Employee(models.Model):
         except cls.DoesNotExist:
             return False  # Employee not found
         
+        
+    # delete employee
+    @classmethod
+    def delete_with_master_key(cls, master_key_input, employee_id_to_delete):
+        """
+        Delete an employee if master key verification passes.
+        
+        Args:
+            master_key_input (str): The master key to verify
+            employee_id_to_delete (str): ID of employee to delete
+            
+        Returns:
+            tuple: (success: bool, message: str)
+        """
+        try:
+            # Get the employee to be deleted
+            employee_to_delete = cls.objects.get(employee_id=employee_id_to_delete)
+            
+            # Get all employees with master keys
+            potential_admins = cls.objects.exclude(master_key__isnull=True).exclude(master_key='')
+            
+            # Check if any admin has the matching master key
+            valid_admin = None
+            for admin in potential_admins:
+                if admin.verify_master_key(master_key_input):
+                    valid_admin = admin
+                    break
+            
+            if not valid_admin:
+                return (False, "Invalid master key")
+                
+            # Prevent self-deletion
+            if valid_admin.employee_id == employee_id_to_delete:
+                return (False, "Cannot delete yourself with your own master key")
+                
+            # Proceed with deletion
+            employee_to_delete.delete()
+            return (True, f"Employee {employee_id_to_delete} deleted successfully")
+            
+        except cls.DoesNotExist:
+            return (False, "Employee not found")
+        except Exception as e:
+            return (False, f"Error: {str(e)}")
+        
 
 class Shift_schedule(models.Model):
     DAYS_OF_WEEK = [

@@ -460,6 +460,54 @@ document.addEventListener("DOMContentLoaded", function () {
     });
 });
 
+//Remove User/ Employee or Nurse
+document.getElementById('removeUserBtn').addEventListener('click', async function() {
+    const masterKey = document.getElementById('removeUserKeyInput').value;
+    // const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value; // UNCOMMENT THIS
+    
+    if (!masterKey) {
+        alert("Please enter a master key");
+        return;
+    }
+    
+    try {
+        const response = await fetch('/remove_user/', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': csrfToken // MUST be included
+            },
+            body: JSON.stringify({
+                master_key: masterKey // Key matches what Django expects
+            })
+        });
+
+        const data = await response.json();
+        
+        if (!response.ok) {
+            throw new Error(data.message || 'Invalid request');
+        }
+        
+        console.log("Success:", data);
+        // Check the actual status from your Django response
+        if (data.status === 'success') {
+            alert(`✅ Success: ${data.message}`);
+            // Optional: Refresh page or update UI
+            location.reload();
+        } else {
+            alert(`❌ Failed: ${data.message}`);
+        }
+        // Optional: Refresh page or update UI
+        location.reload();
+        
+    } catch (error) {
+        console.error("Error:", error);
+        alert(`Error: ${error.message}`);
+    }
+});
+
+
+
 function createOrUpdateShiftRow(day, start_time, end_time, shiftId = null) {
     // Create new div element
     const shiftRow = document.createElement('div');
