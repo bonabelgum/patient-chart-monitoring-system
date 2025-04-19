@@ -182,29 +182,49 @@ def create_shift(request):
         
         
 def delete_shift(request):
+    if request.method != 'POST':
+        return JsonResponse({'error': 'Only POST method allowed'}, status=405)
+    
     try:
-        
         # Parse JSON data
         data = json.loads(request.body)
         shift_id = data.get('shift_id')
-        employee = Shift_schedule.get_employee_by_shift_id(shift_id)
+        
+        if not shift_id:
+            return JsonResponse({'error': 'shift_id is required'}, status=400)
+        
+        # Get shift and employee
         shift = Shift_schedule.get_shift_by_id(shift_id)
+        if not shift:
+            return JsonResponse({'error': f'Shift with ID {shift_id} not found'}, status=404)
+            
+        employee = shift.employee  # Directly access the employee through the ForeignKey
         
-        # Print to console to verify reception
-        print(f"Received shift ID: {shift_id}")
+        # Debug prints
+        print(f"Processing deletion for shift ID: {shift_id}")
+        print(f"Day: {shift.get_day_display()}")
+        print(f"Employee: {employee.name}")
         
+        # Delete the shift
         deleted = Shift_schedule.delete_shift_by_id(shift_id)
-        Admin_logs.add_log_activity("Admin Deleted "+employee.name+" Shift on "+shift.get_day_display()+": "+shift.start_time+" to "+shift.end_time)
+        if not deleted:
+            return JsonResponse({'error': 'Failed to delete shift'}, status=500)
+        
+        # Add admin log
+        log_message = f"Admin Deleted {employee.name}'s Shift on {shift.get_day_display()}: {shift.start_time} to {shift.end_time}"
+        Admin_logs.add_log_activity(log_message)
         
         return JsonResponse({
             'success': True,
-            'message': f'Shift ID {shift_id} received successfully',
-            'received_id': shift_id
+            'message': f'Shift deleted successfully',
+            'deleted_id': shift_id,
+            'log': log_message
         })
         
     except json.JSONDecodeError:
         return JsonResponse({'error': 'Invalid JSON'}, status=400)
     except Exception as e:
+        print(f"Error in delete_shift: {str(e)}")  # Detailed error logging
         return JsonResponse({'error': str(e)}, status=500)
     
 def get_all_logs(request):

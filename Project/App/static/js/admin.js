@@ -496,36 +496,34 @@ function createOrUpdateShiftRow(day, start_time, end_time, shiftId = null) {
     return shiftRow;
 }
 
-function deleteShiftFromBackend(shiftId) {
-    // Get CSRF token
-    // const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
-    
-    fetch('/delete_shift/', {  // Your Django URL endpoint
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
-            'X-CSRFToken': csrfToken
-            // 'X-Requested-With': 'XMLHttpRequest'
-        },
-        body: JSON.stringify({
-            'shift_id': shiftId  // Sending the shift ID in request body
-        })
-    })
-    .then(response => {
+async function deleteShiftFromBackend(shiftId) {
+    try {
+        const response = await fetch('/delete_shift/', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': csrfToken
+            },
+            body: JSON.stringify({
+                'shift_id': shiftId
+            })
+        });
+
+        const data = await response.json();
+        
         if (!response.ok) {
-            throw new Error('Network response was not ok');
+            throw new Error(data.error || 'Failed to delete shift');
         }
-        return response.json();
-    })
-    .then(data => {
-        console.log('Server response:', data);
-        if (data.success) {
-            console.log(`Shift ID ${shiftId} was successfully received by Django`);
-        }
-    })
-    .catch(error => {
+
+        console.log('Success:', data);
+        alert(`Shift deleted successfully!`);
+        // Refresh or update your UI here
+        location.reload(); // Or update the table dynamically
+        
+    } catch (error) {
         console.error('Error:', error);
-    });
+        alert(`Error: ${error.message}`);
+    }
 }
 // logActivity("I added activity hehe") = call this to add log activity
 function logActivity(message) {

@@ -101,11 +101,9 @@ class Shift_schedule(models.Model):
             return None
     
     @classmethod
-    def get_employee_by_shift_id(cls, shift_id):
-        """Get the employee object corresponding to the given shift_id."""
+    def get_shift_by_id(cls, shift_id):
         try:
-            shift = cls.objects.get(pk=shift_id)
-            return shift.employee
+            return cls.objects.get(pk=shift_id)
         except cls.DoesNotExist:
             return None
     
