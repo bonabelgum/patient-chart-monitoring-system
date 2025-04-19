@@ -615,93 +615,163 @@ function addLogEntry(table, dateTime, activity) {
 
 
 //TIME TABLE/ SCHED
-// document.addEventListener('DOMContentLoaded', function () {
-//     const tab3Button = document.querySelector('#tab3-tab');
-
-//     document.querySelectorAll('[data-bs-toggle="tab"]').forEach(tab => {
-//         tab.addEventListener('shown.bs.tab', function (event) {
-//             if (event.target === tab3Button) {
-//                 loadScheduleData();
-//             }
-//         });
-//     });
-
-//     function loadScheduleData() {
-//         fetch('/api/schedule/')
-//             .then(response => response.json())
-//             .then(data => {
-//                 populateScheduleTable(data.shifts);
-//             })
-//             .catch(error => {
-//                 console.error('Error loading schedule:', error);
-//             });
-//     }
-
-//     function populateScheduleTable(shifts) {
-//         const tbody = document.querySelector('#tab3 .schedule-table tbody');
-//         tbody.innerHTML = '';
-//         const uniqueTimes = new Set();
-        
-//         // Collect all unique times from shifts (only for sorting)
-//         shifts.forEach(shift => {
-//             uniqueTimes.add(shift.start_time);
-//             uniqueTimes.add(shift.end_time);
-//         });
-        
-//         // Convert to sorted array
-//         const timeSlots = Array.from(uniqueTimes).sort((a, b) => a.localeCompare(b));
-        
-//         // Create table rows for each time slot
-//         for (let i = 0; i < timeSlots.length - 1; i++) {
-//             const start = timeSlots[i];
-//             const end = timeSlots[i + 1];
-//             const row = document.createElement('tr');
-            
-//             // Time label
-//             const timeCell = document.createElement('td');
-//             timeCell.textContent = `${start} - ${end}`;
-//             row.appendChild(timeCell);
-            
-//             // Create cells for each day
-//             for (let day = 1; day <= 7; day++) {
-//                 const cell = document.createElement('td');
-                
-//                 // STRICT day matching - only show if shift is exactly for this day
-//                 const dayShifts = shifts.filter(s => s.day === day);
-                
-//                 // Check if any shift for this day overlaps with current time slot
-//                 const hasShift = dayShifts.some(shift => {
-//                     // Convert all times to minutes for accurate comparison
-//                     const slotStart = timeToMinutes(start);
-//                     const slotEnd = timeToMinutes(end);
-//                     const shiftStart = timeToMinutes(shift.start_time);
-//                     const shiftEnd = timeToMinutes(shift.end_time);
-                    
-//                     // Check for overlap
-//                     return (shiftStart < slotEnd && shiftEnd > slotStart);
-//                 });
-                
-//                 if (hasShift) {
-//                     const div = document.createElement('div');
-//                     div.classList.add('bg-warning', 'p-1', 'rounded', 'mb-1', 'text-center');
-//                     div.innerHTML = `<strong>Employee 2</strong><br>`;
-//                     cell.appendChild(div);
-//                 }
-//                 row.appendChild(cell);
-//             }
-//             tbody.appendChild(row);
-//         }
-//     }
-    
-//     // Helper function to convert "HH:MM" to minutes
-//     function timeToMinutes(time) {
-//         const [hours, minutes] = time.split(':').map(Number);
-//         return hours * 60 + minutes;
-//     }
-// });
-
-
 document.addEventListener('DOMContentLoaded', function() {
+    renderScheduleTable();
+});
+
+function renderScheduleTable() {
+    //DATA TEST ONLY
+    const scheduleData = [
+        { day: 1, employeeId: 'ID:1', startTime: '2:00', endTime: '16:00' },
+        { day: 1, employeeId: 'ID:1', startTime: '22:00', endTime: '24:00' },
+        { day: 1, employeeId: 'ID:6', startTime: '5:10', endTime: '18:00' },
+        { day: 1, employeeId: 'ID:8', startTime: '1:00', endTime: '18:00' },
+        { day: 5, employeeId: 'ID:7', startTime: '5:30', endTime: '18:00' }
+    ];
+
+    const days = [
+        { id: 1, name: 'Monday' },
+        { id: 2, name: 'Tuesday' },
+        { id: 3, name: 'Wednesday' },
+        { id: 4, name: 'Thursday' },
+        { id: 5, name: 'Friday' },
+        { id: 6, name: 'Saturday' },
+        { id: 7, name: 'Sunday' }
+    ];
+
+    // Create time slots from 1:00 to 24:00
+    const timeSlots = Array.from({ length: 24 }, (_, i) => ({
+        hour: i + 1,
+        label: `${i + 1}:00`
+    }));
+
+    // Render time header
+    const timeHeader = document.querySelector('.time-slots-container');
+    timeHeader.innerHTML = '';
+    timeSlots.forEach(slot => {
+        const timeSlot = document.createElement('div');
+        timeSlot.className = 'time-slot';
+        timeSlot.textContent = slot.label;
+        timeHeader.appendChild(timeSlot);
+    });
+
+    // Calculate minute width (24 hours = 1440 minutes)
+    const minuteWidth = 100 / 1440;
+
+    // Render schedule rows
+    const scheduleRows = document.querySelector('.schedule-rows');
+    scheduleRows.innerHTML = '';
+
+    days.forEach(day => {
+        const dayRow = document.createElement('div');
+        dayRow.className = 'schedule-row';
+
+        // Add day cell
+        const dayCell = document.createElement('div');
+        dayCell.className = 'day-cell';
+        dayCell.textContent = day.name;
+        dayRow.appendChild(dayCell);
+
+        // Add time cells container
+        const timeCells = document.createElement('div');
+        timeCells.className = 'time-cells';
+
+        // Filter schedules for this day
+        const daySchedules = scheduleData.filter(item => item.day === day.id);
+
+        // Calculate vertical positions for each schedule
+        const scheduleLanes = calculateScheduleLanes(daySchedules);
+
+        // Render each schedule block
+        daySchedules.forEach((schedule, index) => {
+            const startTime = schedule.startTime;
+            const endTime = schedule.endTime;
+            const [startHour, startMinute] = startTime.split(':').map(Number);
+            const [endHour, endMinute] = endTime.split(':').map(Number);
+            const visibleStartMinutes = 60; // Because your timeline starts at 1:00 AM
+
+            // Calculate position and width
+            const startMinutes = (startHour * 60) + startMinute;
+            const endMinutes = (endHour * 60) + endMinute;
+            const duration = Math.max(0, endMinutes - startMinutes);
+
+            // Get assigned lane for this schedule
+            const lane = scheduleLanes[index];
+
+            // Create employee block
+            const employeeBlock = document.createElement('div');
+            employeeBlock.className = 'employee-block';
+            employeeBlock.textContent = schedule.employeeId;
+            employeeBlock.style.left = `${((startMinutes - visibleStartMinutes) / (1440 - visibleStartMinutes)) * 100}%`;
+            employeeBlock.style.width = `${(duration / (1440 - visibleStartMinutes)) * 100}%`;
+            employeeBlock.style.top = `${10 + (lane * 35)}px`;
+            employeeBlock.title = `${schedule.employeeId}: ${startTime} - ${endTime}`;
+
+            // Different colors for different employees
+            const colors = ['#4e73df', '#1cc88a', '#36b9cc', '#f6c23e', '#e74a3b'];
+            employeeBlock.style.backgroundColor = colors[index % colors.length];
+
+            timeCells.appendChild(employeeBlock);
+        });
+
+        // Adjust row height based on number of lanes needed
+        const lanesNeeded = daySchedules.length > 0 ? 
+            Math.max(...scheduleLanes) + 1 : 0;
+        timeCells.style.minHeight = `${50 + (lanesNeeded * 35)}px`;
+
+        dayRow.appendChild(timeCells);
+        scheduleRows.appendChild(dayRow);
+    });
+}
+
+// Calculate optimal lanes for schedules to prevent overlapping
+function calculateScheduleLanes(schedules) {
+    if (schedules.length === 0) return [];
+    
+    // Sort schedules by start time
+    const sorted = [...schedules].sort((a, b) => {
+        const aStart = timeToMinutes(a.startTime);
+        const bStart = timeToMinutes(b.startTime);
+        return aStart - bStart;
+    });
+
+    const lanes = [];
+    const laneEndTimes = [];
+
+    sorted.forEach(schedule => {
+        const start = timeToMinutes(schedule.startTime);
+        const end = timeToMinutes(schedule.endTime);
+        
+        let lane = 0;
+        while (lane < laneEndTimes.length && laneEndTimes[lane] > start) {
+            lane++;
+        }
+        
+        if (lane < laneEndTimes.length) {
+            laneEndTimes[lane] = end;
+        } else {
+            laneEndTimes.push(end);
+        }
+        
+        // Map back to original schedule order
+        const originalIndex = schedules.findIndex(s => 
+            s.employeeId === schedule.employeeId && 
+            s.startTime === schedule.startTime && 
+            s.endTime === schedule.endTime);
+        lanes[originalIndex] = lane;
+    });
+
+    return lanes;
+}
+
+function timeToMinutes(timeStr) {
+    const [hours, minutes] = timeStr.split(':').map(Number);
+    return hours * 60 + minutes;
+}
+
+
+
+/*document.addEventListener('DOMContentLoaded', function() {
     fetch('/get_all_shifts/')
         .then(response => {
             if (!response.ok) {
@@ -751,7 +821,7 @@ function addRowToTable(employee) {
     }
     
     tbody.appendChild(row);
-}
+}*/
 
 // Example usage:
 // addRowToTable({name: "John Doe", role: "Nurse"});

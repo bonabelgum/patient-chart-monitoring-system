@@ -112,20 +112,90 @@ table.dataTable tbody tr:hover {
     margin: auto;
 }
 /*sched*/
-.schedule-table {
-    width: 100%;
-    border-collapse: collapse;
-    margin-top: 1rem;
+.schedule-container {
+    overflow-x: auto;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    font-size: 14px;
 }
 
-.schedule-table th, .schedule-table td {
-    padding: 10px;
-    border: 1px solid #dee2e6;
-    vertical-align: middle;
-    min-width: 100px;
-}
-
-.schedule-table .time-column {
+.schedule-header {
+    display: flex;
     background-color: #f8f9fa;
+    border-bottom: 1px solid #ddd;
+}
+
+.day-header {
+    width: 100px;
+    min-width: 100px;
+    padding: 10px;
     font-weight: bold;
 }
+
+.time-slots-container {
+    display: flex;
+    flex-grow: 1;
+    position: relative;
+    margin-left: 0; /* default is okay */
+}
+.time-slot:first-child {
+    border-left: 1px solid #eee; /* add left border to make it look clean */
+}
+
+.time-slot {
+    flex: 1;
+    min-width: 40px;
+    text-align: center;
+    padding: 10px 5px;
+    border-right: 1px solid #eee;
+}
+
+.schedule-rows {
+    display: flex;
+    flex-direction: column;
+}
+
+.schedule-row {
+    display: flex;
+    min-height: 50px;
+    border-bottom: 1px solid #eee;
+}
+
+.day-cell {
+    width: 100px;
+    min-width: 100px;
+    padding: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: bold;
+}
+
+.time-cells {
+    flex-grow: 1;
+    position: relative;
+}
+
+.employee-block {
+    position: absolute;
+    height: 30px;
+    background-color: #4e73df;
+    color: white;
+    border-radius: 4px;
+    padding: 5px;
+    font-size: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    cursor: pointer;
+}
+
+.employee-block:hover {
+    background-color: #2e59d9;
+    z-index: 2;
+    box-shadow: 0 0 5px rgba(0,0,0,0.2);
+}
+
