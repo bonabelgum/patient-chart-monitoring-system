@@ -61,11 +61,6 @@ class Employee(models.Model):
         
     @classmethod
     def remove_by_employee_id(cls, employee_id):
-        """
-        Remove an employee by employee_id.
-        :param employee_id: The employee_id of the employee to remove.
-        :return: True if the employee was removed, False otherwise.
-        """
         try:
             employee = cls.objects.get(employee_id=employee_id)
             employee.delete()
@@ -77,16 +72,7 @@ class Employee(models.Model):
     # delete employee
     @classmethod
     def delete_with_master_key(cls, master_key_input, employee_id_to_delete):
-        """
-        Delete an employee if master key verification passes.
-        
-        Args:
-            master_key_input (str): The master key to verify
-            employee_id_to_delete (str): ID of employee to delete
-            
-        Returns:
-            tuple: (success: bool, message: str)
-        """
+    
         try:
             # Get the employee to be deleted
             employee_to_delete = cls.objects.get(employee_id=employee_id_to_delete)
@@ -134,6 +120,10 @@ class Shift_schedule(models.Model):
     start_time = models.TimeField()
     end_time = models.TimeField()
     employee = models.ForeignKey(Employee, on_delete=models.CASCADE, related_name='shifts')
+    
+    @classmethod
+    def get_all_shifts(cls):
+        return cls.objects.all().select_related('employee')
     
     @classmethod
     def get_employee_by_shift_id(cls, shift_id):

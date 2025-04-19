@@ -615,91 +615,144 @@ function addLogEntry(table, dateTime, activity) {
 
 
 //TIME TABLE/ SCHED
-document.addEventListener('DOMContentLoaded', function () {
-    const tab3Button = document.querySelector('#tab3-tab');
+// document.addEventListener('DOMContentLoaded', function () {
+//     const tab3Button = document.querySelector('#tab3-tab');
 
-    document.querySelectorAll('[data-bs-toggle="tab"]').forEach(tab => {
-        tab.addEventListener('shown.bs.tab', function (event) {
-            if (event.target === tab3Button) {
-                loadScheduleData();
-            }
-        });
-    });
+//     document.querySelectorAll('[data-bs-toggle="tab"]').forEach(tab => {
+//         tab.addEventListener('shown.bs.tab', function (event) {
+//             if (event.target === tab3Button) {
+//                 loadScheduleData();
+//             }
+//         });
+//     });
 
-    function loadScheduleData() {
-        fetch('/api/schedule/')
-            .then(response => response.json())
-            .then(data => {
-                populateScheduleTable(data.shifts);
-            })
-            .catch(error => {
-                console.error('Error loading schedule:', error);
-            });
-    }
+//     function loadScheduleData() {
+//         fetch('/api/schedule/')
+//             .then(response => response.json())
+//             .then(data => {
+//                 populateScheduleTable(data.shifts);
+//             })
+//             .catch(error => {
+//                 console.error('Error loading schedule:', error);
+//             });
+//     }
 
-    function populateScheduleTable(shifts) {
-        const tbody = document.querySelector('#tab3 .schedule-table tbody');
-        tbody.innerHTML = '';
-        const uniqueTimes = new Set();
+//     function populateScheduleTable(shifts) {
+//         const tbody = document.querySelector('#tab3 .schedule-table tbody');
+//         tbody.innerHTML = '';
+//         const uniqueTimes = new Set();
         
-        // Collect all unique times from shifts (only for sorting)
-        shifts.forEach(shift => {
-            uniqueTimes.add(shift.start_time);
-            uniqueTimes.add(shift.end_time);
-        });
+//         // Collect all unique times from shifts (only for sorting)
+//         shifts.forEach(shift => {
+//             uniqueTimes.add(shift.start_time);
+//             uniqueTimes.add(shift.end_time);
+//         });
         
-        // Convert to sorted array
-        const timeSlots = Array.from(uniqueTimes).sort((a, b) => a.localeCompare(b));
+//         // Convert to sorted array
+//         const timeSlots = Array.from(uniqueTimes).sort((a, b) => a.localeCompare(b));
         
-        // Create table rows for each time slot
-        for (let i = 0; i < timeSlots.length - 1; i++) {
-            const start = timeSlots[i];
-            const end = timeSlots[i + 1];
-            const row = document.createElement('tr');
+//         // Create table rows for each time slot
+//         for (let i = 0; i < timeSlots.length - 1; i++) {
+//             const start = timeSlots[i];
+//             const end = timeSlots[i + 1];
+//             const row = document.createElement('tr');
             
-            // Time label
-            const timeCell = document.createElement('td');
-            timeCell.textContent = `${start} - ${end}`;
-            row.appendChild(timeCell);
+//             // Time label
+//             const timeCell = document.createElement('td');
+//             timeCell.textContent = `${start} - ${end}`;
+//             row.appendChild(timeCell);
             
-            // Create cells for each day
-            for (let day = 1; day <= 7; day++) {
-                const cell = document.createElement('td');
+//             // Create cells for each day
+//             for (let day = 1; day <= 7; day++) {
+//                 const cell = document.createElement('td');
                 
-                // STRICT day matching - only show if shift is exactly for this day
-                const dayShifts = shifts.filter(s => s.day === day);
+//                 // STRICT day matching - only show if shift is exactly for this day
+//                 const dayShifts = shifts.filter(s => s.day === day);
                 
-                // Check if any shift for this day overlaps with current time slot
-                const hasShift = dayShifts.some(shift => {
-                    // Convert all times to minutes for accurate comparison
-                    const slotStart = timeToMinutes(start);
-                    const slotEnd = timeToMinutes(end);
-                    const shiftStart = timeToMinutes(shift.start_time);
-                    const shiftEnd = timeToMinutes(shift.end_time);
+//                 // Check if any shift for this day overlaps with current time slot
+//                 const hasShift = dayShifts.some(shift => {
+//                     // Convert all times to minutes for accurate comparison
+//                     const slotStart = timeToMinutes(start);
+//                     const slotEnd = timeToMinutes(end);
+//                     const shiftStart = timeToMinutes(shift.start_time);
+//                     const shiftEnd = timeToMinutes(shift.end_time);
                     
-                    // Check for overlap
-                    return (shiftStart < slotEnd && shiftEnd > slotStart);
-                });
+//                     // Check for overlap
+//                     return (shiftStart < slotEnd && shiftEnd > slotStart);
+//                 });
                 
-                if (hasShift) {
-                    const div = document.createElement('div');
-                    div.classList.add('bg-warning', 'p-1', 'rounded', 'mb-1', 'text-center');
-                    div.innerHTML = `<strong>Employee 2</strong><br>`;
-                    cell.appendChild(div);
-                }
-                row.appendChild(cell);
-            }
-            tbody.appendChild(row);
-        }
-    }
+//                 if (hasShift) {
+//                     const div = document.createElement('div');
+//                     div.classList.add('bg-warning', 'p-1', 'rounded', 'mb-1', 'text-center');
+//                     div.innerHTML = `<strong>Employee 2</strong><br>`;
+//                     cell.appendChild(div);
+//                 }
+//                 row.appendChild(cell);
+//             }
+//             tbody.appendChild(row);
+//         }
+//     }
     
-    // Helper function to convert "HH:MM" to minutes
-    function timeToMinutes(time) {
-        const [hours, minutes] = time.split(':').map(Number);
-        return hours * 60 + minutes;
-    }
+//     // Helper function to convert "HH:MM" to minutes
+//     function timeToMinutes(time) {
+//         const [hours, minutes] = time.split(':').map(Number);
+//         return hours * 60 + minutes;
+//     }
+// });
+
+
+document.addEventListener('DOMContentLoaded', function() {
+    fetch('/get_all_shifts/')
+        .then(response => {
+            if (!response.ok) {
+                throw new Error('Network response was not ok');
+            }
+            return response.json();
+        })
+        .then(data => {
+            // Console.log all employee names
+            data.shifts.forEach(shift => {
+                console.log(shift.employee.name);
+                addRowToTable({name: shift.employee.name, role: "Nurse"});
+            });
+            
+            // Optional: Also display in the browser
+            const namesList = data.shifts.map(shift => shift.employee.name).join('\n');
+            // alert('Employee names:\n' + namesList);
+        })
+        .catch(error => {
+            console.error('Error fetching shifts:', error);
+        });
 });
 
 
 
+function addRowToTable(employee) {
+    const tbody = document.querySelector('.schedule-table tbody');
+    const row = document.createElement('tr');
+    
+    // Employee info cell
+    const nameCell = document.createElement('td');
+    nameCell.innerHTML = `
+        <div class="employee-info">
+            <strong>${employee.name}</strong>
+            <div class="text-muted small">${employee.role}</div>
+        </div>
+    `;
+    nameCell.classList.add('employee-cell');
+    row.appendChild(nameCell);
+    
+    // Day cells
+    for (let i = 0; i < 7; i++) {
+        const dayCell = document.createElement('td');
+        dayCell.classList.add('schedule-cell');
+        dayCell.setAttribute('contenteditable', 'true');
+        row.appendChild(dayCell);
+    }
+    
+    tbody.appendChild(row);
+}
 
+// Example usage:
+// addRowToTable({name: "John Doe", role: "Nurse"});
+// addRowToTable({name: "Jane Smith", role: "Doctor"});

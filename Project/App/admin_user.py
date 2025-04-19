@@ -276,6 +276,25 @@ def get_all_logs(request):
     })
     
 
+def get_all_shifts(request):
+    shifts = Shift_schedule.get_all_shifts()  # Your existing class method
+    shift_data = []
+    
+    for shift in shifts:
+        shift_data.append({
+            'id': shift.id,
+            'day': shift.get_day_display(),
+            'start_time': shift.start_time.strftime('%H:%M'),
+            'end_time': shift.end_time.strftime('%H:%M'),
+            'employee': {
+                'id': shift.employee.id,
+                'name': shift.employee.name,
+                'role': shift.employee.role
+            }
+        })
+    
+    return JsonResponse({'shifts': shift_data})
+
 def verify_master_key_for_all_employees(master_key_input):
     for employee in Employee.objects.all():
         if employee.master_key and employee.verify_master_key(master_key_input):
