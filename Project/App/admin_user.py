@@ -242,6 +242,7 @@ def remove_user(request):
         
         
         employee_id = request.session.get('confirm_nurse_id')
+        employee = Employee.objects.get(employee_id=employee_id)
         print(f"Received master key: {master_key} "+employee_id)  # Debug
         
         success, message = Employee.delete_with_master_key(master_key, employee_id)
@@ -249,6 +250,7 @@ def remove_user(request):
         # Replace with your actual key validation
         if success:  
             # Add your user deletion logic here
+            Admin_logs.add_log_activity("Admin deleted "+ employee.name)
             return JsonResponse({
                 'status': 'success',
                 'message': 'User removed successfully'
