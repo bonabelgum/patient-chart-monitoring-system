@@ -253,11 +253,12 @@ document.addEventListener('DOMContentLoaded', function() {
 
         //handle saving the schedule NOT YET DONE
         newShift.querySelector(".saveShiftBtn").addEventListener("click", function () {
-            console.log("hello success");
+            // console.log("hello success");
             let selectedDay = newShift.querySelector(".shift-day")?.value;
             let start_time = newShift.querySelector(".shift-from")?.value;
             let end_time = newShift.querySelector(".shift-to")?.value;
-
+            
+            // console.log(start_time)
             const formData = {
                 selectedDay:selectedDay, 
                 start_time:start_time,
@@ -278,9 +279,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 <button class="btn btn-danger btn-sm ms-2 deleteShiftBtn">Delete</button>
             `;
             
-            newShift.querySelector(".deleteShiftBtn").addEventListener("click", function () {
-                newShift.remove(); //TO BE FIXED <add edit button instead>
-            });
+            
             
             alert("Shift saved!");
 
@@ -294,18 +293,39 @@ document.addEventListener('DOMContentLoaded', function() {
                 },
                 body: JSON.stringify({
                     day: selectedDay,
-                    start_time: start_time,
-                    end_time: end_time
+                    start_time: start_time,  // Must be string in HH:MM format
+                    end_time: end_time      // Must be string in HH:MM format
                 })
             })
-            .then(function(response) {
+            .then(handleResponse)
+            .then(data => {
+                console.log("Created shift:", data.shift.id);
+                newShift.querySelector(".deleteShiftBtn").addEventListener("click", function () {
+
+                    if (confirm('Are you sure you want to delete this shift?')) {
+                        // shiftRow.remove();
+                        // console.log("hello id shioft");
+                        if (data.shift.id) {
+                            deleteShiftFromBackend(data.shift.id);
+                            newShift.remove(); //TO BE FIXED <add edit button instead>
+                        }
+                    }
+                });
+                // Update your UI here
+            })
+            .catch(handleError);
+            
+            function handleResponse(response) {
                 if (!response.ok) {
-                    return response.json().then(function(err) {
-                        throw new Error(err.message || 'Server error');
-                    });
+                    return response.json().then(err => { throw new Error(err.message); });
                 }
                 return response.json();
-            })
+            }
+            
+            function handleError(error) {
+                console.error('Error:', error);
+                alert('Error: ' + error.message);
+            }
 
         });
 
@@ -530,7 +550,7 @@ function createOrUpdateShiftRow(day, start_time, end_time, shiftId = null) {
     deleteBtn.addEventListener('click', function() {
         if (confirm('Are you sure you want to delete this shift?')) {
             shiftRow.remove();
-            console.log("hello id shioft");
+            // console.log("hello id shioft");
             if (shiftId) {
                 deleteShiftFromBackend(shiftId);
             }

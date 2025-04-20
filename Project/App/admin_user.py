@@ -3,6 +3,7 @@ import os
 from django.http import JsonResponse
 from django.core.mail import send_mail
 from django.views.decorators.csrf import csrf_exempt
+from django.utils.dateparse import parse_time
 from .models import  Employee, Shift_schedule, Admin_logs
 
 
@@ -113,73 +114,50 @@ def reject_master_key(request):
 # Create shift here
 def create_shift(request):
     if request.method != 'POST':
-        return JsonResponse({
-            'status': 'error',
-            'message': 'Only POST requests are allowed'
-        }, status=405)
+        return JsonResponse({'status': 'error', 'message': 'Only POST requests are allowed'}, status=405)
 
     try:
-        # Parse JSON data
+        data = json.loads(request.body)
+        
+        # Validate and parse times
         try:
-            data = json.loads(request.body)
-        except json.JSONDecodeError:
+            start_time = parse_time(data['start_time'])
+            end_time = parse_time(data['end_time'])
+            if not all([start_time, end_time]):
+                raise ValueError("Invalid time format")
+        except (ValueError, TypeError, KeyError):
             return JsonResponse({
                 'status': 'error',
-                'message': 'Invalid JSON data'
+                'message': 'Invalid time format. Use HH:MM:SS'
             }, status=400)
 
-        # Validate required fields
-        required_fields = ['day', 'start_time', 'end_time']
-        missing_fields = [field for field in required_fields if field not in data]
-        if missing_fields:
-            return JsonResponse({
-                'status': 'error',
-                'message': 'Missing required fields',
-                'missing_fields': missing_fields
-            }, status=400)
-
-        # Save the shift to database
-        # Get an employee (example: get by employee_id)
+        # Get employee
         nurse_id = request.session.get('confirm_nurse_id')
         employee = Employee.objects.get(employee_id=nurse_id)
 
-        # print("hello employee "+nurse_id)
-        shift_day = convert_day_to_number(data['day'])
-        shift_start_time = data['start_time']
-        shift_end_time = data['end_time']
-        # print(shift_day)
-        
-        # Create a shift schedule for this employee
-        # shift = Shift_schedule.objects.create(
-        #     employee=employee,
-        #     day=shift_day,  # Tuesday
-        #     start_time=shift_start_time,
-        #     end_time=shift_end_time
-        # )
-        # Create a shift schedule for this employee
+        # Create shift
         shift = Shift_schedule.objects.create(
             employee=employee,
-            day=shift_day,  # Tuesday
-            start_time=shift_start_time,
-            end_time=shift_end_time
+            day=convert_day_to_number(data['day']),
+            start_time=start_time,
+            end_time=end_time
         )
-        
-        Admin_logs.add_log_activity(data['day']+": "+shift_start_time+" to "+shift_end_time+" schedule is added to "+employee.name)
-        # print("hello shift"+shift)
 
         return JsonResponse({
             'status': 'success',
-            'message': 'Shift data received',
-            'data': data
+            'shift': {
+                'id': shift.id,
+                'day': shift.get_day_display(),
+                'start_time': shift.start_time.strftime('%H:%M'),
+                'end_time': shift.end_time.strftime('%H:%M'),
+                'employee': employee.name
+            }
         })
 
+    except Employee.DoesNotExist:
+        return JsonResponse({'status': 'error', 'message': 'Employee not found'}, status=404)
     except Exception as e:
-        return JsonResponse({
-            'status': 'error',
-            'message': 'Server error',
-            'error': str(e)
-        }, status=500)
-        
+        return JsonResponse({'status': 'error', 'message': str(e)}, status=500)
         
 def delete_shift(request):
     if request.method != 'POST':
