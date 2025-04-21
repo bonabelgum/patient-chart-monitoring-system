@@ -68,6 +68,19 @@ document.addEventListener('DOMContentLoaded', function () {
 
 });
 
+// PRINT SUMMARY BUTTON
+document.addEventListener('DOMContentLoaded', function() {
+    // Initialize tooltip
+    const tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
+    tooltipTriggerList.map(function (tooltipTriggerEl) {
+        return new bootstrap.Tooltip(tooltipTriggerEl);
+    });
+    // Print functionality
+    document.getElementById('print-header').addEventListener('click', function() {
+        //
+    });
+});
+
 //edit patient vs details
 document.addEventListener('DOMContentLoaded', function() {
     const editBtn = document.getElementById('edit-vs-details-btn');
@@ -186,7 +199,7 @@ document.addEventListener('DOMContentLoaded', function() {
         const day = String(date.getDate()).padStart(2, '0');
         return `${year}-${month}-${day}`;
     }
-    // Example save function (you'll need to implement this properly)
+    //save function 
     function savePatientDetails() {
         const patientData = {
             name: document.getElementById('data-patient-name-edit').value,

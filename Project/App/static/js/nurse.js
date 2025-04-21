@@ -24,7 +24,7 @@ document.addEventListener('DOMContentLoaded', function() {
     //admitting patient
     var admitButton = document.getElementById('admit_patient');
     admitButton.addEventListener('click', function() {
-        addEmployeeModal.show();
+        addpatientModal.show();
     });
 
     //qr code scanning
@@ -67,5 +67,45 @@ document.addEventListener('DOMContentLoaded', function() {
                 scanButton.scanner.clear();
             }
         }
+    });
+});
+
+/*MODAL */
+document.addEventListener('DOMContentLoaded', function() {
+    const admitPatientBtn = document.getElementById('admit_patient');
+    const savePatientBtn = document.getElementById('savePatientBtn');
+    const patientForm = document.getElementById('patientAdmissionForm');
+    
+    // Save patient handler
+    savePatientBtn.addEventListener('click', function() {
+        if (patientForm.checkValidity()) {
+            // Get form values
+            const patientData = {
+                name: document.getElementById('patientName').value,
+                birthday: document.getElementById('patientBirthday').value,
+                ward: document.getElementById('patientWard').value
+            };
+            
+            // Here you would typically send data to server
+            console.log('Patient data to save:', patientData);
+            
+            // Show success message (you can replace with actual API call)
+            alert('Patient admitted successfully!');
+            
+            // Close the modal
+            const modal = bootstrap.Modal.getInstance(document.getElementById('patientModal'));
+            modal.hide();
+            
+            // Reset form
+            patientForm.reset();
+        } else {
+            // Trigger HTML5 validation messages
+            patientForm.reportValidity();
+        }
+    });
+    
+    // Optional: Clear form when modal closes
+    document.getElementById('patientModal').addEventListener('hidden.bs.modal', function() {
+        patientForm.reset();
     });
 });

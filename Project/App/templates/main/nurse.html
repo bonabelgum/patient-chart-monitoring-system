@@ -18,9 +18,9 @@
     <script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
 </head>
 <body>
-    <div>
-        <h1>Patient</h1>
-        <button id="logoutButton">Logout</button>
+    <div class="nurse-header">
+        <h1>Welcome, Nurse!</h1>
+        <button id="logoutButton" class="logout-btn">Logout</button>
 
         <!-- Tab Navigation -->
         <ul class="nav nav-tabs" id="patient_list" role="tablist">
@@ -37,7 +37,8 @@
         </ul>
 
         <!-- Tab Content -->
-        <div class="tab-content" id="nurse-page">
+        <div class="tab-content-container">
+        <div class="tab-content p-5" id="nurse-page">
             <!-- Patient Tab Content -->
             <div class="tab-pane fade show active" id="patient_tab" role="tabpanel" aria-labelledby="patient-list-tab">
                 <!-- QR Code Scanning Section -->
@@ -50,7 +51,48 @@
                     <div id="qr-reader-results"></div>
                 </div>
 
-                <button id="admit_patient" class="btn btn-primary mt-3">Admit Patient</button>
+                <button id="admit_patient" class="btn btn-primary mt-3" data-bs-toggle="modal" data-bs-target="#patientModal">
+                    Admit Patient
+                </button>
+
+                <!-- Modal Structure -->
+                <div class="modal fade" id="patientModal" tabindex="-1" aria-labelledby="patientModalLabel" aria-hidden="true">
+                    <div class="modal-dialog">
+                        <div class="modal-content">
+                            <div class="modal-header">
+                                <h5 class="modal-title" id="patientModalLabel">Admit New Patient</h5>
+                                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                            </div>
+                            <div class="modal-body">
+                                <form id="patientAdmissionForm">
+                                    <div class="mb-3">
+                                        <label for="patientName" class="form-label">Full Name</label>
+                                        <input type="text" class="form-control" id="patientName" required>
+                                    </div>
+                                    <div class="mb-3">
+                                        <label for="patientBirthday" class="form-label">Birthday</label>
+                                        <input type="date" class="form-control" id="patientBirthday" required>
+                                    </div>
+                                    <div class="mb-3">
+                                        <label for="patientWard" class="form-label">Ward</label>
+                                        <select class="form-select" id="patientWard" required>
+                                            <option value="" selected disabled>Select Ward</option>
+                                            <option value="General">General Ward</option>
+                                            <option value="Pediatrics">Pediatrics</option>
+                                            <option value="ICU">Intensive Care Unit</option>
+                                            <option value="Maternity">Maternity Ward</option>
+                                        </select>
+                                    </div>
+                                </form>
+                            </div>
+                            <div class="modal-footer">
+                                <button type="button" class="btn btn-primary" id="savePatientBtn">Save</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!--TABLE-->
                 <table id="patient" class="table table-striped mt-3" style="width:100%">
                     <thead>
                         <tr>
@@ -99,6 +141,7 @@
                 </table>
             </div>
 
+        </div>
         </div>
 
 

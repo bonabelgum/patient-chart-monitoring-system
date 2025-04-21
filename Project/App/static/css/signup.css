@@ -199,6 +199,11 @@ html, body {
     transition: transform 0.2s ease-in-out;
     cursor: pointer;
 }
+/*icon*/
+.circle-icon {
+    width: 60%;
+    height: auto;
+}
 /*existing-acc*/
 .existing-acc {
     padding-top: 25px;

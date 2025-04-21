@@ -1,4 +1,34 @@
 
+/* QR Code Container Styles */
+.qr-code-container {
+    border-bottom: 1px solid #eee;
+    padding-bottom: 20px;
+    margin-bottom: 20px;
+}
+.qr-placeholder {
+    border: 2px dashed #ddd;
+    border-radius: 8px;
+}
+/* Print Button Styles */
+#print-qr-btn {
+    min-width: 180px;
+    transition: all 0.3s ease;
+}
+#print-qr-btn:hover {
+    background-color: #2240eb;
+    color: white;
+}
+#print-header {
+    transition: color 0.2s ease;
+}
+#print-header:hover {
+    color: #1c6ea4 !important;
+    transform: scale(1.05);
+}
+#print-header:active {
+    transform: scale(0.95);
+}
+
 /*med tab*/
 .medication-container {
     padding: 20px;
