@@ -81,6 +81,7 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'App',
+    #'sslserver', # to run: python manage.py runsslserver IP:PORT
 ]
 
 MIDDLEWARE = [

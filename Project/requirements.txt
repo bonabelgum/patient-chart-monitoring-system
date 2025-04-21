@@ -4,3 +4,4 @@ python-dotenv
 whitenoise
 cryptography
 pyngrok
+django-sslserver
