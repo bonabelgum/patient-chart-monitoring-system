@@ -3,3 +3,4 @@ django
 python-dotenv
 whitenoise
 cryptography
+pyngrok

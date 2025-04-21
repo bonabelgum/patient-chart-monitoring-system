@@ -14,9 +14,17 @@ from pathlib import Path
 import os
 from dotenv import load_dotenv #env file
 
+#pythonngrok
+from pyngrok import conf
+NGROK_PATH = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), 'bin', 'ngrok.exe')
+conf.get_default().ngrok_path = NGROK_PATH
+if not os.path.exists(NGROK_PATH):
+    raise Exception(f"ngrok.exe not found at: {NGROK_PATH}")
+
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
-CSRF_TRUSTED_ORIGINS= ["https://patient-chart-monitoring-system-production.up.railway.app"]
+#CSRF_TRUSTED_ORIGINS= ["https://patient-chart-monitoring-system-production.up.railway.app"]
+CSRF_TRUSTED_ORIGINS = ['https://*.ngrok-free.app',]
 
 
 # Quick-start development settings - unsuitable for production
@@ -44,6 +52,7 @@ ALLOWED_HOSTS = [
     #"patient-chart-monitoring-and-management.onrender.com",
     "0.0.0.0",
     os.getenv('ALLOWED_HOSTS'), #env variable
+    ".ngrok-free.app",
 ]
 
 # Ferney Key for Encryption of masterkey
@@ -163,3 +172,4 @@ STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
 # https://docs.djangoproject.com/en/5.0/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
