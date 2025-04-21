@@ -36,12 +36,13 @@
    ```bash
    mkdir bin
    ```
-3. Put `ngrok.exe` inside the `bin` folder  
-4. Run:
+3. Put `ngrok.exe` inside the `bin` folder
+4. Get your token: https://dashboard.ngrok.com/get-started/your-authtoken
+5. Run:
    ```bash
    bin\ngrok.exe authtoken YOUR_AUTHTOKEN_HERE
    ```
-5. Then:
+6. Then:
    ```bash
    python manage.py runserver
    ```
