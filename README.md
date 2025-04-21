@@ -43,35 +43,43 @@
    ```
 5. Then:
    ```bash
+   python manage.py runserver
+   ```
+   And:
+   ```bash
    .\bin\ngrok.exe http 8000
    ```
    or:
    ```bash
    ngrok.exe http 8000
    ```
+
 ---
 
 ## 📄 If You Have a `yml` File
 
 1. In the project root, create a `ngrok.yml` file:
    ```yaml
-   agent:
-     authtoken: YOUR_AUTHTOKEN_HERE
+   authtoken: TOKEN
+   tunnels:
+   django:
+      addr: PORT
+      proto: http
+      bind_tls: true
    ```
 2. Run:
    ```bash
    bin\ngrok.exe http -config=ngrok.yml 8000
    ```
+   
 ---
 
 ## 🛠️ Django Shell Quick Add
-If you want to allow external ngrok links temporarily:
-1. 
+If you want to allow external ngrok links temporarily: 
 ```bash
 python manage.py shell
 ```
 Then:
-2. 
 ```python
 from django.conf import settings
 settings.ALLOWED_HOSTS += ['LINK']
