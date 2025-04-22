@@ -55,25 +55,28 @@ def get_nurse_data(request):
 # Accept the nurse then send email and change the status in db if correct master_key
 def verify_master_key(request):
     if request.method == "POST":
-        print("Enter 1")
+        #print("Enter 1")
         try:
             data = json.loads(request.body)
             master_key = data.get("master_key")
             
             is_valid = verify_master_key_for_all_employees(master_key)
             if is_valid == True: #Create the necessary action
-                print("Enter 3")
+                #print("Enter 3")
                 
                 confirm_nurse_id = request.session.get('confirm_nurse_id')
                 employee = Employee.objects.get(employee_id=confirm_nurse_id)
                 print("Request employee "+employee.name)
+
+                # Get the admin's user ID from session
+                admin_id = request.session.get('user_id')
                 
                 send_nurse_confirmation(employee.name, employee.email)
                 employee.update_status("Registered")
-                Admin_logs.add_log_activity("Nurse: "+employee.name+" is approved by admin.")
+                Admin_logs.add_log_activity("Nurse: "+employee.name+" is approved by admin " + str(admin_id) + ".")
                 return JsonResponse({"status": "success"})
             else:
-                print("Enter 4")
+                #print("Enter 4")
                 return JsonResponse({"message": "Incorrect Masterkey"})
         except Exception as e:
             return JsonResponse({"status": "error", "message": str(e)}, status=500)
@@ -95,6 +98,9 @@ def reject_master_key(request):
                 confirm_nurse_id = request.session.get('confirm_nurse_id')
                 employee = Employee.objects.get(employee_id=confirm_nurse_id)
                 # print("Request employee "+employee.name)
+
+                # Get the admin's user ID from session
+                admin_id = request.session.get('user_id')
                 
                 reject_nurse_confirmation(employee.name, employee.email)
                 employee.remove_by_employee_id(employee.employee_id)
@@ -102,7 +108,7 @@ def reject_master_key(request):
                 return JsonResponse({"status": "success"})
             else:
                 # print("Enter 4")
-                Admin_logs.add_log_activity("Nurse: "+employee.name+" is rejected by admin.")
+                Admin_logs.add_log_activity("Nurse: "+employee.name+" is rejected by admin " + str(admin_id) + ".")
                 return JsonResponse({"message": "Incorrect Masterkey"})
         except Exception as e:
             return JsonResponse({"status": "error", "message": str(e)}, status=500)
@@ -188,8 +194,11 @@ def delete_shift(request):
         if not deleted:
             return JsonResponse({'error': 'Failed to delete shift'}, status=500)
         
+        # Get the admin's user ID from session
+        admin_id = request.session.get('user_id')
+        
         # Add admin log
-        log_message = f"Admin Deleted {employee.name}'s Shift on {shift.get_day_display()}: {shift.start_time} to {shift.end_time}"
+        log_message = f"Admin {admin_id} Deleted {employee.name}'s Shift on {shift.get_day_display()}: {shift.start_time} to {shift.end_time}"
         Admin_logs.add_log_activity(log_message)
         
         return JsonResponse({
@@ -320,12 +329,3 @@ def convert_day_to_number(day_name):
         return 7
     else:
         return None  # or raise an exception for invalid input
-
-# employee = Employee.objects.get(employee_id="123456")
-# is_valid = employee.verify_master_key("182ca57243078629")
-# print(is_valid)  # True if the key is correct, False otherwise
-
-# for employee in Employee.objects.all():
-#     if employee.master_key:
-#         is_valid = employee.verify_master_key("expected-key")  # Replace with the expected key
-#         print(f"Employee {employee.employee_id}: {'Valid' if is_valid else 'Invalid'}")

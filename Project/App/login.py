@@ -39,7 +39,7 @@ def handle_request(request):
                 return JsonResponse({"message": "User not found"}, status=404)
             
             if employee.status == "Pending": #status check if still Pending
-                return JsonResponse({"message": "The account is still pending. Please wait for the confirmation via email."})#, status=403)
+                return JsonResponse({"message": "The account is still pending. Please wait for the confirmation via email."})
 
             send_login_otp(employee.email)
             #print(f"Generating OTP for Employee ID: {employee_id}")
@@ -56,21 +56,21 @@ def handle_request(request):
             stored_otp = cache.get(employee.email)
             if password == stored_otp:
                 # Check if user exists; create only if necessary
-                #user, created = User.objects.get_or_create(username=employee_id, defaults={"role": employee.role}) #doesn't work for me
                 user, created = User.objects.get_or_create(username=employee_id)
 
 
                 # Log the user in
                 login(request, user)  # ✅ Store user session
                 request.session["role"] = employee.role  # ✅ Store role in session
+                request.session['user_id'] = employee_id
                 
                 # Redirect based on role
                 if employee.role == "admin":
                     Admin_logs.add_log_activity("Admin: "+employee.name+" Logged In")
-                    response_data = {"message": "Login successful!", "redirect_url": "admin"}
+                    response_data = {"message": "Login successful!", "redirect_url": "admin", "user_id": employee_id}
                 else:
                     Admin_logs.add_log_activity("Nurse: "+employee.name+" Logged In")
-                    response_data = {"message": "Login successful!", "redirect_url": "nurse"}
+                    response_data = {"message": "Login successful!", "redirect_url": "nurse", "user_id": employee_id}
 
                 return JsonResponse(response_data)  
             else:

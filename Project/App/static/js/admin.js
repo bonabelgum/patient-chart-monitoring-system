@@ -46,21 +46,7 @@ function fetchEmployees() {
 }
 
 document.addEventListener('DOMContentLoaded', function() {
-    // new DataTable('#logs'); //initialize DataTable for the second table (#logs)
     const table = $('#logs').DataTable();  // Assuming you're using DataTable
-
-    // //initialize DataTable with empty data
-    // let employeesTable = new DataTable('#employees', {
-    //     destroy: true,
-    //     responsive: true,
-    //     autoWidth: false,
-    //     createdRow: function(row, data, dataIndex) {
-    //         //Status column
-    //         if (data[3].trim() === "Pending") {
-    //             row.classList.add("table-danger");
-    //         }
-    //     }
-    // });
 
     //fetch and populate the employee data
     fetchEmployees();
@@ -78,10 +64,6 @@ document.addEventListener('DOMContentLoaded', function() {
                 // Add each log entry to the table
                 logs.forEach(log => {
                     addLogEntry(table,log.date_time, log.activity)
-                    // table.row.add([
-                    //     `<td>${log.date_time}</td>`,
-                    //     log.activity
-                    // ]).draw(false);
                 });
             } else {
                 console.error('Failed to load logs:', data.message);
@@ -92,7 +74,6 @@ document.addEventListener('DOMContentLoaded', function() {
         });
 
     
-    // addLogEntry("Sample4", 'Sample4');
     let id;
 
 
@@ -177,23 +158,6 @@ document.addEventListener('DOMContentLoaded', function() {
             })
             .then(data => {
                 if (data.status === 'success') {
-                    // console.log("hello data");
-                    // console.log('Nurse ID:', data.nurse_id);
-                    // console.log('Shifts:', data.shifts);
-                    // let shiftRowContainer = document.getElementBy
-                    
-                    // // Process each shift from the response
-                    // 3. Access shifts array
-                    // const shifts = data.shifts;
-                    
-                    // // 4. Loop through shifts
-                    // shifts.forEach(shift => {
-                    //     console.log("Shift ID:", shift.id);
-                    //     console.log("Day:", shift.day);          // e.g. "Monday"
-                    //     console.log("Day Number:", shift.day_number);  // e.g. 1
-                    //     console.log("Start Time:", shift.start_time);  // e.g. "09:00"
-                    //     console.log("End Time:", shift.end_time);    // e.g. "17:00"
-                    // });
                     data.shifts.forEach(shift => {
                         // console.log("hello data");
                         const shiftRow = createOrUpdateShiftRow(

@@ -24,7 +24,6 @@ document.addEventListener("DOMContentLoaded", function () {
 document.getElementById("login-btn").addEventListener("click", function () {
     let employeeID = document.getElementById("employeeID").value;
     let password = document.getElementById("password").value;
-    console.log("button click")
 
     fetch("/handle-request/", {
         method: "POST",
@@ -36,7 +35,7 @@ document.getElementById("login-btn").addEventListener("click", function () {
     })
     .then(response => response.json())
     .then(data => {
-            console.log("response message ito");
+            console.log("Full response data:", data);
         if (data.redirect_url) {
             console.log("🔁 Redirecting to:", data.redirect_url);
             window.location.href = data.redirect_url; // Redirect to admin page
