@@ -16,6 +16,8 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <!--qr-->
     <script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
+    <!--phone number-->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/intl-tel-input/17.0.8/css/intlTelInput.min.css">
 </head>
 <body>
     <div class="nurse-header">
@@ -65,13 +67,36 @@
                             </div>
                             <div class="modal-body">
                                 <form id="patientAdmissionForm">
+                                    <label for="patientName" class="form-label">Basic Information:</label>
                                     <div class="mb-3">
                                         <label for="patientName" class="form-label">Full Name</label>
                                         <input type="text" class="form-control" id="patientName" required>
                                     </div>
                                     <div class="mb-3">
+                                        <label for="sex" class="form-label">Sex</label>
+                                        <select class="form-select" id="patientWard" required>
+                                            <option value="" selected disabled>Select Sex</option>
+                                            <option value="General">Female</option>
+                                            <option value="Pediatrics">Male</option>
+                                        </select>
+                                    </div>
+                                    <div class="mb-3">
                                         <label for="patientBirthday" class="form-label">Birthday</label>
                                         <input type="date" class="form-control" id="patientBirthday" required>
+                                    </div>
+                                    <div class="mb-3">
+                                        <label for="patientPhone" class="form-label">Phone Number</label>
+                                        <div class="input-group mb-2 w-100">
+                                            <input class="form-control" id="phone_number_patient" type="tel" placeholder="Phone Number" pattern="[0-9]*" inputmode="numeric" required>
+                                        </div>  
+                                    </div>  
+                                    <div class="mb-3">
+                                        <label for="patientStatus" class="form-label">Status</label>
+                                        <select class="form-select" id="patientWard" required>
+                                            <option value="" selected disabled>Select Status</option>
+                                            <option value="Inpatient">Inpatient</option>
+                                            <option value="Outpatient">Outpatient</option>
+                                        </select>
                                     </div>
                                     <div class="mb-3">
                                         <label for="patientWard" class="form-label">Ward</label>
@@ -81,6 +106,7 @@
                                             <option value="Pediatrics">Pediatrics</option>
                                             <option value="ICU">Intensive Care Unit</option>
                                             <option value="Maternity">Maternity Ward</option>
+                                            <option value="Maternity">None</option>
                                         </select>
                                     </div>
                                 </form>
@@ -103,17 +129,17 @@
                         </tr>
                     </thead>
                     <tbody>
-                        <tr data-patient-id="1" data-patient-name="namepatient" data-patient-ward="WardA" data-patient-status="Stable">
-                            <td>sample only</td>
-                            <td>sample</td>
-                            <td>sample</td>
-                            <td>sample</td>
+                        <tr data-patient-id="1" data-patient-name="namepatient" data-patient-ward="None" data-patient-status="Outpatient">
+                            <td>1</td>
+                            <td>Namepatient</td>
+                            <td>None</td>
+                            <td>Outpatient</td>
                         </tr>
-                        <tr data-patient-id="2" data-patient-name="namepatient2" data-patient-ward="WardB" data-patient-status="Stable">
-                            <td>sample1</td>
-                            <td>sample1</td>
-                            <td>sample1</td>
-                            <td>sample1</td>
+                        <tr data-patient-id="2" data-patient-name="namepatient2" data-patient-ward="ICU" data-patient-status="Inpatient">
+                            <td>2</td>
+                            <td>namepatient2</td>
+                            <td>ICU</td>
+                            <td>Inpatient</td>
                         </tr>
                     </tbody>
                 </table>
@@ -158,6 +184,8 @@
     <script src="https://cdn.datatables.net/2.2.2/js/dataTables.js"></script>
     <script src="https://cdn.datatables.net/2.2.2/js/dataTables.bootstrap5.js"></script>
     <script src="https://unpkg.com/bootstrap-table@1.19.1/dist/bootstrap-table.min.js"></script>
+    <!--phone num-->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/intl-tel-input/17.0.8/js/intlTelInput.min.js"></script>
 
     <script src="{% static 'js/logout.js' %}"></script>
     <script src="{% static 'js/nurse.js' %}"></script>

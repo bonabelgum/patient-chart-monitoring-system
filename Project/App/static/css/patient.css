@@ -1,9 +1,92 @@
 /*main page*/
+body {
+    margin: 0;
+    padding: 0;
+    min-height: 100vh;
+    background: 
+        url('../images/page-bkg.jpg') no-repeat center center fixed;
+    background-size: cover;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
 .patient-header {
     margin: 1.5rem 3%;
     padding: 1rem;
     position: relative;
 }
+/*tabs*/
+.info-item {
+    width: 100%;
+}
+.action-buttons {
+    margin-left: auto; 
+    white-space: nowrap; 
+}
+
+/* Optional: Add some spacing between buttons */
+.action-buttons .btn {
+    margin-left: 8px;
+}
+.nav-tabs {
+    border-bottom: 2px solid #e0e0e0;
+    background-color: transparent; 
+}
+.nav-tabs .nav-link {
+    background-color: rgba(255, 255, 255, 0.7); /* Semi-transparent white */
+    border: none;
+    color: #555; 
+    margin-right: 1px; 
+    border-radius: 5px 5px 0 0 !important;
+    padding: 0.75rem 1.5rem;
+    transition: all 0.3s ease;
+    font-weight: 500;
+    box-shadow: 0 2px 3px rgba(0,0,0,0.05);
+}
+
+.nav-tabs .nav-link:hover {
+    background-color: rgba(255, 255, 255, 0.9);
+    color: #333;
+}
+.nav-tabs .nav-link.active {
+    background-color: white !important;
+    color: #2240eb !important; 
+    border-bottom: 3px solid #2240eb !important;
+    box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+    font-weight: 600;
+}
+/* Remove default Bootstrap focus styles */
+.nav-tabs .nav-link:focus {
+    outline: none;
+    box-shadow: none;
+}
+/* Tab content area */
+.tab-content-container {
+    background-color: white;
+    border-radius: 0 0 8px 8px; 
+    box-shadow: 0 3px 10px rgba(0, 0, 0, 0.1);
+    margin-top: -1px;
+}
+.tab-content-container .tab-pane {
+    padding: 20px; 
+}
+.tab-content-container #patient {
+    padding: 15px;
+}
+.tab-content-container #vitals {
+    padding: 15px 20px;
+}
+.tab-content-container #med {
+    padding: 20px 15px;
+}
+.tab-content-container #note {
+    padding: 15px;
+}
+
+/*Tab 1: basic details*/
+/*phone numer*/
+.iti {
+    width: 100%;
+}
+
 
 /* QR Code Container Styles */
 .qr-code-container {
