@@ -27,7 +27,7 @@ function fetchEmployees() {
                     data-email="${employee.email}"
                     data-phone="${employee.phone_number}"
                     data-status="${status}" 
-                    data-shift="Monday-Friday"
+                    data-shift=" "
                     >View More</button>`;
 
                 employeesTable.row.add([
@@ -275,15 +275,17 @@ document.addEventListener('DOMContentLoaded', function() {
             
             //replace input fields with static text //NOT SAVED TO THE DB YET
             newShift.innerHTML = `
-                ${selectedDay}: ${start_time} - ${end_time}
-                <button class="btn btn-danger btn-sm ms-2 deleteShiftBtn">Delete</button>
+                <div class="d-flex align-items-center justify-content-between">
+                    <span class="shift-time">${selectedDay}: ${start_time} - ${end_time}</span>
+                    <button class="btn btn-link text-secondary p-0 border-0 deleteShiftBtn" title="Delete">
+                        <i class="bi bi-trash"></i>
+                    </button>
+                </div>
             `;
-            
             
             
             alert("Shift saved!");
 
-            // Send POST request
             // Send POST request
             fetch('/create_shift/', {
                 method: 'POST',
@@ -543,8 +545,9 @@ function createOrUpdateShiftRow(day, start_time, end_time, shiftId = null) {
     
     // Create delete button
     const deleteBtn = document.createElement('button');
-    deleteBtn.className = 'btn btn-danger btn-sm ms-2 deleteShiftBtn';
-    deleteBtn.textContent = 'Delete';
+    deleteBtn.className = 'btn btn-link text-secondary p-0 border-0 deleteShiftBtn ms-2';
+    deleteBtn.innerHTML = '<i class="bi bi-trash"></i>';
+    deleteBtn.title = 'Delete';
     
     // Add event listener
     deleteBtn.addEventListener('click', function() {

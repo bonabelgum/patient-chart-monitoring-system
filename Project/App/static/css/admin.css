@@ -160,6 +160,11 @@ table.dataTable tbody tr:hover {
     min-width: 80px;
     max-width: 150px;
 }
+/* Shift item container */
+.shift-time {
+    margin-right: 8px; /* Space between text and button */
+    white-space: nowrap; /* Prevents line breaks */
+}
 
 
 /*verification section*/
