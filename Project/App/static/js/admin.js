@@ -339,9 +339,20 @@ document.addEventListener("DOMContentLoaded", function () {
     //event listener for when the modal is shown
     employeeModal.addEventListener("shown.bs.modal", function () {
         //console.log("Modal is open");
+        this.removeAttribute('aria-hidden');
+    // Focus on first focusable element when shown
+    setTimeout(() => {
+        const focusable = this.querySelector('button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])');
+        if (focusable) focusable.focus();
+    }, 100);
+    });
+    employeeModal.addEventListener('hide.bs.modal', function() {
+        // Ensure no focus is trapped during hide transition
+        document.activeElement.blur();
     });
     //event listener for when the modal is hidden
     employeeModal.addEventListener("hidden.bs.modal", function () {
+        this.setAttribute('aria-hidden', 'true');
         //console.log("Modal is closed");
         //clear master key input/ btn when modal is closed
         hideMasterKeyElements();
@@ -605,13 +616,10 @@ function addLogEntry(table, dateTime, activity) {
 
 const scheduleTab = document.getElementById('tab3-tab');
 
-scheduleTab.addEventListener('shown.bs.tab', function (event) {
+/*scheduleTab.addEventListener('shown.bs.tab', function (event) {
     console.log('Schedule tab is now active!');
-    renderScheduleTable(); // Call your rendering function here
-});
-// document.addEventListener('DOMContentLoaded', function() {
-//     renderScheduleTable();
-// });
+    //renderScheduleTable(); // Call your rendering function here
+});*/
 
 
 

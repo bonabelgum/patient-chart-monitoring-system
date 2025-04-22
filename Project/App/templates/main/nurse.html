@@ -58,7 +58,7 @@
                 </button>
 
                 <!-- Modal Structure -->
-                <div class="modal fade" id="patientModal" tabindex="-1" aria-labelledby="patientModalLabel" data-bs-backdrop="static">
+                <div class="modal fade" id="patientModal" tabindex="-1" aria-labelledby="patientModalLabel" aria-hidden="true" data-bs-backdrop="static">
                     <div class="modal-dialog">
                         <div class="modal-content">
                             <div class="modal-header">
@@ -119,25 +119,25 @@
                 </div>
 
                 <!-- QR Code Display Modal -->
-                <div class="modal fade" id="qrCodeModal" tabindex="-1" aria-labelledby="qrCodeModalLabel" 
-                aria-hidden="true" data-bs-backdrop="static">
-                    <div class="modal-dialog">
-                        <div class="modal-content">
-                            <div class="modal-header">
-                                <h5 class="modal-title" id="qrCodeModalLabel">Patient QR Code</h5>
-                                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                            </div>
-                            <div class="modal-body text-center">
-                                <div id="qrCodeImageContainer">
-                                    <!-- QR code image will be inserted here -->
-                                </div>
-                            </div>
-                            <div class="modal-footer">
-                                <button type="button" class="btn btn-primary" id="printQrBtn">Print QR Code</button>
-                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-                            </div>
+                <div class="modal fade" id="qrCodeModal" tabindex="-1" aria-labelledby="qrCodeModalLabel" aria-hidden="true" data-bs-backdrop="static">
+                <div class="modal-dialog">
+                <div class="modal-content" tabindex="-1">  <!-- Added tabindex here -->
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="qrCodeModalLabel">Patient QR Code</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body text-center">
+                        <div id="qrCodeImageContainer">
+                            <!-- QR code image will be inserted here -->
+                             <!--img src="" class="qr-wristband" alt="Patient ID QR Code"-->
                         </div>
                     </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-primary" id="printQrBtn">Print QR Code</button>
+                        <!--button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button-->
+                    </div>
+                </div>
+                </div>
                 </div>
 
                 <!--TABLE-->

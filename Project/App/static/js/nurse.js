@@ -89,26 +89,29 @@ document.addEventListener('DOMContentLoaded', function() {
     });
 });
 
-/*MODAL */
 document.addEventListener('DOMContentLoaded', function() {
-    const admitPatientBtn = document.getElementById('admit_patient');
+    // Initialize elements
     const savePatientBtn = document.getElementById('savePatientBtn');
     const patientForm = document.getElementById('patientAdmissionForm');
+    const patientModal = document.getElementById('patientModal');
+    const qrModal = document.getElementById('qrCodeModal');
+    
+    // Initialize modal instances
+    const patientModalInstance = new bootstrap.Modal(patientModal);
+    const qrModalInstance = new bootstrap.Modal(qrModal);
     
     // Save patient handler
     savePatientBtn.addEventListener('click', function() {
         if (patientForm.checkValidity()) {
-            // Get form values
             const patientData = {
                 name: document.getElementById('patientName').value,
-                sex: document.getElementById('patientSex').value,  // Fixed ID
+                sex: document.getElementById('patientSex').value,
                 birthday: document.getElementById('patientBirthday').value,
                 phone_number: document.getElementById('phone_number_patient').value,
-                status: document.getElementById('patientStatus').value,  // Fixed ID
+                status: document.getElementById('patientStatus').value,
                 ward: document.getElementById('patientWard').value
             };
             
-            // Send data to server
             fetch('/admit-patient/', {
                 method: 'POST',
                 headers: {
@@ -121,18 +124,28 @@ document.addEventListener('DOMContentLoaded', function() {
             .then(data => {
                 if (data.status === 'success') {
                     alert(data.message);
-                    // Close the modal
-                    const modal = bootstrap.Modal.getInstance(document.getElementById('patientModal'));
-                    modal.hide();
-                     // Show QR code modal
-                    const qrCodeModal = new bootstrap.Modal(document.getElementById('qrCodeModal'));
-                    // Create and display the QR code image (simple version for now)
-                    const qrContainer = document.getElementById('qrCodeImageContainer');
-                    qrContainer.innerHTML = `<img src="${data.qr_code_url}" alt="Patient QR Code" class="img-fluid">`;
                     
-                    qrCodeModal.show();
-                    // Reset form
-                    patientForm.reset();
+                    // First, move focus to body to prevent focus trap
+                    document.body.focus();
+                    
+                    // Then hide the patient modal
+                    patientModalInstance.hide();
+                    
+                    // When patient modal is fully hidden, show QR modal
+                    patientModal.addEventListener('hidden.bs.modal', function showQRModal() {
+                        patientModal.removeEventListener('hidden.bs.modal', showQRModal);
+                        
+                        // Prepare QR code
+                        const qrContainer = document.getElementById('qrCodeImageContainer');
+                        qrContainer.innerHTML = `<img src="${data.qr_code_url}" alt="Patient QR Code" class="img-fluid">`;
+                        
+                        // Show QR modal
+                        qrModalInstance.show();
+                        
+                        // Reset form
+                        patientForm.reset();
+                    }, { once: true });
+                    
                 } else {
                     alert(data.message);
                 }
@@ -141,15 +154,48 @@ document.addEventListener('DOMContentLoaded', function() {
                 console.error('Error:', error);
                 alert('An error occurred while admitting the patient.');
             });
-            
         } else {
-            // Trigger HTML5 validation messages
             patientForm.reportValidity();
         }
     });
     
-    // Clear form when modal closes
-    document.getElementById('patientModal').addEventListener('hidden.bs.modal', function() {
+    // Patient Modal events
+    patientModal.addEventListener('show.bs.modal', function() {
+        this.removeAttribute('aria-hidden');
+        setTimeout(() => savePatientBtn.focus(), 100);
+    });
+    
+    patientModal.addEventListener('hide.bs.modal', function() {
+        // Ensure no focus is trapped during hide transition
+        document.activeElement.blur();
+    });
+    
+    patientModal.addEventListener('hidden.bs.modal', function() {
+        this.setAttribute('aria-hidden', 'true');
+    });
+    
+    // QR Modal events
+    qrModal.addEventListener('show.bs.modal', function() {
+        this.removeAttribute('aria-hidden');
+        setTimeout(() => {
+            const printBtn = document.getElementById('printQrBtn');
+            if (printBtn) printBtn.focus();
+        }, 100);
+    });
+    
+    qrModal.addEventListener('hide.bs.modal', function() {
+        // Ensure no focus is trapped during hide transition
+        document.activeElement.blur();
+    });
+    
+    qrModal.addEventListener('hidden.bs.modal', function() {
+        this.setAttribute('aria-hidden', 'true');
+        //page refresh
+        window.location.reload();
+    });
+    
+    // Clear form when patient modal closes
+    patientModal.addEventListener('hidden.bs.modal', function() {
         patientForm.reset();
     });
 
@@ -168,14 +214,6 @@ document.addEventListener('DOMContentLoaded', function() {
         }
         return cookieValue;
     }
-});
-//qr code
-document.getElementById('qrCodeModal').addEventListener('show.bs.modal', function() {
-    this.setAttribute('aria-hidden', 'false');
-});
-
-document.getElementById('qrCodeModal').addEventListener('hidden.bs.modal', function() {
-    this.setAttribute('aria-hidden', 'true');
 });
 
 //phone number

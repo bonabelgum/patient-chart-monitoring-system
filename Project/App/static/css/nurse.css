@@ -122,6 +122,14 @@ body {
     font-weight: bold;
     color: #007bff;
 }
+.qr-wristband {
+    width: 50mm; /* Standard wristband width */
+    height: 50mm;
+    image-rendering: crisp-edges; /* Keeps QR sharp when scaled */
+    border: 1px solid #ddd; /* Visual boundary */
+    padding: 3mm;
+    background: white;
+}
 
 /* MODAL */
 #patientModal .modal-header {

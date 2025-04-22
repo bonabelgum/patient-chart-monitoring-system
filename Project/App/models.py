@@ -222,28 +222,30 @@ class PatientInformation(models.Model):
         return self.name
     
     def save(self, *args, **kwargs):
-        if not self.qr_code:  # Only generate QR code if it doesn't exist
+        if not self.qr_code:  # Only generate if doesn't exist
             qr = qrcode.QRCode(
-                version=1,
-                error_correction=qrcode.constants.ERROR_CORRECT_L,
-                box_size=10,  # Increased from default 10
-                border=4,     # Increased from default 4
+                version=1,  # Smaller version (1-40, 1 is smallest)
+                error_correction=qrcode.constants.ERROR_CORRECT_H,  # High error correction
+                box_size=8,  # Smaller pixels but still readable
+                border=2,    # Minimal border
             )
-            
-            qr_data = f"Patient ID: {self.id}\nName: {self.name}"
+        
+            # Minimal data - just ID and initials for smaller QR
+            qr_data = f"ID:{self.id}"
             qr.add_data(qr_data)
             qr.make(fit=True)
-            
-            # Create QR code image
+        
+            # Create blank white image with QR code
             img = qr.make_image(fill_color="black", back_color="white")
             
-            # Create a BytesIO buffer
-            buffer = BytesIO()
-            img.save(buffer, format="PNG")
+            # Convert to 300dpi for better print quality
+            img = img.resize((300, 300))  # Fixed size for wristband
             
-            # Save to model field
-            fname = f'qr_code_{self.id}.png'
+            buffer = BytesIO()
+            img.save(buffer, format="PNG", dpi=(300, 300))
+            
+            fname = f'qr_wristband_{self.id}.png'
             self.qr_code.save(fname, File(buffer), save=False)
             buffer.close()
-        
+    
         super().save(*args, **kwargs)
