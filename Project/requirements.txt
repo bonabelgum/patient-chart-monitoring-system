@@ -5,3 +5,5 @@ whitenoise
 cryptography
 pyngrok
 django-sslserver
+qrcode[pil]
+djangorestframework

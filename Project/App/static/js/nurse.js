@@ -22,9 +22,28 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     });
     //admitting patient
-    var admitButton = document.getElementById('admit_patient');
-    admitButton.addEventListener('click', function() {
-        addpatientModal.show();
+    // Initialize modal with proper focus control
+    const patientModal = new bootstrap.Modal('#patientModal', {
+        focus: true  // Ensures proper focus management
+    });
+
+    // When opening modal
+    document.getElementById('patientModal').addEventListener('show.bs.modal', () => {
+        const modal = document.getElementById('patientModal');
+        modal.removeAttribute('aria-hidden');
+        modal.removeAttribute('inert');
+    });
+
+    // When closing modal
+    document.getElementById('patientModal').addEventListener('hidden.bs.modal', () => {
+        document.getElementById('admit_patient').focus();
+    });
+
+    // Fix for close button focus
+    document.querySelector('#patientModal .btn-close').addEventListener('click', (e) => {
+        e.preventDefault();
+        patientModal.hide();
+        document.getElementById('admit_patient').focus();
     });
 
     //qr code scanning
@@ -82,32 +101,81 @@ document.addEventListener('DOMContentLoaded', function() {
             // Get form values
             const patientData = {
                 name: document.getElementById('patientName').value,
+                sex: document.getElementById('patientSex').value,  // Fixed ID
                 birthday: document.getElementById('patientBirthday').value,
+                phone_number: document.getElementById('phone_number_patient').value,
+                status: document.getElementById('patientStatus').value,  // Fixed ID
                 ward: document.getElementById('patientWard').value
             };
             
-            // Here you would typically send data to server
-            console.log('Patient data to save:', patientData);
+            // Send data to server
+            fetch('/admit-patient/', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': getCookie('csrftoken')
+                },
+                body: JSON.stringify(patientData)
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.status === 'success') {
+                    alert(data.message);
+                    // Close the modal
+                    const modal = bootstrap.Modal.getInstance(document.getElementById('patientModal'));
+                    modal.hide();
+                     // Show QR code modal
+                    const qrCodeModal = new bootstrap.Modal(document.getElementById('qrCodeModal'));
+                    // Create and display the QR code image (simple version for now)
+                    const qrContainer = document.getElementById('qrCodeImageContainer');
+                    qrContainer.innerHTML = `<img src="${data.qr_code_url}" alt="Patient QR Code" class="img-fluid">`;
+                    
+                    qrCodeModal.show();
+                    // Reset form
+                    patientForm.reset();
+                } else {
+                    alert(data.message);
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('An error occurred while admitting the patient.');
+            });
             
-            // Show success message (you can replace with actual API call)
-            alert('Patient admitted successfully!');
-            
-            // Close the modal
-            const modal = bootstrap.Modal.getInstance(document.getElementById('patientModal'));
-            modal.hide();
-            
-            // Reset form
-            patientForm.reset();
         } else {
             // Trigger HTML5 validation messages
             patientForm.reportValidity();
         }
     });
     
-    // Optional: Clear form when modal closes
+    // Clear form when modal closes
     document.getElementById('patientModal').addEventListener('hidden.bs.modal', function() {
         patientForm.reset();
     });
+
+    // Function to get CSRF token
+    function getCookie(name) {
+        let cookieValue = null;
+        if (document.cookie && document.cookie !== '') {
+            const cookies = document.cookie.split(';');
+            for (let i = 0; i < cookies.length; i++) {
+                const cookie = cookies[i].trim();
+                if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                    cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                    break;
+                }
+            }
+        }
+        return cookieValue;
+    }
+});
+//qr code
+document.getElementById('qrCodeModal').addEventListener('show.bs.modal', function() {
+    this.setAttribute('aria-hidden', 'false');
+});
+
+document.getElementById('qrCodeModal').addEventListener('hidden.bs.modal', function() {
+    this.setAttribute('aria-hidden', 'true');
 });
 
 //phone number

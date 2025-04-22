@@ -8,7 +8,11 @@ from django.views.decorators.csrf import csrf_exempt
 from django.contrib.auth.decorators import login_required   
 from django.contrib.auth import logout
 from django.urls import reverse_lazy
-from .models import Admin_logs, Employee, Shift_schedule
+from .models import Admin_logs, Employee, Shift_schedule, PatientInformation
+
+#storing qr test
+from .serializers import PatientInformationSerializer
+from datetime import datetime
 
 # Create your views here.
 
@@ -121,3 +125,53 @@ def get_schedule_data(request):
             'employee': shift.employee.id, 
         })
     return JsonResponse({'shifts': data})
+#storing qr
+@csrf_exempt
+def admit_patient(request):
+    if request.method == 'POST':
+        try:
+            data = json.loads(request.body)
+            
+            # Check if patient already exists
+            existing_patient = PatientInformation.objects.filter(
+                name=data.get('name'),
+                birthday=data.get('birthday'),
+                sex=data.get('sex')
+            ).first()
+            
+            if existing_patient:
+                return JsonResponse({
+                    'status': 'error',
+                    'message': 'Patient already exists. You can update their information.'
+                }, status=400)
+            
+            # Create new patient
+            patient = PatientInformation.objects.create(
+                name=data.get('name'),
+                sex=data.get('sex'),
+                birthday=data.get('birthday'),
+                phone_number=data.get('phone_number'),
+                status=data.get('status'),
+                ward=data.get('ward')
+            )
+
+            qr_code_url = request.build_absolute_uri(patient.qr_code.url)
+            
+            return JsonResponse({
+                'status': 'success',
+                'message': 'Patient admitted successfully!',
+                'qr_code_url': qr_code_url,
+                'patient_id': str(patient.id),
+            }) 
+        except Exception as e:
+            return JsonResponse({
+                'status': 'error',
+                'message': str(e)
+            }, status=500)
+    
+    return JsonResponse({
+        'status': 'error',
+        'message': 'Invalid request method',
+        'patient_id': str(patient.id),
+        'qr_code_url': patient.qr_code.url
+    }, status=405)

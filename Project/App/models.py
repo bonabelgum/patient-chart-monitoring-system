@@ -5,6 +5,13 @@ from django.contrib.auth.models import User
 from cryptography.fernet import Fernet, InvalidToken
 from django.utils import timezone
 
+#strogin qr
+import qrcode
+from io import BytesIO
+from django.core.files import File
+from PIL import Image
+import uuid
+
 
 
 class Employee(models.Model): 
@@ -178,4 +185,65 @@ class Admin_logs(models.Model):
             }
             for log in cls.objects.all().order_by('-date_time')
         ] 
+
+#storing with qr
+class PatientInformation(models.Model):
+    STATUS_CHOICES = [
+        ('Inpatient', 'Inpatient'),
+        ('Outpatient', 'Outpatient'),
+        ('Discharge', 'Discharge'),
+    ]
     
+    SEX_CHOICES = [
+        ('Female', 'Female'),
+        ('Male', 'Male'),
+        ('Other', 'Other'),
+    ]
+    
+    WARD_CHOICES = [
+        ('General', 'General Ward'),
+        ('Pediatrics', 'Pediatrics'),
+        ('ICU', 'Intensive Care Unit'),
+        ('Maternity', 'Maternity Ward'),
+        ('None', 'None'),
+    ]
+    
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    name = models.CharField(max_length=100)
+    sex = models.CharField(max_length=10, choices=SEX_CHOICES)
+    birthday = models.DateField()
+    phone_number = models.CharField(max_length=20)
+    status = models.CharField(max_length=10, choices=STATUS_CHOICES)
+    ward = models.CharField(max_length=20, choices=WARD_CHOICES)
+    qr_code = models.ImageField(upload_to='qr_codes', blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    
+    def __str__(self):
+        return self.name
+    
+    def save(self, *args, **kwargs):
+        if not self.qr_code:  # Only generate QR code if it doesn't exist
+            qr = qrcode.QRCode(
+                version=1,
+                error_correction=qrcode.constants.ERROR_CORRECT_L,
+                box_size=10,  # Increased from default 10
+                border=4,     # Increased from default 4
+            )
+            
+            qr_data = f"Patient ID: {self.id}\nName: {self.name}"
+            qr.add_data(qr_data)
+            qr.make(fit=True)
+            
+            # Create QR code image
+            img = qr.make_image(fill_color="black", back_color="white")
+            
+            # Create a BytesIO buffer
+            buffer = BytesIO()
+            img.save(buffer, format="PNG")
+            
+            # Save to model field
+            fname = f'qr_code_{self.id}.png'
+            self.qr_code.save(fname, File(buffer), save=False)
+            buffer.close()
+        
+        super().save(*args, **kwargs)

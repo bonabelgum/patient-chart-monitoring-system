@@ -58,7 +58,7 @@
                 </button>
 
                 <!-- Modal Structure -->
-                <div class="modal fade" id="patientModal" tabindex="-1" aria-labelledby="patientModalLabel" aria-hidden="true">
+                <div class="modal fade" id="patientModal" tabindex="-1" aria-labelledby="patientModalLabel" data-bs-backdrop="static">
                     <div class="modal-dialog">
                         <div class="modal-content">
                             <div class="modal-header">
@@ -74,7 +74,7 @@
                                     </div>
                                     <div class="mb-3">
                                         <label for="sex" class="form-label">Sex</label>
-                                        <select class="form-select" id="patientWard" required>
+                                        <select class="form-select" id="patientSex" required>
                                             <option value="" selected disabled>Select Sex</option>
                                             <option value="General">Female</option>
                                             <option value="Pediatrics">Male</option>
@@ -92,7 +92,7 @@
                                     </div>  
                                     <div class="mb-3">
                                         <label for="patientStatus" class="form-label">Status</label>
-                                        <select class="form-select" id="patientWard" required>
+                                        <select class="form-select" id="patientStatus" required>
                                             <option value="" selected disabled>Select Status</option>
                                             <option value="Inpatient">Inpatient</option>
                                             <option value="Outpatient">Outpatient</option>
@@ -113,6 +113,28 @@
                             </div>
                             <div class="modal-footer">
                                 <button type="button" class="btn btn-primary" id="savePatientBtn">Save</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- QR Code Display Modal -->
+                <div class="modal fade" id="qrCodeModal" tabindex="-1" aria-labelledby="qrCodeModalLabel" 
+                aria-hidden="true" data-bs-backdrop="static">
+                    <div class="modal-dialog">
+                        <div class="modal-content">
+                            <div class="modal-header">
+                                <h5 class="modal-title" id="qrCodeModalLabel">Patient QR Code</h5>
+                                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                            </div>
+                            <div class="modal-body text-center">
+                                <div id="qrCodeImageContainer">
+                                    <!-- QR code image will be inserted here -->
+                                </div>
+                            </div>
+                            <div class="modal-footer">
+                                <button type="button" class="btn btn-primary" id="printQrBtn">Print QR Code</button>
+                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
                             </div>
                         </div>
                     </div>
