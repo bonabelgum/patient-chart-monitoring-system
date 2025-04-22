@@ -4,3 +4,5 @@ db.sqlite3
 ngrok.yml
 __pycache__/
 *.pyc
+localhost.crt
+localhost.key
