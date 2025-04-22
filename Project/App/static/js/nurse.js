@@ -1,26 +1,38 @@
 document.addEventListener('DOMContentLoaded', function() {
-    new DataTable('#patient');
+    const table = $('#patient').DataTable();  // Initialize DataTable
 
-    //click event listener for table rows
-    document.querySelectorAll('#patient tbody tr').forEach(function(row) {
-        row.addEventListener('click', function() {
-             //retrieve the patient data from the row's data attributes
-             const patientId = row.getAttribute('data-patient-id');
-             const patientName = row.getAttribute('data-patient-name');
-             const patientWard = row.getAttribute('data-patient-ward');
-             const patientStatus = row.getAttribute('data-patient-status');
-
-             //console.log(patientId, patientName, patientWard, patientStatus);
- 
-             const queryParams = new URLSearchParams({  
-                name: patientName,
-                ward: patientWard,
-                status: patientStatus
-            }).toString();
-            window.location.href = `/patient/${patientId}/?${queryParams}`;
-            
+    fetch('/get_patients/')
+        .then(response => response.json())
+        .then(data => {
+            console.log(data);
+            data.patients.forEach(patient => {
+                addPatientRow(table, patient);
+            });
+        })
+        .catch(error => {
+            console.error("Error fetching patients:", error);
         });
-    });
+
+    // //click event listener for table rows
+    // document.querySelectorAll('#patient tbody tr').forEach(function(row) {
+    //     row.addEventListener('click', function() {
+    //          //retrieve the patient data from the row's data attributes
+    //          const patientId = row.getAttribute('data-patient-id');
+    //          const patientName = row.getAttribute('data-patient-name');
+    //          const patientWard = row.getAttribute('data-patient-ward');
+    //          const patientStatus = row.getAttribute('data-patient-status');
+    //         console.log(patientId +" "+ patientName);
+    //         //  console.log(patientId, patientName, patientWard, patientStatus);
+ 
+    //          const queryParams = new URLSearchParams({  
+    //             name: patientName,
+    //             ward: patientWard,
+    //             status: patientStatus
+    //         }).toString();
+    //         window.location.href = `/patient/${patientId}/?${queryParams}`;
+            
+    //     });
+    // });
     //admitting patient
     // Initialize modal with proper focus control
     const patientModal = new bootstrap.Modal('#patientModal', {
@@ -67,13 +79,23 @@ document.addEventListener('DOMContentLoaded', function() {
             
             html5QrcodeScanner.render((decodedText, decodedResult) => {
                 // Successfully scanned
-                alert(`Scanned: ${decodedText}`);
+                // alert(`Scanned: ${decodedText}`);
                 html5QrcodeScanner.clear();
                 qrReader.style.display = 'none';
                 scanButton.textContent = 'Scan QR Code';
+                PatientExist = checkPatient(decodedText);
+                checkPatient(decodedText).then(PatientExist => {
+                    console.log("Value of PatientExist:", PatientExist);
+                    if (PatientExist) {
+                        console.log("Scanned:", decodedText);
+                        const queryParams = new URLSearchParams({
+                            id: decodedText,
+                        }).toString();
                 
-                // You can do something with the scanned data here
-                console.log("Scanned:", decodedText);
+                        window.location.href = `/patient/${decodedText}/?${queryParams}`;
+                    }
+                });
+                
             });
             
             // Store scanner instance so we can stop it later
@@ -88,6 +110,72 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     });
 });
+
+
+
+// Function to add a patient row to the DataTable
+function addPatientRow(table, patient) {
+    const newRow = table.row.add([
+        patient.id,
+        patient.name,
+        patient.ward || 'Unassigned',
+        patient.status
+    ]).draw().node();
+
+    // Add custom data attributes
+    newRow.dataset.patientId = patient.id;
+    newRow.dataset.patientName = patient.full_name;
+    newRow.dataset.patientWard = patient.ward;
+    newRow.dataset.patientStatus = "Unknown";
+
+    // Attach click event to this row
+    newRow.addEventListener("click", function () {
+        const patientId = this.dataset.patientId;
+        const patientName = this.dataset.patientName;
+        const patientWard = this.dataset.patientWard;
+        const patientStatus = this.dataset.patientStatus;
+
+        // console.log(`${patientId} ${patientName}`);
+
+        const queryParams = new URLSearchParams({
+            id: patientId,
+            name: patientName,
+            ward: patientWard,
+            status: patientStatus
+        }).toString();
+
+        window.location.href = `/patient/${patientId}/?${queryParams}`;
+    });
+}
+
+// Function to check if patient exist in db
+function checkPatient(hospitalId) {
+    return fetch('/api/check_patient_id/', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': csrfToken
+        },
+        body: JSON.stringify({ hospital_id: hospitalId })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.exists) {
+            console.log("Patient exists.");
+            return true;
+        } else {
+            console.log("Patient does not exist.");
+            return false;
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        return false;
+    });
+}
+
+
+
 
 document.addEventListener('DOMContentLoaded', function() {
     // Initialize elements

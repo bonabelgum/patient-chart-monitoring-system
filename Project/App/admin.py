@@ -1,6 +1,6 @@
 from django.contrib import admin
 from django.utils.html import format_html
-from .models import Admin_logs, Employee, Shift_schedule
+from .models import Admin_logs, Employee, PatientInformation, Shift_schedule
 
 @admin.register(Employee)
 class EmployeeAdmin(admin.ModelAdmin):
@@ -43,3 +43,19 @@ class AdminLogsAdmin(admin.ModelAdmin):
             obj.activity[:75] + '...' if len(obj.activity) > 75 else obj.activity
         )
     truncated_activity.short_description = 'Activity'
+    
+@admin.register(PatientInformation)
+class PatientInformationAdmin(admin.ModelAdmin):
+    list_display = ('name', 'phone_number', 'status', 'ward', 'created_at', 'qr_code')
+    search_fields = ('name', 'phone_number', 'status')
+    list_filter = ('status', 'sex', 'ward', 'created_at')
+    ordering = ('name',)
+    fieldsets = (
+        (None, {
+            'fields': ('name', 'sex', 'birthday', 'phone_number', 'status', 'ward', 'qr_code')
+        }),
+        ('Dates', {
+            'fields': ('created_at',),
+        }),
+    )
+    readonly_fields = ('created_at', 'id')

@@ -1,9 +1,64 @@
 document.addEventListener('DOMContentLoaded', function () {
+
+    
+
     //retrieve the patient data from sessionStorage
     const patientId = sessionStorage.getItem('data-patient-id');
     const patientName = sessionStorage.getItem('data-patient-name');
     const patientWard = sessionStorage.getItem('data-patient-ward');
     const patientStatus = sessionStorage.getItem('data-patient-status');
+
+    const urlParams = new URLSearchParams(window.location.search);
+    const patientIdParams = urlParams.get('id');
+    fetch('/api/receive_data/', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': csrfToken
+        },
+        body: JSON.stringify({
+            patient_id: patientIdParams
+        })
+    })
+    .then(response => response.json())
+    .then(data => {
+        console.log('Response from server:', data);
+        
+        if (data.status === 'success') {
+            const patient = data.patient_data;
+            document.getElementById('data-patient-id-view').textContent = patient.id;
+            document.getElementById('data-patient-id-edit').value = patient.id;
+    
+            document.getElementById('data-patient-name-view').textContent = patient.name;
+            document.getElementById('data-patient-name-edit').value = patient.name;
+    
+            document.getElementById('data-patient-sex-view').textContent = patient.sex;
+            document.getElementById('data-patient-sex-edit').value = patient.sex;
+    
+            document.getElementById('data-patient-bday-view').textContent = "";
+            document.getElementById('data-patient-bday-edit').value = "";
+    
+            document.getElementById('data-patient-phone-view').textContent = "";
+            document.getElementById('data-patient-phone-edit').value = "";
+    
+            document.getElementById('data-patient-ward-view').textContent = patient.ward;
+            document.getElementById('data-patient-ward-edit').value = patient.ward;
+    
+            document.getElementById('data-patient-status-view').textContent = patient.status;
+            document.getElementById('data-patient-status-edit').value = patient.status;
+
+    
+            // Update other fields as necessary
+        } else {
+            alert('Error: ' + data.error);
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+    });
+    
+    
+
     //display the patient data on the page
     if (document.getElementById('patient-id')) {
         document.getElementById('patient-id').textContent = patientId || 'N/A';
@@ -11,6 +66,8 @@ document.addEventListener('DOMContentLoaded', function () {
         document.getElementById('patient-ward').textContent = patientWard || 'N/A';
         document.getElementById('patient-status').textContent = patientStatus || 'N/A';
     }
+    
+    // console.log('patient id ', patientId);
     sessionStorage.clear(); //clear the sessionStorage after displaying the data
 
     //edit patient details
@@ -239,7 +296,7 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 });
 
-//VS TABLE
+//Vitals TABLE
 document.addEventListener('DOMContentLoaded', function() {
     // Initialize Bootstrap Table
     $('#vitals-table').bootstrapTable();
@@ -269,7 +326,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
 });
 
-//MED
+//Medication
 document.addEventListener('DOMContentLoaded', function() {
     new DataTable('#active');
     new DataTable('#inactive');

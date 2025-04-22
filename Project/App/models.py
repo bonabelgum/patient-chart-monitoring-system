@@ -208,7 +208,8 @@ class PatientInformation(models.Model):
         ('None', 'None'),
     ]
     
-    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    # id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    id = models.AutoField(primary_key=True)
     name = models.CharField(max_length=100)
     sex = models.CharField(max_length=10, choices=SEX_CHOICES)
     birthday = models.DateField()
@@ -220,6 +221,17 @@ class PatientInformation(models.Model):
     
     def __str__(self):
         return self.name
+    
+    @classmethod
+    def get_patient_by_id(cls, id):
+        try:
+            return cls.objects.get(id=id)
+        except cls.DoesNotExist:
+            return None
+    @classmethod
+    def id_exists(cls, id):    
+        return cls.objects.filter(id=id).exists()
+        
     
     def save(self, *args, **kwargs):
         if not self.qr_code:  # Only generate if doesn't exist
@@ -249,3 +261,5 @@ class PatientInformation(models.Model):
             buffer.close()
     
         super().save(*args, **kwargs)
+    
+    

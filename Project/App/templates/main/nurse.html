@@ -151,7 +151,7 @@
                         </tr>
                     </thead>
                     <tbody>
-                        <tr data-patient-id="1" data-patient-name="namepatient" data-patient-ward="None" data-patient-status="Outpatient">
+                        {% comment %} <tr data-patient-id="1" data-patient-name="namepatient" data-patient-ward="None" data-patient-status="Outpatient">
                             <td>1</td>
                             <td>Namepatient</td>
                             <td>None</td>
@@ -161,7 +161,7 @@
                             <td>2</td>
                             <td>namepatient2</td>
                             <td>ICU</td>
-                            <td>Inpatient</td>
+                            <td>Inpatient</td> {% endcomment %}
                         </tr>
                     </tbody>
                 </table>
@@ -188,7 +188,7 @@
                     </tbody>
                 </table>
             </div>
-
+ 
         </div>
         </div>
 
@@ -209,6 +209,10 @@
     <!--phone num-->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/intl-tel-input/17.0.8/js/intlTelInput.min.js"></script>
 
+    
+    <script>
+        const csrfToken = "{{ csrf_token }}"; // Django template tag to get the CSRF token
+    </script>
     <script src="{% static 'js/logout.js' %}"></script>
     <script src="{% static 'js/nurse.js' %}"></script>
 </body>

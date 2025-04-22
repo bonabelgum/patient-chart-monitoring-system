@@ -64,64 +64,65 @@
                     </div>
 
                     {% block content %}
-                <div id="patient-info">
-                    <div class="patient-field">
-                        <strong>ID:</strong>
-                        <span id="data-patient-id-view">{{ patient_id }}</span>
-                        <input type="text" id="data-patient-id-edit" value="{{ patient_id }}" class="form-control d-none" readonly>
+                    <div id="patient-info">
+                        <div class="patient-field">
+                            <strong>ID:</strong>
+                            <span id="data-patient-id-view"></span>
+                            <input type="text" id="data-patient-id-edit" class="form-control d-none" readonly>
+                        </div>
+                        <div class="patient-field">
+                            <strong>Full Name:</strong>
+                            <span id="data-patient-name-view"></span>
+                            <input type="text" id="data-patient-name-edit" class="form-control d-none">
+                        </div>
+                        <div class="patient-field">
+                            <strong>Sex:</strong>
+                            <span id="data-patient-sex-view"></span>
+                            <select class="form-select d-none" id="data-patient-sex-edit" required>
+                                <option value="" selected disabled>Select Sex</option>
+                                <option value="Female">Female</option>
+                                <option value="Male">Male</option>
+                            </select>
+                        </div>
+                        <div class="patient-field">
+                            <strong>Birthday:</strong>
+                            <span id="data-patient-bday-view"></span>
+                            <input type="date" class="form-control d-none" id="data-patient-bday-edit">
+                        </div>
+                        <div class="patient-field">
+                            <strong>Phone Number:</strong>
+                            <span id="data-patient-phone-view"></span>
+                            <input class="form-control d-none" id="data-patient-phone-edit" type="tel" pattern="[0-9]*" inputmode="numeric" required>
+                        </div>
+                        <div class="patient-field">
+                            <strong>Ward:</strong>
+                            <span id="data-patient-ward-view"></span>
+                            <select class="form-select d-none" id="data-patient-ward-edit" required>
+                                <option value="" selected disabled>Select Ward</option>
+                                <option value="General">General Ward</option>
+                                <option value="Pediatrics">Pediatrics</option>
+                                <option value="ICU">Intensive Care Unit</option>
+                                <option value="Maternity">Maternity Ward</option>
+                                <option value="None">None</option>
+                            </select>
+                        </div>
+                        <div class="patient-field">
+                            <strong>Status:</strong>
+                            <span id="data-patient-status-view"></span>
+                            <select class="form-select d-none" id="data-patient-status-edit" required>
+                                <option value="" selected disabled>Select Status</option>
+                                <option value="Inpatient">Inpatient</option>
+                                <option value="Outpatient">Outpatient</option>
+                                <option value="Discharge">Discharge</option>
+                            </select>
+                        </div>
+
+                        <button id="edit-patient-btn" class="btn btn-primary mt-3">Update Details</button>
+                        <button id="save-patient-btn" class="btn btn-success mt-3 d-none">Save</button>
+                        <button id="cancel-patient-btn" class="btn btn-secondary mt-3 d-none">Cancel</button>
                     </div>
-                    <div class="patient-field">
-                        <strong>Full Name:</strong>
-                        <span id="data-patient-name-view">{{ patient_name }}</span>
-                        <input type="text" id="data-patient-name-edit" value="{{ patient_name }}" class="form-control d-none">
-                    </div>
-                    <div class="patient-field">
-                        <strong>Sex:</strong>
-                        <span id="data-patient-sex-view">{{ patient_sex }}</span>
-                        <select class="form-select d-none" id="data-patient-sex-edit" required>
-                            <option value="" selected disabled>Select Sex</option>
-                            <option value="Female" {% if patient_sex == 'Female' %}selected{% endif %}>Female</option>
-                            <option value="Male" {% if patient_sex == 'Male' %}selected{% endif %}>Male</option>
-                        </select>
-                    </div>
-                    <div class="patient-field">
-                        <strong>Birthday:</strong>
-                        <span id="data-patient-bday-view">{{ patient_bday }}</span>
-                        <input type="date" class="form-control d-none" id="data-patient-bday-edit" value="{{ patient_bday }}">
-                    </div>
-                    <div class="patient-field">
-                        <strong>Phone Number:</strong>
-                        <span id="data-patient-phone-view">{{ patient_phone_number }}</span>
-                        <input class="form-control d-none" id="data-patient-phone-edit" type="tel" value="{{ patient_phone_number }}" pattern="[0-9]*" inputmode="numeric" required>
-                    </div>
-                    <div class="patient-field">
-                        <strong>Ward:</strong>
-                        <span id="data-patient-ward-view">{{ patient_ward }}</span>
-                        <select class="form-select d-none" id="data-patient-ward-edit" required>
-                            <option value="" selected disabled>Select Ward</option>
-                            <option value="General" {% if patient_ward == 'General' %}selected{% endif %}>General Ward</option>
-                            <option value="Pediatrics" {% if patient_ward == 'Pediatrics' %}selected{% endif %}>Pediatrics</option>
-                            <option value="ICU" {% if patient_ward == 'ICU' %}selected{% endif %}>Intensive Care Unit</option>
-                            <option value="Maternity" {% if patient_ward == 'Maternity' %}selected{% endif %}>Maternity Ward</option>
-                            <option value="None" {% if patient_ward == 'None' %}selected{% endif %}>None</option>
-                        </select>
-                    </div>
-                    <div class="patient-field">
-                        <strong>Status:</strong>
-                        <span id="data-patient-status-view">{{ patient_status }}</span>
-                        <select class="form-select d-none" id="data-patient-status-edit" required>
-                            <option value="" selected disabled>Select Status</option>
-                            <option value="Inpatient" {% if patient_status == 'Inpatient' %}selected{% endif %}>Inpatient</option>
-                            <option value="Outpatient" {% if patient_status == 'Outpatient' %}selected{% endif %}>Outpatient</option>
-                            <option value="Discharge" {% if patient_status == 'Discharge' %}selected{% endif %}>Discharge</option>
-                        </select>
-                    </div>
-                    
-                    <button id="edit-patient-btn" class="btn btn-primary mt-3">Update Details</button>
-                    <button id="save-patient-btn" class="btn btn-success mt-3 d-none">Save</button>
-                    <button id="cancel-patient-btn" class="btn btn-secondary mt-3 d-none">Cancel</button>
-                </div>       
-                {% endblock %}
+                    {% endblock %}
+
                 </div>
 
                 <!-- tab2 -->
@@ -420,6 +421,10 @@
     <!--phone num-->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/intl-tel-input/17.0.8/js/intlTelInput.min.js"></script>
 
+    
+    <script>
+        const csrfToken = "{{ csrf_token }}"; // Django template tag to get the CSRF token
+    </script>
     <script src="{% static 'js/patient.js' %}"></script>
 
 </body>

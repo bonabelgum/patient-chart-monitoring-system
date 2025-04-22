@@ -18,12 +18,14 @@ from django.contrib import admin
 from django.urls import path
 from django.conf import settings
 from django.conf.urls.static import static
-from App import views
+from App import views, nurse, patient
 
 from App.signup import verify_admin, verify_nurse, get_admin_details, admin_code_verification
 from App.views import signup_view, logout_view, patient_detail, get_employees, log_activity, admit_patient
 from App.login import handle_request  # Import the function
 from App.admin_user import get_nurse_data, verify_master_key, reject_master_key, create_shift , delete_shift, get_all_logs, remove_user, get_all_shifts # Import the function
+from App.nurse import get_patients, check_patient_id
+from App.patient import receive_data
 
 urlpatterns = [
     path('admin/', admin.site.urls),
@@ -49,6 +51,14 @@ urlpatterns = [
     path('get_all_logs/', get_all_logs, name='get_all_logs'),
     path('remove_user/', remove_user, name='remove_user'),
     path('get_all_shifts/', get_all_shifts, name='get_all_shifts'),
+     
+    # Nurse 
+    path('get_patients/', get_patients, name='get_patients'),
+    path('api/check_patient_id/', check_patient_id, name='check_patient_id'),
+    
+    # patient
+    path('api/receive_data/', receive_data, name='receive_data'),
+    
     path("log_activity/", log_activity, name="log_activity"),
     path('api/schedule/', views.get_schedule_data, name='schedule-data'),
 

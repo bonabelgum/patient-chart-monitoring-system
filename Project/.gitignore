@@ -2,3 +2,5 @@ venv/
 .env
 db.sqlite3
 ngrok.yml
+__pycache__/
+*.pyc

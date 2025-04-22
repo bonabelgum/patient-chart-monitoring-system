@@ -10,7 +10,7 @@ from django.contrib.auth import authenticate, login
 
 from .models import Admin_logs, Employee
 
-print("Helllo worllldd")
+# print("Helllo worllldd")
 
 
 
