@@ -234,32 +234,31 @@ class PatientInformation(models.Model):
         
     
     def save(self, *args, **kwargs):
-        if not self.qr_code:  # Only generate if doesn't exist
+        is_new = self.pk is None  # Check if it's a new object (no ID yet)
+
+        super().save(*args, **kwargs)  # Save once to get self.id
+
+        if is_new or not self.qr_code:  # Only generate if it's new or QR is missing
             qr = qrcode.QRCode(
-                version=1,  # Smaller version (1-40, 1 is smallest)
-                error_correction=qrcode.constants.ERROR_CORRECT_H,  # High error correction
-                box_size=8,  # Smaller pixels but still readable
-                border=2,    # Minimal border
+                version=1,
+                error_correction=qrcode.constants.ERROR_CORRECT_H,
+                box_size=8,
+                border=2,
             )
-        
-            # Minimal data - just ID and initials for smaller QR
-            qr_data = f"ID:{self.id}"
+
+            qr_data = self.id
             qr.add_data(qr_data)
             qr.make(fit=True)
-        
-            # Create blank white image with QR code
+
             img = qr.make_image(fill_color="black", back_color="white")
-            
-            # Convert to 300dpi for better print quality
-            img = img.resize((300, 300))  # Fixed size for wristband
-            
+            img = img.resize((300, 300))
+
             buffer = BytesIO()
             img.save(buffer, format="PNG", dpi=(300, 300))
-            
+
             fname = f'qr_wristband_{self.id}.png'
             self.qr_code.save(fname, File(buffer), save=False)
             buffer.close()
-    
-        super().save(*args, **kwargs)
-    
-    
+
+            # Save ONLY the qr_code field now, so no duplicate insert
+            super().save(update_fields=['qr_code'])
