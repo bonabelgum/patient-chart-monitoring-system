@@ -127,7 +127,10 @@
                         <!-- input area for adding shift -->
                         <div id="shift-container"></div>
                         <!-- adding sched button -->
-                        <button class="btn btn-success btn-sm mt-2" id="addShiftBtn">+ Add Schedule</button>
+                        <div class="d-flex mt-2">
+                            <button class="btn btn-success btn-sm" id="addShiftBtn">+ Add Schedule</button>
+                            <button class="btn btn-danger btn-sm ms-2" id="toggleDeleteBtn">Delete Schedule</button>
+                        </div>
                         <!--danger zone for removing a user-->
                         <div id="dangerZone" class="mt-4" style="display: none;">
                             <button class="btn btn-outline-danger btn-sm" id="toggleDangerZone">⚠ Show Danger Zone</button>

@@ -187,14 +187,15 @@ document.addEventListener('DOMContentLoaded', function() {
             
         }
     });
+
     //ADDING SCHED
     document.getElementById("addShiftBtn").addEventListener("click", function () {
         let shiftContainer = document.getElementById("shift-container");
-        console.log("hello id "+id);
+        
         //create a new schedule row
         let newShift = document.createElement("div");
         newShift.classList.add("shift-row");
-
+    
         newShift.innerHTML = `
             <select class="form-select form-select-sm shift-day">
                 <option value="Monday">Monday</option>
@@ -209,47 +210,42 @@ document.addEventListener('DOMContentLoaded', function() {
             <input type="time" class="form-control form-control-sm shift-from">
             <span>To:</span>
             <input type="time" class="form-control form-control-sm shift-to">
-            <button class="btn btn-primary btn-sm saveShiftBtn" id="saveShiftBtn">Save</button>
-            <button class="btn btn-danger btn-sm cancelShiftBtn id="cancelShiftBtn"">Cancel</button>
+            <button class="btn btn-primary btn-sm saveShiftBtn">Save</button>
+            <button class="btn btn-danger btn-sm cancelShiftBtn">Cancel</button>
         `;
+        
         //appending the new shift row above the button
         shiftContainer.appendChild(newShift);
-
-        //handle saving the schedule NOT YET DONE
+    
+        //handle saving the schedule
         newShift.querySelector(".saveShiftBtn").addEventListener("click", function () {
-            // console.log("hello success");
             let selectedDay = newShift.querySelector(".shift-day")?.value;
             let start_time = newShift.querySelector(".shift-from")?.value;
             let end_time = newShift.querySelector(".shift-to")?.value;
-            
-            // console.log(start_time)
-            const formData = {
-                selectedDay:selectedDay, 
-                start_time:start_time,
-                end_time:end_time
-                // Add CSRF token for Django
-                // csrfmiddlewaretoken: document.querySelector('[name=csrfmiddlewaretoken]').value
-            };
-
+    
             //validate input fields
             if (!selectedDay || !start_time || !end_time) {
                 alert("Please fill in all fields.");
                 return;
             }
             
-            //replace input fields with static text //NOT SAVED TO THE DB YET
+            //replace input fields with static text (with OT and delete buttons on LEFT)
             newShift.innerHTML = `
-                <div class="d-flex align-items-center justify-content-between">
-                    <span class="shift-time">${selectedDay}: ${start_time} - ${end_time}</span>
-                    <button class="btn btn-link text-secondary p-0 border-0 deleteShiftBtn" title="Delete">
+            <div class="d-flex align-items-center justify-content-between">
+                <div class="d-flex align-items-center">
+                    <button class="btn btn-link text-warning p-0 border-0 otBtn" title="Overtime" style="min-width: 24px; width: 24px; padding: 0;">
+                        <i class="bi bi-clock-history"></i>
+                    </button>
+                    <button class="btn btn-link text-secondary p-0 border-0 deleteShiftBtn ms-1" title="Delete" style="display: none; min-width: 24px; width: 24px; padding: 0;">
                         <i class="bi bi-trash"></i>
                     </button>
                 </div>
-            `;
-            
+                <span class="shift-time ms-2">${selectedDay}: ${start_time} - ${end_time}</span>
+            </div>
+`;         
             
             alert("Shift saved!");
-
+    
             // Send POST request
             fetch('/create_shift/', {
                 method: 'POST',
@@ -259,25 +255,21 @@ document.addEventListener('DOMContentLoaded', function() {
                 },
                 body: JSON.stringify({
                     day: selectedDay,
-                    start_time: start_time,  // Must be string in HH:MM format
-                    end_time: end_time      // Must be string in HH:MM format
+                    start_time: start_time,
+                    end_time: end_time
                 })
             })
             .then(handleResponse)
             .then(data => {
                 console.log("Created shift:", data.shift.id);
-                newShift.querySelector(".deleteShiftBtn").addEventListener("click", function () {
-
+                // Add delete button event listener
+                const deleteBtn = newShift.querySelector(".deleteShiftBtn");
+                deleteBtn.addEventListener("click", function () {
                     if (confirm('Are you sure you want to delete this shift?')) {
-                        // shiftRow.remove();
-                        // console.log("hello id shioft");
-                        if (data.shift.id) {
-                            deleteShiftFromBackend(data.shift.id);
-                            newShift.remove(); //TO BE FIXED <add edit button instead>
-                        }
+                        deleteShiftFromBackend(data.shift.id);
+                        newShift.remove();
                     }
                 });
-                // Update your UI here
             })
             .catch(handleError);
             
@@ -292,37 +284,137 @@ document.addEventListener('DOMContentLoaded', function() {
                 console.error('Error:', error);
                 alert('Error: ' + error.message);
             }
-
         });
-
-
-
+        
         //cancel the shift input
         newShift.querySelector(".cancelShiftBtn").addEventListener("click", function () {
             newShift.remove();
-            });
         });
-//for master key confirmation
-document.getElementById("rejectBtn").addEventListener("click", function() {
-    document.getElementById("rejectKeyInput").style.display = "block";
-    document.getElementById("confirmRejectKeyBtn").style.display = "block";
-    document.getElementById("cancelRejectKeyBtn").style.display = "block";
+    });
+    
+    // TOGGLE DELETE MODE
+    let isDeleteMode = false;
+    document.getElementById("toggleDeleteBtn").addEventListener("click", function() {
+        isDeleteMode = !isDeleteMode;
+        
+        // Toggle button text
+        this.textContent = isDeleteMode ? "Cancel Delete" : "Delete Schedule";
+        
+        // Toggle all delete buttons visibility
+        const deleteButtons = document.querySelectorAll(".deleteShiftBtn");
+        deleteButtons.forEach(btn => {
+            btn.style.display = isDeleteMode ? "block" : "none";
+        });
+    });
+    
+    // Function to create shift row (used when loading existing shifts)
+    function createOrUpdateShiftRow(day, start_time, end_time, shiftId = null) {
+        const shiftRow = document.createElement('div');
+        shiftRow.className = 'shift-row';
+        
+        const flexContainer = document.createElement('div');
+        flexContainer.className = 'd-flex align-items-center justify-content-between';
+        
+        if (shiftId) {
+            shiftRow.dataset.shiftId = shiftId;
+        }
+        
+        // Create button container for left side
+        const buttonContainer = document.createElement('div');
+        buttonContainer.className = 'd-flex align-items-center';
+        
+        // Create OT button (always visible)
+        const otBtn = document.createElement('button');
+        otBtn.className = 'btn btn-link text-warning p-0 border-0 otBtn';
+        otBtn.title = 'Overtime';
+        otBtn.style.minWidth = '24px'; 
+        otBtn.innerHTML = '<i class="bi bi-clock-history"></i>';
+        
+        // Create delete button
+        const deleteBtn = document.createElement('button');
+        deleteBtn.className = 'btn btn-link text-secondary p-0 border-0 deleteShiftBtn ms-1';
+        deleteBtn.title = 'Delete';
+        deleteBtn.style.minWidth = '24px';
+        deleteBtn.innerHTML = '<i class="bi bi-trash"></i>';
+        deleteBtn.style.display = 'none'; // Hidden by default
+        
+        // Create the text span
+        const shiftText = document.createElement('span');
+        shiftText.className = 'shift-time ms-2';
+        shiftText.textContent = `${day}: ${start_time} - ${end_time}`;
+        
+        deleteBtn.addEventListener('click', function() {
+            if (confirm('Are you sure you want to delete this shift?')) {
+                shiftRow.remove();
+                if (shiftId) {
+                    deleteShiftFromBackend(shiftId);
+                }
+            }
+        });
+        
+        // Append buttons to container
+        buttonContainer.appendChild(otBtn);
+        buttonContainer.appendChild(deleteBtn);
+        
+        // Build the structure
+        flexContainer.appendChild(buttonContainer);
+        flexContainer.appendChild(shiftText);
+        shiftRow.appendChild(flexContainer);
+        
+        return shiftRow;
+    }
+    
+    // Function to delete shift from backend
+    async function deleteShiftFromBackend(shiftId) {
+        try {
+            const response = await fetch('/delete_shift/', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': csrfToken
+                },
+                body: JSON.stringify({
+                    'shift_id': shiftId
+                })
+            });
+    
+            const data = await response.json();
+            
+            if (!response.ok) {
+                throw new Error(data.error || 'Failed to delete shift');
+            }
+    
+            console.log('Success:', data);
+            alert(`Shift deleted successfully!`);
+            
+        } catch (error) {
+            console.error('Error:', error);
+            alert(`Error: ${error.message}`);
+        }
+    }
 
-    document.getElementById("masterKeyInput").style.display = "none";
-    document.getElementById("masterKeyInput").value = ""; //Clear the inside
-    document.getElementById("confirmMasterKeyBtn").style.display = "none";
-    document.getElementById("cancelMasterKeyBtn").style.display = "none";
-});
-document.getElementById("approveBtn").addEventListener("click", function() {
-    document.getElementById("masterKeyInput").style.display = "block";
-    document.getElementById("confirmMasterKeyBtn").style.display = "block";
-    document.getElementById("cancelMasterKeyBtn").style.display = "block";
 
-    document.getElementById("rejectKeyInput").style.display = "none";
-    document.getElementById("rejectKeyInput").value = ""; //Clear the inside
-    document.getElementById("confirmRejectKeyBtn").style.display = "none";
-    document.getElementById("cancelRejectKeyBtn").style.display = "none";
-});
+    //for master key confirmation
+    document.getElementById("rejectBtn").addEventListener("click", function() {
+        document.getElementById("rejectKeyInput").style.display = "block";
+        document.getElementById("confirmRejectKeyBtn").style.display = "block";
+        document.getElementById("cancelRejectKeyBtn").style.display = "block";
+
+        document.getElementById("masterKeyInput").style.display = "none";
+        document.getElementById("masterKeyInput").value = ""; //Clear the inside
+        document.getElementById("confirmMasterKeyBtn").style.display = "none";
+        document.getElementById("cancelMasterKeyBtn").style.display = "none";
+    });
+    document.getElementById("approveBtn").addEventListener("click", function() {
+        document.getElementById("masterKeyInput").style.display = "block";
+        document.getElementById("confirmMasterKeyBtn").style.display = "block";
+        document.getElementById("cancelMasterKeyBtn").style.display = "block";
+
+        document.getElementById("rejectKeyInput").style.display = "none";
+        document.getElementById("rejectKeyInput").value = ""; //Clear the inside
+        document.getElementById("confirmRejectKeyBtn").style.display = "none";
+        document.getElementById("cancelRejectKeyBtn").style.display = "none";
+    });
 
 
 });
@@ -503,74 +595,6 @@ document.getElementById('removeUserBtn').addEventListener('click', async functio
     }
 });
 
-
-
-function createOrUpdateShiftRow(day, start_time, end_time, shiftId = null) {
-    // Create new div element
-    const shiftRow = document.createElement('div');
-    shiftRow.className = 'shift-row-schedule';
-    
-    // Add data attribute if shift ID is provided
-    if (shiftId) {
-        shiftRow.dataset.shiftId = shiftId;
-    }
-    
-    // Create the shift text content
-    const shiftText = document.createTextNode(`${day}: ${start_time} - ${end_time} `);
-    
-    // Create delete button
-    const deleteBtn = document.createElement('button');
-    deleteBtn.className = 'btn btn-link text-secondary p-0 border-0 deleteShiftBtn ms-2';
-    deleteBtn.innerHTML = '<i class="bi bi-trash"></i>';
-    deleteBtn.title = 'Delete';
-    
-    // Add event listener
-    deleteBtn.addEventListener('click', function() {
-        if (confirm('Are you sure you want to delete this shift?')) {
-            shiftRow.remove();
-            // console.log("hello id shioft");
-            if (shiftId) {
-                deleteShiftFromBackend(shiftId);
-            }
-        }
-    });
-    
-    // Append elements
-    shiftRow.appendChild(shiftText);    
-    shiftRow.appendChild(deleteBtn);
-    
-    return shiftRow;
-}
-
-async function deleteShiftFromBackend(shiftId) {
-    try {
-        const response = await fetch('/delete_shift/', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'X-CSRFToken': csrfToken
-            },
-            body: JSON.stringify({
-                'shift_id': shiftId
-            })
-        });
-
-        const data = await response.json();
-        
-        if (!response.ok) {
-            throw new Error(data.error || 'Failed to delete shift');
-        }
-
-        console.log('Success:', data);
-        alert(`Shift deleted successfully!`);
-        // Refresh or update your UI here
-        location.reload(); // Or update the table dynamically
-        
-    } catch (error) {
-        console.error('Error:', error);
-        alert(`Error: ${error.message}`);
-    }
-}
 // logActivity("I added activity hehe") = call this to add log activity
 function logActivity(message) {
     fetch('/log_activity/', {  // Your Django URL endpoint
