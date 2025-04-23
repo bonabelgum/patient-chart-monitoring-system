@@ -48,6 +48,20 @@ document.addEventListener("DOMContentLoaded", function () {
     document.querySelector(".back-arrow").addEventListener("click", showSignUpUser);
 });
 
+//bod validation
+document.querySelector('form').addEventListener('submit', function(event) {
+    const birthdateInput = document.getElementById('birthdate');
+    
+    if (!birthdateInput.value) {
+        birthdateInput.classList.add('is-invalid');
+        event.preventDefault(); // Prevent form submission
+        event.stopPropagation();
+    } else {
+        birthdateInput.classList.remove('is-invalid');
+    }
+    
+    birthdateInput.classList.add('was-validated');
+});
 
 //sending data 
 document.addEventListener("DOMContentLoaded", function () {
