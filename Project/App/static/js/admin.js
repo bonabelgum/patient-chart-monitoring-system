@@ -195,7 +195,7 @@ document.addEventListener('DOMContentLoaded', function() {
         //create a new schedule row
         let newShift = document.createElement("div");
         newShift.classList.add("shift-row");
-    
+
         newShift.innerHTML = `
             <select class="form-select form-select-sm shift-day">
                 <option value="Monday">Monday</option>
@@ -216,13 +216,13 @@ document.addEventListener('DOMContentLoaded', function() {
         
         //appending the new shift row above the button
         shiftContainer.appendChild(newShift);
-    
+
         //handle saving the schedule
         newShift.querySelector(".saveShiftBtn").addEventListener("click", function () {
             let selectedDay = newShift.querySelector(".shift-day")?.value;
             let start_time = newShift.querySelector(".shift-from")?.value;
             let end_time = newShift.querySelector(".shift-to")?.value;
-    
+
             //validate input fields
             if (!selectedDay || !start_time || !end_time) {
                 alert("Please fill in all fields.");
@@ -236,16 +236,22 @@ document.addEventListener('DOMContentLoaded', function() {
                     <button class="btn btn-link text-warning p-0 border-0 otBtn" title="Overtime" style="min-width: 24px; width: 24px; padding: 0;">
                         <i class="bi bi-clock-history"></i>
                     </button>
+                    <div class="ot-controls ms-1" style="display: none;">
+                        <input type="number" class="form-control form-control-sm ot-hours" value="1" min="-24" max="24" style="width: 60px; display: inline-block;">
+                        <button class="btn btn-link text-success p-0 border-0 confirmOtBtn ms-1" title="Confirm" style="min-width: 24px; width: 24px; padding: 0;">
+                            <i class="bi bi-check"></i>
+                        </button>
+                    </div>
                     <button class="btn btn-link text-secondary p-0 border-0 deleteShiftBtn ms-1" title="Delete" style="display: none; min-width: 24px; width: 24px; padding: 0;">
                         <i class="bi bi-trash"></i>
                     </button>
                 </div>
                 <span class="shift-time ms-2">${selectedDay}: ${start_time} - ${end_time}</span>
             </div>
-`;         
+    `;         
             
             alert("Shift saved!");
-    
+
             // Send POST request
             fetch('/create_shift/', {
                 method: 'POST',
@@ -270,6 +276,28 @@ document.addEventListener('DOMContentLoaded', function() {
                         newShift.remove();
                     }
                 });
+                
+                // Add OT button toggle functionality
+                const otBtn = newShift.querySelector(".otBtn");
+                const otControls = newShift.querySelector(".ot-controls");
+                
+                otBtn.addEventListener("click", function() {
+                    // Toggle visibility of OT controls
+                    if (otControls.style.display === "none") {
+                        otControls.style.display = "block";
+                    } else {
+                        otControls.style.display = "none";
+                    }
+                });
+                
+                // Add confirm OT button functionality
+                const confirmOtBtn = newShift.querySelector(".confirmOtBtn");
+                confirmOtBtn.addEventListener("click", function() {
+                    const otHours = newShift.querySelector(".ot-hours").value;
+                    alert(`Overtime of ${otHours} hours confirmed!`);
+                    otControls.style.display = "none";
+                    // Here you would typically send the OT data to your backend
+                });
             })
             .catch(handleError);
             
@@ -291,7 +319,7 @@ document.addEventListener('DOMContentLoaded', function() {
             newShift.remove();
         });
     });
-    
+
     // TOGGLE DELETE MODE
     let isDeleteMode = false;
     document.getElementById("toggleDeleteBtn").addEventListener("click", function() {
@@ -306,7 +334,7 @@ document.addEventListener('DOMContentLoaded', function() {
             btn.style.display = isDeleteMode ? "block" : "none";
         });
     });
-    
+
     // Function to create shift row (used when loading existing shifts)
     function createOrUpdateShiftRow(day, start_time, end_time, shiftId = null) {
         const shiftRow = document.createElement('div');
@@ -330,6 +358,17 @@ document.addEventListener('DOMContentLoaded', function() {
         otBtn.style.minWidth = '24px'; 
         otBtn.innerHTML = '<i class="bi bi-clock-history"></i>';
         
+        // Create OT controls (initially hidden)
+        const otControls = document.createElement('div');
+        otControls.className = 'ot-controls ms-1';
+        otControls.style.display = 'none';
+        otControls.innerHTML = `
+            <input type="number" class="form-control form-control-sm ot-hours" value="1" min="-24" max="24" style="width: 60px; display: inline-block;">
+            <button class="btn btn-link text-success p-0 border-0 confirmOtBtn ms-1" title="Confirm" style="min-width: 24px; width: 24px; padding: 0;">
+                <i class="bi bi-check"></i>
+            </button>
+        `;
+        
         // Create delete button
         const deleteBtn = document.createElement('button');
         deleteBtn.className = 'btn btn-link text-secondary p-0 border-0 deleteShiftBtn ms-1';
@@ -352,8 +391,27 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         });
         
+        // Add OT button toggle functionality
+        otBtn.addEventListener('click', function() {
+            if (otControls.style.display === 'none') {
+                otControls.style.display = 'block';
+            } else {
+                otControls.style.display = 'none';
+            }
+        });
+        
+        // Add confirm OT button functionality
+        const confirmOtBtn = otControls.querySelector('.confirmOtBtn');
+        confirmOtBtn.addEventListener('click', function() {
+            const otHours = otControls.querySelector('.ot-hours').value;
+            alert(`Overtime of ${otHours} hours confirmed!`);
+            otControls.style.display = 'none';
+            // Here you would typically send the OT data to your backend
+        });
+        
         // Append buttons to container
         buttonContainer.appendChild(otBtn);
+        buttonContainer.appendChild(otControls);
         buttonContainer.appendChild(deleteBtn);
         
         // Build the structure
@@ -363,7 +421,7 @@ document.addEventListener('DOMContentLoaded', function() {
         
         return shiftRow;
     }
-    
+
     // Function to delete shift from backend
     async function deleteShiftFromBackend(shiftId) {
         try {
@@ -377,13 +435,13 @@ document.addEventListener('DOMContentLoaded', function() {
                     'shift_id': shiftId
                 })
             });
-    
+
             const data = await response.json();
             
             if (!response.ok) {
                 throw new Error(data.error || 'Failed to delete shift');
             }
-    
+
             console.log('Success:', data);
             alert(`Shift deleted successfully!`);
             
