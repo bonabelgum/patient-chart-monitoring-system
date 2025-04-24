@@ -1,3 +1,5 @@
+
+
 document.addEventListener('DOMContentLoaded', function() {
     const table = $('#patient').DataTable();  // Initialize DataTable
 
@@ -119,14 +121,14 @@ function addPatientRow(table, patient) {
         patient.id,
         patient.name,
         patient.ward || 'Unassigned',
-        patient.status
+        patient.status,
     ]).draw().node();
 
     // Add custom data attributes
     newRow.dataset.patientId = patient.id;
     newRow.dataset.patientName = patient.full_name;
     newRow.dataset.patientWard = patient.ward;
-    newRow.dataset.patientStatus = "Unknown";
+    newRow.dataset.patientStatus = patient.status;
 
     // Attach click event to this row
     newRow.addEventListener("click", function () {
@@ -197,7 +199,8 @@ document.addEventListener('DOMContentLoaded', function() {
                 birthday: document.getElementById('patientBirthday').value,
                 phone_number: document.getElementById('phone_number_patient').value,
                 status: document.getElementById('patientStatus').value,
-                ward: document.getElementById('patientWard').value
+                ward: document.getElementById('patientWard').value,
+                physician_name: document.getElementById('physicianName').value
             };
             
             fetch('/admit-patient/', {

@@ -4,6 +4,7 @@ document.addEventListener('DOMContentLoaded', function () {
     const patientName = sessionStorage.getItem('data-patient-name');
     const patientWard = sessionStorage.getItem('data-patient-ward');
     const patientStatus = sessionStorage.getItem('data-patient-status');
+    const physicianName= sessionStorage.getItem('data-physician-name');
 
     const urlParams = new URLSearchParams(window.location.search);
     const patientIdParams = urlParams.get('id');
@@ -27,6 +28,7 @@ document.addEventListener('DOMContentLoaded', function () {
             console.log('Patient Birthday:', patient.birthday);
             console.log('Patient Phone Number:', patient.phone_number);
             console.log('Patient QR Code URL:', patient.qr_code);
+            console.log('Attending physician:', patient.physician_name);
             //vs1
             console.log('Allergies:', patient.allergies);
             console.log('Family History:', patient.family_history);
@@ -67,11 +69,11 @@ document.addEventListener('DOMContentLoaded', function () {
             document.getElementById('data-patient-sex-view').textContent = patient.sex;
             document.getElementById('data-patient-sex-edit').value = patient.sex;
     
-            document.getElementById('data-patient-bday-view').textContent = "";
-            document.getElementById('data-patient-bday-edit').value = "";
+            document.getElementById('data-patient-bday-view').textContent = patient.birthday;
+            document.getElementById('data-patient-bday-edit').value = patient.birthday;
     
-            document.getElementById('data-patient-phone-view').textContent = "";
-            document.getElementById('data-patient-phone-edit').value = "";
+            document.getElementById('data-patient-phone-view').textContent = patient.phone_number;
+            document.getElementById('data-patient-phone-edit').value = patient.phone_number;
     
             document.getElementById('data-patient-ward-view').textContent = patient.ward;
             document.getElementById('data-patient-ward-edit').value = patient.ward;
@@ -97,6 +99,7 @@ document.addEventListener('DOMContentLoaded', function () {
         document.getElementById('patient-name').textContent = patientName || 'N/A';
         document.getElementById('patient-ward').textContent = patientWard || 'N/A';
         document.getElementById('patient-status').textContent = patientStatus || 'N/A';
+        document.getElementById('physician-name').textContent = physicianName || 'N/A';
     }
     
     // console.log('patient id ', patientId);

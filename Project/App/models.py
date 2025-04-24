@@ -217,6 +217,7 @@ class PatientInformation(models.Model):
     status = models.CharField(max_length=10, choices=STATUS_CHOICES)
     ward = models.CharField(max_length=20, choices=WARD_CHOICES)
     qr_code = models.ImageField(upload_to='qr_codes', blank=True)
+    physician_name = models.CharField(max_length=100, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
     
     def __str__(self):

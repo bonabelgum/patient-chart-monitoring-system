@@ -75,11 +75,13 @@ def patient_detail(request, patient_id):
     patient_name = request.GET.get('name', 'Unknown')
     patient_ward = request.GET.get('ward', 'Unknown')
     patient_status = request.GET.get('status', 'Unknown')
+    physician_name = request.GET.get('physician_name', 'Unknown')
     context = {
         'patient_id': patient_id,
         'patient_name': patient_name,
         'patient_ward': patient_ward,
         'patient_status': patient_status,
+        'physician_name': physician_name
     }
 
     return render(request, 'main/patient.html', context)
@@ -152,7 +154,8 @@ def admit_patient(request):
                 birthday=data.get('birthday'),
                 phone_number=data.get('phone_number'),
                 status=data.get('status'),
-                ward=data.get('ward')
+                ward=data.get('ward'),
+                physician_name=data.get('physician_name')
             )
 
             qr_code_url = request.build_absolute_uri(patient.qr_code.url)
