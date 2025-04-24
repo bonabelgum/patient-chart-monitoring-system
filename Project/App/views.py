@@ -70,6 +70,7 @@ def get_employees(request):
     return JsonResponse(list(employees), safe=False)
 
 #patient
+#@login_required(login_url='/')
 def patient_detail(request, patient_id):
     #get data from the URL parameters (temporary for now until we use a database here)
     patient_name = request.GET.get('name', 'Unknown')

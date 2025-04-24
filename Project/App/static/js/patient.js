@@ -81,6 +81,9 @@ document.addEventListener('DOMContentLoaded', function () {
             document.getElementById('data-patient-status-view').textContent = patient.status;
             document.getElementById('data-patient-status-edit').value = patient.status;
 
+            document.getElementById('data-physician-name').textContent = patient.physician_name;
+            document.getElementById('data-patient-physician-edit').value = patient.physician_name;
+
     
             // Update other fields as necessary
         } else {

@@ -22,7 +22,7 @@ function initPasswordModal() {
     document.getElementById('confirmAccess').addEventListener('click', function() {
         const password = document.getElementById('accessPassword').value;
         
-        if (password) {
+        if (password) { //get shift password
             const queryParams = new URLSearchParams({
                 id: currentPatientData.id,
                 name: currentPatientData.name || '',
@@ -33,7 +33,7 @@ function initPasswordModal() {
             const modal = bootstrap.Modal.getInstance(document.getElementById('patientPasswordModal'));
             modal.hide();
             
-            window.location.href = `/patient/${currentPatientData.id}/?${queryParams}`;
+            window.location.href = `/patient/${currentPatientData.id}/?${queryParams}`; //redirect
         } else {
             alert('Please enter a password');
         }
@@ -127,7 +127,8 @@ document.addEventListener('DOMContentLoaded', function() {
                         const passwordModal = new bootstrap.Modal(document.getElementById('patientPasswordModal'));
                         passwordModal.show();
                     } else {
-                        alert(`Patient ID ${decodedText} does not exist!`);
+                        //alert(`Patient ID ${decodedText} does not exist!`);
+                        alert(`Patient ID does not exist!`);
                     }
                 });
             });
