@@ -1,7 +1,4 @@
 document.addEventListener('DOMContentLoaded', function () {
-
-    
-
     //retrieve the patient data from sessionStorage
     const patientId = sessionStorage.getItem('data-patient-id');
     const patientName = sessionStorage.getItem('data-patient-name');
@@ -26,6 +23,41 @@ document.addEventListener('DOMContentLoaded', function () {
         
         if (data.status === 'success') {
             const patient = data.patient_data;
+            //--test
+            console.log('Patient Birthday:', patient.birthday);
+            console.log('Patient Phone Number:', patient.phone_number);
+            console.log('Patient QR Code URL:', patient.qr_code);
+            //vs1
+            console.log('Allergies:', patient.allergies);
+            console.log('Family History:', patient.family_history);
+            console.log('Physical Exam:', patient.physical_exam);
+            console.log('Diagnosis:', patient.diagnosis);
+            //vs2
+            console.log('Date/time:', patient.date_and_time);
+            console.log('Temperature:', patient.temperature);
+            console.log('BP:', patient.blood_pressure);
+            console.log('Pulse:', patient.pulse);
+            console.log('Respiration:', patient.respiratory);
+            console.log('Oxygen Saturation:', patient.oxygen);
+            //med
+            console.log('Drug name:', patient.drug_name);
+            console.log('Dose:', patient.dose);
+            console.log('Units:', patient.units);
+            console.log('Frequency:', patient.frequency);
+            console.log('Route:', patient.route);
+            console.log('Duration:', patient.duration);
+            console.log('Quantity:', patient.quantity);
+            console.log('Start Date:', patient.start_date);
+            console.log('Status: ', patient.status);
+            console.log('Diagnostic: ', patient.health_diagnostic);
+            console.log('Pt instructions: ', patient.patient_instructions);
+            console.log('Physician instruction: ', patient.pharmacist_instructions);
+            //notes
+            console.log('Notes:', patient.notes);
+            console.log('Notes:', patient.nurse_id);
+
+            //--
+
             document.getElementById('data-patient-id-view').textContent = patient.id;
             document.getElementById('data-patient-id-edit').value = patient.id;
     

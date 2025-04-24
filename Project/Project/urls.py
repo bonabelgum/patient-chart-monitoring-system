@@ -62,5 +62,6 @@ urlpatterns = [
     path("log_activity/", log_activity, name="log_activity"),
     path('api/schedule/', views.get_schedule_data, name='schedule-data'),
 
-    path('admit-patient/', admit_patient, name='admit_patient'), #storing qr
+    #storing pt details
+    path('admit-patient/', admit_patient, name='admit_patient'), 
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

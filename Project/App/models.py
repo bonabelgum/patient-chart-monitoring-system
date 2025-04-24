@@ -262,3 +262,188 @@ class PatientInformation(models.Model):
 
             # Save ONLY the qr_code field now, so no duplicate insert
             super().save(update_fields=['qr_code'])
+
+
+#vs
+class VitalSigns1(models.Model):
+    patient = models.ForeignKey(
+        PatientInformation,
+        on_delete=models.CASCADE,  # Delete vital signs if patient is deleted
+        related_name='vital_signs'  # Allows querying via patient.vital_signs.all()
+    )
+    allergies = models.TextField(blank=True, null=True)  # Large text for paragraphs
+    family_history = models.TextField(blank=True, null=True)
+    physical_exam = models.TextField(blank=True, null=True)
+    diagnosis = models.TextField(blank=True, null=True)
+    created_at = models.DateTimeField(auto_now_add=True)  # Auto-set on creation
+    updated_at = models.DateTimeField(auto_now=True)      # Auto-updates on save
+
+    def __str__(self):
+        return f"Vitals for {self.patient.name} (ID: {self.patient.id})"
+#vs2
+class VitalSigns2(models.Model):
+    patient = models.ForeignKey(
+        PatientInformation,
+        on_delete=models.CASCADE,  # Delete vitals if patient is deleted
+        related_name='vital_signs2'  # Allows querying via patient.vital_signs2.all()
+    )
+    date_and_time = models.DateTimeField(auto_now_add=True)  # Auto-set on creation
+    temperature = models.DecimalField(
+        max_digits=5, 
+        decimal_places=2,
+        help_text="Temperature in °C (e.g., 36.6)",
+        null=True,
+        blank=True
+    )
+    blood_pressure = models.CharField(
+        max_length=10,
+        help_text="Format: '120/80'",
+        null=True,
+        blank=True
+    )
+    pulse_rate = models.PositiveIntegerField(
+        help_text="Beats per minute (e.g., 72)",
+        null=True,
+        blank=True
+    )
+    respiratory_rate = models.PositiveIntegerField(
+        help_text="Breaths per minute (e.g., 16)",
+        null=True,
+        blank=True
+    )
+    oxygen_saturation = models.DecimalField(
+        max_digits=5,
+        decimal_places=2,
+        help_text="SpO2 percentage (e.g., 98.5)",
+        null=True,
+        blank=True
+    )
+    def __str__(self):
+        return f"Vitals for {self.patient.name} at {self.date_and_time}"
+    class Meta:
+        ordering = ['-date_and_time']  # Newest entries first
+        verbose_name_plural = "Vital Signs 2"  # Human-readable name in admin
+
+#med
+from django.db import models
+from .models import PatientInformation  # Adjust import as needed
+
+class Medication(models.Model):
+    # Status choices (e.g., Active, Completed, Discontinued)
+    STATUS_CHOICES = [
+        ('active', 'Active'),
+        ('completed', 'Completed'),
+        ('inactive', 'Inactive'),
+    ]
+
+    # Route choices (e.g., Oral, IV, Topical)
+    ROUTE_CHOICES = [
+        ('oral', 'Oral'),
+        ('iv', 'Intravenous (IV)'),
+        ('im', 'Intramuscular (IM)'),
+        ('sc', 'Subcutaneous (SC)'),
+        ('topical', 'Topical'),
+        ('inhalation', 'Inhalation'),
+    ]
+
+    # Frequency choices (e.g., Daily, BID, TID)
+    FREQUENCY_CHOICES = [
+        ('daily', 'Once Daily'),
+        ('bid', 'Twice Daily (BID)'),
+        ('tid', 'Three Times Daily (TID)'),
+        ('qid', 'Four Times Daily (QID)'),
+        ('prn', 'As Needed (PRN)'),
+    ]
+
+    # Unit choices (e.g., mg, mL, tablets)
+    UNIT_CHOICES = [
+        ('mg', 'Milligrams (mg)'),
+        ('g', 'Grams (g)'),
+        ('ml', 'Milliliters (mL)'),
+        ('tablet', 'Tablets'),
+        ('capsule', 'Capsules'),
+        ('drop', 'Drops'),
+    ]
+
+    # Patient reference
+    patient = models.ForeignKey(
+        PatientInformation,
+        on_delete=models.CASCADE,
+        related_name='medications'  # Query via patient.medications.all()
+    )
+
+    # Core medication details
+    drug_name = models.CharField(max_length=100)
+    dose = models.DecimalField(max_digits=10, decimal_places=2) 
+    units = models.CharField(max_length=20, choices=UNIT_CHOICES)
+    frequency = models.CharField(max_length=20, choices=FREQUENCY_CHOICES)
+    route = models.CharField(max_length=20, choices=ROUTE_CHOICES)
+    duration = models.PositiveIntegerField(help_text="e.g., '7 days'") #
+    quantity = models.PositiveIntegerField(help_text="Total quantity dispensed")
+    start_date = models.DateField()
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='active')
+
+    # Text fields for notes/instructions
+    health_diagnostics = models.TextField(
+        blank=True, 
+        null=True,
+        help_text="Relevant health conditions for this medication"
+    )
+    patient_instructions = models.TextField(
+        blank=True, 
+        null=True,
+        help_text="Instructions for the patient"
+    )
+    pharmacist_instructions = models.TextField(
+        blank=True, 
+        null=True,
+        help_text="Special instructions for the pharmacist"
+    )
+
+    # Timestamps
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    def __str__(self):
+        return f"{self.drug_name} ({self.dose}{self.units}) for {self.patient.name}"
+
+    class Meta:
+        ordering = ['-start_date']  # Newest medications first
+        verbose_name_plural = "Medications"
+
+#nurse notes
+class NurseNotes(models.Model):
+    patient = models.ForeignKey(
+        PatientInformation,
+        on_delete=models.CASCADE,
+        related_name='nurse_notes',  # Access via patient.nurse_notes.all()
+        verbose_name="Patient"
+    )
+    nurse = models.ForeignKey(
+        'Employee',  # Employee model
+        on_delete=models.SET_NULL,  # Preserve notes even if nurse is deleted
+        null=True,
+        blank=True,
+        related_name='nurse_notes',  # Access via employee.nurse_notes.all()
+        verbose_name="Nurse",
+        to_field='employee_id'  # References Employee.employee_id
+    )
+    notes = models.TextField(
+        verbose_name="Clinical Notes",
+        help_text="Detailed nursing notes (supports paragraphs and formatting)"
+    )
+    date = models.DateTimeField(
+        auto_now_add=True,  # Automatically set on creation
+        verbose_name="Note Date"
+    )
+    last_updated = models.DateTimeField(
+        auto_now=True,  # Updates on every save
+        verbose_name="Last Updated"
+    )
+
+    def __str__(self):
+        return f"Note for {self.patient.name} by Nurse ID {self.nurse.employee_id if self.nurse else 'Unknown'} on {self.date}"
+
+    class Meta:
+        ordering = ['-date']  # Newest notes first
+        verbose_name_plural = "Nurse Notes"

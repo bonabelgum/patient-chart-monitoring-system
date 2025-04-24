@@ -106,6 +106,7 @@ document.addEventListener('DOMContentLoaded', function() {
             //adding shift
             let shiftContainer = document.getElementById("shift-container");
             let addShiftBtn = document.getElementById("addShiftBtn");
+            let toggleDeleteBtn = document.getElementById("toggleDeleteBtn");
             let shiftRow = document.getElementById("shift-row"); 
             //dangerzone
             let dangerZone = document.getElementById("dangerZone");
@@ -127,6 +128,7 @@ document.addEventListener('DOMContentLoaded', function() {
             if (position === "admin") {
                 shiftContainer.style.display = "none";
                 addShiftBtn.style.display = "none";
+                toggleDeleteBtn.style.display = "none";
                 shiftRow.style.display = "none";
             } else {
                 shiftRow.style.display = "block";
@@ -134,10 +136,12 @@ document.addEventListener('DOMContentLoaded', function() {
                 if (status === "Registered") {
                     shiftContainer.style.display = "block";
                     addShiftBtn.style.display = "block";
+                    toggleDeleteBtn.style.display = "block";
                 }
                 else {
                     shiftContainer.style.display = "none";
                     addShiftBtn.style.display = "none";
+                    toggleDeleteBtn.style.display = "none";
                 }
             }
 
@@ -453,6 +457,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
 
     //for master key confirmation
+
     document.getElementById("rejectBtn").addEventListener("click", function() {
         document.getElementById("rejectKeyInput").style.display = "block";
         document.getElementById("confirmRejectKeyBtn").style.display = "block";
