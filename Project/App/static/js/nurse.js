@@ -1,5 +1,54 @@
+let currentPatientData = null;
+// Initialize modal event listeners once
+function initPasswordModal() {
+    document.getElementById('patientPasswordModal').addEventListener('show.bs.modal', () => {
+        const modal = document.getElementById('patientPasswordModal');
+        modal.removeAttribute('aria-hidden');
+        modal.removeAttribute('inert');
+        document.getElementById('accessPassword').value = '';
+        setTimeout(() => document.getElementById('accessPassword').focus(), 10);
+    });
+    
+    document.getElementById('patientPasswordModal').addEventListener('hide.bs.modal', () => {
+        document.activeElement.blur();
+    });
+    
+    document.getElementById('patientPasswordModal').addEventListener('hidden.bs.modal', () => {
+        const modal = document.getElementById('patientPasswordModal');
+        modal.setAttribute('aria-hidden', 'true');
+        modal.setAttribute('inert', '');
+    });
+    
+    document.getElementById('confirmAccess').addEventListener('click', function() {
+        const password = document.getElementById('accessPassword').value;
+        
+        if (password) {
+            const queryParams = new URLSearchParams({
+                id: currentPatientData.id,
+                name: currentPatientData.name || '',
+                ward: currentPatientData.ward || '',
+                status: currentPatientData.status || ''
+            }).toString();
+
+            const modal = bootstrap.Modal.getInstance(document.getElementById('patientPasswordModal'));
+            modal.hide();
+            
+            window.location.href = `/patient/${currentPatientData.id}/?${queryParams}`;
+        } else {
+            alert('Please enter a password');
+        }
+    });
+    
+    document.getElementById('accessPassword').addEventListener('keypress', function(e) {
+        if (e.key === 'Enter') {
+            document.getElementById('confirmAccess').click();
+        }
+    });
+}
+initPasswordModal()
 
 
+///---
 document.addEventListener('DOMContentLoaded', function() {
     const table = $('#patient').DataTable();  // Initialize DataTable
 
@@ -15,26 +64,6 @@ document.addEventListener('DOMContentLoaded', function() {
             console.error("Error fetching patients:", error);
         });
 
-    // //click event listener for table rows
-    // document.querySelectorAll('#patient tbody tr').forEach(function(row) {
-    //     row.addEventListener('click', function() {
-    //          //retrieve the patient data from the row's data attributes
-    //          const patientId = row.getAttribute('data-patient-id');
-    //          const patientName = row.getAttribute('data-patient-name');
-    //          const patientWard = row.getAttribute('data-patient-ward');
-    //          const patientStatus = row.getAttribute('data-patient-status');
-    //         console.log(patientId +" "+ patientName);
-    //         //  console.log(patientId, patientName, patientWard, patientStatus);
- 
-    //          const queryParams = new URLSearchParams({  
-    //             name: patientName,
-    //             ward: patientWard,
-    //             status: patientStatus
-    //         }).toString();
-    //         window.location.href = `/patient/${patientId}/?${queryParams}`;
-            
-    //     });
-    // });
     //admitting patient
     // Initialize modal with proper focus control
     const patientModal = new bootstrap.Modal('#patientModal', {
@@ -76,31 +105,33 @@ document.addEventListener('DOMContentLoaded', function() {
                     fps: 10, 
                     qrbox: 250 
                 },
-                /* verbose= */ false
+                false
             );
             
             html5QrcodeScanner.render((decodedText, decodedResult) => {
-                // Successfully scanned
-                // alert(`Scanned: ${decodedText}`);
                 html5QrcodeScanner.clear();
                 qrReader.style.display = 'none';
                 scanButton.textContent = 'Scan QR Code';
-                PatientExist = checkPatient(decodedText);
-                checkPatient(decodedText).then(PatientExist => {
-                    console.log("Value of PatientExist:", PatientExist);
-                    if (PatientExist) {
-                        console.log("Scanned:", decodedText);
-                        const queryParams = new URLSearchParams({
-                            id: decodedText,
-                        }).toString();
                 
-                        window.location.href = `/patient/${decodedText}/?${queryParams}`;
+                checkPatient(decodedText).then(PatientExist => {
+                    if (PatientExist) {
+                        // Store the patient data (you might want to get more details here)
+                        currentPatientData = {
+                            id: decodedText,
+                            name: '', // You might want to fetch these details
+                            ward: '',
+                            status: ''
+                        };
+                        
+                        // Show the same password modal
+                        const passwordModal = new bootstrap.Modal(document.getElementById('patientPasswordModal'));
+                        passwordModal.show();
+                    } else {
+                        alert(`Patient ID ${decodedText} does not exist!`);
                     }
                 });
-                
             });
             
-            // Store scanner instance so we can stop it later
             scanButton.scanner = html5QrcodeScanner;
         } else {
             // Stop scanning
@@ -124,29 +155,21 @@ function addPatientRow(table, patient) {
         patient.status,
     ]).draw().node();
 
-    // Add custom data attributes
     newRow.dataset.patientId = patient.id;
     newRow.dataset.patientName = patient.full_name;
     newRow.dataset.patientWard = patient.ward;
     newRow.dataset.patientStatus = patient.status;
 
-    // Attach click event to this row
-    newRow.addEventListener("click", function () {
-        const patientId = this.dataset.patientId;
-        const patientName = this.dataset.patientName;
-        const patientWard = this.dataset.patientWard;
-        const patientStatus = this.dataset.patientStatus;
-
-        // console.log(`${patientId} ${patientName}`);
-
-        const queryParams = new URLSearchParams({
-            id: patientId,
-            name: patientName,
-            ward: patientWard,
-            status: patientStatus
-        }).toString();
-
-        window.location.href = `/patient/${patientId}/?${queryParams}`;
+    newRow.addEventListener("click", function() {
+        currentPatientData = {
+            id: this.dataset.patientId,
+            name: this.dataset.patientName,
+            ward: this.dataset.patientWard,
+            status: this.dataset.patientStatus
+        };
+    
+        const passwordModal = new bootstrap.Modal(document.getElementById('patientPasswordModal'));
+        passwordModal.show();
     });
 }
 

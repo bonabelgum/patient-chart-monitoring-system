@@ -241,10 +241,10 @@ class PatientInformation(models.Model):
 
         if is_new or not self.qr_code:  # Only generate if it's new or QR is missing
             qr = qrcode.QRCode(
-                version=1,
+                version=None,
                 error_correction=qrcode.constants.ERROR_CORRECT_H,
-                box_size=8,
-                border=2,
+                box_size=10,
+                border=4,
             )
 
             qr_data = self.id

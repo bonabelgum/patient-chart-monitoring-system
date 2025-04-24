@@ -155,20 +155,30 @@
                         </tr>
                     </thead>
                     <tbody>
-                        {% comment %} <tr data-patient-id="1" data-patient-name="namepatient" data-patient-ward="None" data-patient-status="Outpatient">
-                            <td>1</td>
-                            <td>Namepatient</td>
-                            <td>None</td>
-                            <td>Outpatient</td>
-                        </tr>
-                        <tr data-patient-id="2" data-patient-name="namepatient2" data-patient-ward="ICU" data-patient-status="Inpatient">
-                            <td>2</td>
-                            <td>namepatient2</td>
-                            <td>ICU</td>
-                            <td>Inpatient</td> {% endcomment %}
                         </tr>
                     </tbody>
                 </table>
+            </div>
+
+            <!-- Password Confirmation Modal -->
+            <div class="modal fade" id="patientPasswordModal" tabindex="-1" aria-labelledby="passwordModalLabel" aria-hidden="true" data-bs-backdrop="static">
+                <div class="modal-dialog">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h5 class="modal-title" id="passwordModalLabel">Access Patient Record</h5>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                        </div>
+                        <div class="modal-body">
+                            <div class="mb-3">
+                                <label for="accessPassword" class="form-label">Enter Shift Password:</label>
+                                <input type="password" class="form-control" id="accessPassword" placeholder="Password">
+                            </div>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-primary" id="confirmAccess">Confirm</button>
+                        </div>
+                    </div>
+                </div>
             </div>
 
             <!-- Logs Tab Content -->
