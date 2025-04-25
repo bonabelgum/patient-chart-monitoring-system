@@ -6,6 +6,7 @@ from django.shortcuts import redirect
 from django.contrib.auth.models import User  
 from django.contrib.auth import authenticate, login, logout
 from django.urls import reverse
+from cryptography.fernet import Fernet
 
 
 
@@ -15,6 +16,17 @@ from django.utils.timezone import localtime, now
 # print("Helllo worllldd")
 
 
+def decrypt_string(encrypted_text: str) -> str:
+    """Decrypts a Fernet-encrypted string"""
+    try:
+        fernet_key = os.environ.get('FERNET_KEY')
+        f = Fernet(fernet_key.encode())
+        decrypted_data = f.decrypt(encrypted_text.encode())
+        return decrypted_data.decode()
+    except Exception as e:
+        print(f"Decryption failed: {str(e)}")
+        return None
+
 
 def send_login_otp(email):
     """Send OTP to the provided email."""
@@ -22,6 +34,19 @@ def send_login_otp(email):
     cache.set(email, otp, timeout=300)  # Store OTP for 5 minutes
     subject = "Your OTP Code"
     message = f"Your OTP code is: {otp}. Please enter this to login your account."
+    from_email = os.environ.get('EMAIL_HOST_USER')  # Should match the email in settings.py
+
+    send_mail(subject, message, from_email, [email])
+    #print('email sent')    
+    return True
+
+
+def send_nurse_shift_password(email, shift):
+    
+    shift_password = decrypt_string(shift.shift_password)
+    # print("helloo shift "+shift_password)
+    subject = "Your Shift Password"
+    message = f"Your shift password is: {shift_password}. Please enter this when making changes in PCMS."
     from_email = os.environ.get('EMAIL_HOST_USER')  # Should match the email in settings.py
 
     send_mail(subject, message, from_email, [email])
@@ -74,16 +99,16 @@ def handle_request(request):
                     response_data = {"message": "Login successful!", "redirect_url": "admin", "user_id": employee_id}
                 else:
                     is_active = get_active_shift(employee_id)
-                    # print(is_active.start_time)   
+                    # Check if use has active shift
                     if is_active is None:
                         # print("No active shift found for employee")
                         return JsonResponse({'error': 'No active shift'}, status=400)
-
-                    # print(f"Employee is working now until {is_active.end_time}")
+                    
                     # Log the user in
                     login(request, user)  # ✅ Store user session
                     # Start the thread to keep checking if sched is finished
-                    nurse_id = employee_id  # Replace with actual ID
+                    send_nurse_shift_password(employee.email, is_active)
+                    nurse_id = employee_id  
                     thread = threading.Thread(target=check_shift, args=(request,), daemon=True)
                     thread.start()
                     Admin_logs.add_log_activity("Nurse: "+employee.name+" Logged In")
