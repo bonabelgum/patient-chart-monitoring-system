@@ -2,15 +2,27 @@ import json
 from django.http import JsonResponse
 from django.utils import timezone  # ✅ this one
 import random
-from .models import PatientInformation
+from .models import PatientInformation, Shift_schedule
+import time
+import threading
+
 
 
 # print("hello nurse")
 
-
+# nurse_id =  ""
 def get_patients(request):
+    # global nurse_id 
     patients = PatientInformation.objects.all()
     patient_list = []
+    nurse_id = request.session['user_id']
+    # print(nurse_id)
+    nurse_shift = Shift_schedule.get_nearest_shift_by_employee_id(nurse_id)
+    # if nurse_shift:
+    #     print(nurse_shift)
+    # else:
+    #     print("No shift found for today.")
+    
 
     for patient in patients:
         patient_list.append({
@@ -23,6 +35,8 @@ def get_patients(request):
             'ward': patient.get_ward_display(),  # Human-readable ward using choices
             'qr_code': patient.qr_code.url if patient.qr_code else None,  # QR code URL or None
             'created_at': patient.created_at.strftime("%Y-%m-%d %H:%M"),  # Timestamp formatted
+            'end_time': nurse_shift.end_time,
+            
         })
     return JsonResponse({'patients': patient_list})
 
@@ -48,7 +62,18 @@ def check_patient_id(request):
 
 
 
+# def check_every_minute():
+#     print(nurse_id)
+    
+    
+#     while True:
+#         print("Running task...")
+#         # Place your logic here
+#         time.sleep(60)  # Wait for 60 seconds
 
+# # Start in background
+# thread = threading.Thread(target=check_every_minute, daemon=True)
+# thread.start()
 
 
 

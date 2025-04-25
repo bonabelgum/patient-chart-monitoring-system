@@ -12,6 +12,9 @@ from django.core.files import File
 from PIL import Image
 import uuid
 
+from django.utils.timezone import localtime, now
+from datetime import timedelta
+
 
 
 class Employee(models.Model): 
@@ -153,6 +156,21 @@ class Shift_schedule(models.Model):
         return cls.objects.filter(employee__employee_id=employee_id)
     
     @classmethod
+    def get_nearest_shift_by_employee_id(cls, employee_id):
+        today = localtime(now()).isoweekday()  # 1 (Monday) to 7 (Sunday)
+        
+        for i in range(7):  # Check today + next 6 days
+            day_to_check = (today + i - 1) % 7 + 1  # Ensures it loops 1-7
+            shift = cls.objects.filter(
+                employee__employee_id=employee_id,
+                day=day_to_check
+            ).order_by('start_time').first()
+            if shift:
+                return shift
+
+        return None
+    
+    @classmethod
     def delete_shift_by_id(cls, shift_id):
         """Delete a single shift by its ID (primary key)"""
         try:
@@ -162,30 +180,46 @@ class Shift_schedule(models.Model):
             # Log the error if needed
             print(f"Error deleting shift: {e}")
             return 0
+    
+    @classmethod
+    def delete_shift(cls, shift_id):
+        try:
+            shift = cls.objects.get(id=shift_id)
+            shift.delete()
+            return True, f"Shift {shift_id} deleted successfully"
+        except cls.DoesNotExist:
+            return False, f"Shift with ID {shift_id} does not exist"
+        except Exception as e:
+            return False, f"Error deleting shift: {str(e)}"
+        
+        
         
 class Admin_logs(models.Model):
+    # Stores as UTC (correct for database), displays as local time
     date_time = models.DateTimeField(default=timezone.now)
     activity = models.TextField()
 
     def __str__(self):
-        return f"[{self.date_time}] {self.activity}"
+        # Convert to Philippine time before display
+        ph_time = localtime(self.date_time)
+        return f"[{ph_time.strftime('%Y-%m-%d %H:%M:%S %Z')}] {self.activity}"
 
     @classmethod
     def add_log_activity(cls, activity_message):
-        """Class method to quickly create a new log entry."""
+        """Creates log with automatic UTC timestamp"""
         return cls.objects.create(activity=activity_message)
     
     @classmethod
     def get_all_logs(cls):
-        """Class method to return all logs as a list of dicts."""
+        """Returns all logs converted to Philippine time"""
         return [
             {
-                'date_time': log.date_time.strftime('%Y-%m-%d %H:%M:%S'),
-                'activity': log.activity
+                'date_time': localtime(log.date_time).strftime('%Y-%m-%d %H:%M:%S'),
+                'activity': log.activity,
+                'timezone': 'Asia/Manila'  # Explicitly state the timezone
             }
             for log in cls.objects.all().order_by('-date_time')
-        ] 
-
+        ]
 #storing with qr
 class PatientInformation(models.Model):
     STATUS_CHOICES = [
