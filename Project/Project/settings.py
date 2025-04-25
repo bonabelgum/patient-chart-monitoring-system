@@ -35,9 +35,8 @@ SECRET_KEY = 'django-insecure-!#o5g*stc)^mmk^ds1&9#2qo=bpi7j+fjfr7*ki#==105!7&+*
 
 SESSION_ENGINE = "django.contrib.sessions.backends.db"  # ✅ Default session engine
 SESSION_EXPIRE_AT_BROWSER_CLOSE = True
-SESSION_COOKIE_AGE = 1800  # 30 minutes (in seconds)
+SESSION_COOKIE_AGE = 1800  # 30 minutes (in seconds) of inactivity = logout
 SESSION_SAVE_EVERY_REQUEST = True  # Reset session expiry with every request
-
 
 
 
@@ -151,7 +150,8 @@ AUTH_PASSWORD_VALIDATORS = [
 
 LANGUAGE_CODE = 'en-us'
 
-TIME_ZONE = 'UTC'
+TIME_ZONE = 'Asia/Manila'
+USE_TZ = True
 
 USE_I18N = True
 

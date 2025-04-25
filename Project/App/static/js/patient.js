@@ -1,3 +1,5 @@
+let schedule_end_time = null
+
 document.addEventListener('DOMContentLoaded', function () {
     //retrieve the patient data from sessionStorage
     const patientId = sessionStorage.getItem('data-patient-id');
@@ -8,6 +10,8 @@ document.addEventListener('DOMContentLoaded', function () {
 
     const urlParams = new URLSearchParams(window.location.search);
     const patientIdParams = urlParams.get('id');
+    const schedule_end_time = urlParams.get('end_time');
+    console.log(schedule_end_time);
     fetch('/api/receive_data/', {
         method: 'POST',
         headers: {

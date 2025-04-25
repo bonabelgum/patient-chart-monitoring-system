@@ -1,4 +1,7 @@
 let currentPatientData = null;
+let end_time_schedule = null;
+
+
 // Initialize modal event listeners once
 function initPasswordModal() {
     document.getElementById('patientPasswordModal').addEventListener('show.bs.modal', () => {
@@ -58,7 +61,9 @@ document.addEventListener('DOMContentLoaded', function() {
             console.log(data);
             data.patients.forEach(patient => {
                 addPatientRow(table, patient);
+                end_time_schedule = patient.end_time
             });
+            
         })
         .catch(error => {
             console.error("Error fetching patients:", error);
@@ -156,6 +161,7 @@ function addPatientRow(table, patient) {
         patient.status,
     ]).draw().node();
 
+    console.log(patient.end_time);
     newRow.dataset.patientId = patient.id;
     newRow.dataset.patientName = patient.full_name;
     newRow.dataset.patientWard = patient.ward;
@@ -168,9 +174,19 @@ function addPatientRow(table, patient) {
             ward: this.dataset.patientWard,
             status: this.dataset.patientStatus
         };
+
+        
+        const queryParams = new URLSearchParams({
+            id: currentPatientData.id,
+            name: currentPatientData.name || '',
+            ward: currentPatientData.ward || '',
+            status: currentPatientData.status || '',
+            end_time: patient.end_time || ''
+        }).toString();
+        window.location.href = `/patient/${currentPatientData.id}/?${queryParams}`; //redirect
     
-        const passwordModal = new bootstrap.Modal(document.getElementById('patientPasswordModal'));
-        passwordModal.show();
+        // const passwordModal = new bootstrap.Modal(document.getElementById('patientPasswordModal'));
+        // passwordModal.show();
     });
 }
 
@@ -343,3 +359,29 @@ document.addEventListener("DOMContentLoaded", function () {
         });
     });
 });
+
+// Poll the server periodically instead of relying on long-running request
+function checkShiftStatus() {
+    fetch('/check_shift/')
+        .then(response => response.json())
+        .then(data => {
+            if (data.session_expired) {
+                alert(data.message);
+                window.location.href = data.redirect;
+            } 
+            else if (data.shift_ended) {
+                alert(data.message);
+                window.location.href = data.redirect;
+            }
+            else {
+                setTimeout(checkShiftStatus, 60000);
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            // setTimeout(checkShiftStatus, 60000);
+        });
+}
+
+// Initial call
+checkShiftStatus();
