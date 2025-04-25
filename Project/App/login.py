@@ -74,16 +74,19 @@ def handle_request(request):
                     response_data = {"message": "Login successful!", "redirect_url": "admin", "user_id": employee_id}
                 else:
                     is_active = get_active_shift(employee_id)
-                    print(is_active.start_time)
-                    if is_active:
-                        print(f"Employee is working now until {is_active.end_time}")
-                        # Log the user in
-                        login(request, user)  # ✅ Store user session
-                        # Start the thread to keep checking if sched is finished
-                        nurse_id = employee_id  # Replace with actual ID
-                        thread = threading.Thread(target=check_shift, args=(request,), daemon=True)
-                        thread.start()
-                        Admin_logs.add_log_activity("Nurse: "+employee.name+" Logged In")
+                    # print(is_active.start_time)   
+                    if is_active is None:
+                        # print("No active shift found for employee")
+                        return JsonResponse({'error': 'No active shift'}, status=400)
+
+                    # print(f"Employee is working now until {is_active.end_time}")
+                    # Log the user in
+                    login(request, user)  # ✅ Store user session
+                    # Start the thread to keep checking if sched is finished
+                    nurse_id = employee_id  # Replace with actual ID
+                    thread = threading.Thread(target=check_shift, args=(request,), daemon=True)
+                    thread.start()
+                    Admin_logs.add_log_activity("Nurse: "+employee.name+" Logged In")
                     
                     
                     response_data = {"message": "Login successful!", "redirect_url": "nurse", "user_id": employee_id}
