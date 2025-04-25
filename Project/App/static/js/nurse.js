@@ -175,7 +175,6 @@ function addPatientRow(table, patient) {
             status: this.dataset.patientStatus
         };
 
-        
         const queryParams = new URLSearchParams({
             id: currentPatientData.id,
             name: currentPatientData.name || '',
@@ -183,10 +182,10 @@ function addPatientRow(table, patient) {
             status: currentPatientData.status || '',
             end_time: patient.end_time || ''
         }).toString();
-        window.location.href = `/patient/${currentPatientData.id}/?${queryParams}`; //redirect
+        //window.location.href = `/patient/${currentPatientData.id}/?${queryParams}`; //redirect
     
-        // const passwordModal = new bootstrap.Modal(document.getElementById('patientPasswordModal'));
-        // passwordModal.show();
+        const passwordModal = new bootstrap.Modal(document.getElementById('patientPasswordModal'));
+        passwordModal.show();
     });
 }
 

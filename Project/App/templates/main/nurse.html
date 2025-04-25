@@ -160,7 +160,7 @@
                 </table>
             </div>
 
-            <!-- Password Confirmation Modal -->
+            <!-- Password Confirmation Modal before going to pt page-->
             <div class="modal fade" id="patientPasswordModal" tabindex="-1" aria-labelledby="passwordModalLabel" aria-hidden="true" data-bs-backdrop="static">
                 <div class="modal-dialog">
                     <div class="modal-content">
@@ -176,6 +176,27 @@
                         </div>
                         <div class="modal-footer">
                             <button type="button" class="btn btn-primary" id="confirmAccess">Confirm</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Password Confirmation Modal for updating and deleting -->
+            <div class="modal fade" id="patientDetailModal" tabindex="-1" aria-labelledby="patientDetailModalLabel" aria-hidden="true" data-bs-backdrop="static">
+                <div class="modal-dialog">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h5 class="modal-title" id="patientDetailLabel">Access Patient Record</h5>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                        </div>
+                        <div class="modal-body">
+                            <div class="mb-3">
+                                <label for="accessShiftPassword" class="form-label">Enter Shift Password:</label>
+                                <input type="password" class="form-control" id="accessShiftPassword" placeholder="Password">
+                            </div>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-primary" id="confirmData">Confirm</button>
                         </div>
                     </div>
                 </div>
