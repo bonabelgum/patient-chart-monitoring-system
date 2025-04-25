@@ -4,7 +4,7 @@ document.addEventListener('DOMContentLoaded', function () {
     const patientName = sessionStorage.getItem('data-patient-name');
     const patientWard = sessionStorage.getItem('data-patient-ward');
     const patientStatus = sessionStorage.getItem('data-patient-status');
-    const physicianName= sessionStorage.getItem('data-physician-name');
+    const physicianName= sessionStorage.getItem('data-physician-name-view');
 
     const urlParams = new URLSearchParams(window.location.search);
     const patientIdParams = urlParams.get('id');
@@ -24,7 +24,7 @@ document.addEventListener('DOMContentLoaded', function () {
         
         if (data.status === 'success') {
             const patient = data.patient_data;
-            //--test
+            /*--test---
             console.log('Patient Birthday:', patient.birthday);
             console.log('Patient Phone Number:', patient.phone_number);
             console.log('Patient QR Code URL:', patient.qr_code);
@@ -35,12 +35,13 @@ document.addEventListener('DOMContentLoaded', function () {
             console.log('Physical Exam:', patient.physical_exam);
             console.log('Diagnosis:', patient.diagnosis);
             //vs2
-            console.log('Date/time:', patient.date_and_time);
+            /*console.log('Date/time:', patient.date_and_time);
             console.log('Temperature:', patient.temperature);
             console.log('BP:', patient.blood_pressure);
             console.log('Pulse:', patient.pulse);
             console.log('Respiration:', patient.respiratory);
-            console.log('Oxygen Saturation:', patient.oxygen);
+            console.log('Oxygen Saturation:', patient.oxygen);*
+            console.log('VS: ', data.vitals_data);
             //med
             console.log('Drug name:', patient.drug_name);
             console.log('Dose:', patient.dose);
@@ -56,9 +57,10 @@ document.addEventListener('DOMContentLoaded', function () {
             console.log('Physician instruction: ', patient.pharmacist_instructions);
             //notes
             console.log('Notes:', patient.notes);
-            console.log('Notes:', patient.nurse_id);
+            console.log('Notes:', patient.nurse_id);*/
+            //--end of test--
 
-            //--
+            //--tab1--
 
             document.getElementById('data-patient-id-view').textContent = patient.id;
             document.getElementById('data-patient-id-edit').value = patient.id;
@@ -78,14 +80,83 @@ document.addEventListener('DOMContentLoaded', function () {
             document.getElementById('data-patient-ward-view').textContent = patient.ward;
             document.getElementById('data-patient-ward-edit').value = patient.ward;
     
-            document.getElementById('data-patient-status-view').textContent = patient.status;
-            document.getElementById('data-patient-status-edit').value = patient.status;
+            document.getElementById('data-patient-status-view').textContent = patient.pt_status;
+            document.getElementById('data-patient-status-edit').value = patient.pt_status;
 
-            document.getElementById('data-physician-name').textContent = patient.physician_name;
+            document.getElementById('data-physician-name-view').textContent = patient.physician_name;
             document.getElementById('data-patient-physician-edit').value = patient.physician_name;
+            //--end of tab1--
 
-    
-            // Update other fields as necessary
+            //--tab2--
+
+            document.getElementById('data-patient-name-view1').textContent = patient.name;
+            document.getElementById('data-patient-name-edit1').value = patient.name;
+
+            document.getElementById('data-patient-allergies-view').textContent = patient.allergies;
+            document.getElementById('data-patient-allergies-edit').value = patient.allergies;
+
+            document.getElementById('data-patient-family-history-view').textContent = patient.family_history;
+            document.getElementById('data-patient-family-history-edit').value = patient.family_history;
+
+            document.getElementById('data-patient-physical-exam-view').textContent = patient.family_history;
+            document.getElementById('data-patient-physical-exam-edit').value = patient.family_history;
+
+            document.getElementById('data-patient-diagnosis-view').textContent = patient.diagnosis
+            document.getElementById('data-patient-diagnosis-edit').value = patient.diagnosis;
+            //--end of tab2--
+
+            // ----VITALS TABLE -----
+            if (data.vitals_data) {
+                console.log('Raw VS Data:', data.vitals_data);
+                
+                // 1. Transform data
+                const tableData = data.vitals_data.map(vs => ({
+                    datetime: vs.datetime || vs.date_and_time || '',
+                    temperature: vs.temperature || vs.temp || '',
+                    blood_pressure: vs.blood_pressure || vs.bp || '',
+                    pulse: vs.pulse || vs.pulse_rate || '',
+                    respiratory: vs.respiratory || vs.respiratory_rate || '',
+                    oxygen: vs.oxygen || vs.oxygen_saturation || '',
+                    id: vs.id || Date.now() + Math.random() // ensure unique ID
+                }));
+                
+                console.log('Processed Table Data:', tableData);
+                
+                // 2. Clear existing server-rendered rows
+                $('#vitals-table tbody').empty();
+                
+                // 3. Initialize or refresh table
+                if ($('#vitals-table').data('bootstrap.table')) {
+                    $('#vitals-table').bootstrapTable('load', tableData);
+                } else {
+                    $('#vitals-table').bootstrapTable({
+                        data: tableData,
+                        columns: [
+                            { field: 'datetime', title: 'Date and time', sortable: true },
+                            { field: 'temperature', title: 'Temperature', sortable: true },
+                            { field: 'blood_pressure', title: 'Blood pressure', sortable: true },
+                            { field: 'pulse', title: 'Pulse rate', sortable: true },
+                            { field: 'respiratory', title: 'Respiratory rate', sortable: true },
+                            { field: 'oxygen', title: 'Oxygen saturation', sortable: true }
+                        ]
+                    });
+                }
+                
+                // 4. Add row selection
+                $('#vitals-table').on('click-row.bs.table', function(e, row, $element) {
+                    $('#vitals-table tbody tr').removeClass('table-primary');
+                    $element.addClass('table-primary');
+                    $('#edit-vitals-btn').prop('disabled', false);
+                    $('#delete-vitals-btn').prop('disabled', false);
+                    window.selectedVitalsId = row.id;
+                });
+                
+            } else {
+                console.warn('No vitals data received');
+                $('#vitals-table').bootstrapTable(); // Initialize empty table
+            }
+            // ---- END OF VITALS TABLE SECTION ----
+
         } else {
             alert('Error: ' + data.error);
         }
@@ -157,6 +228,7 @@ document.addEventListener('DOMContentLoaded', function () {
             const editedBday = patientTab.querySelector('#data-patient-bday-edit').value;
             const editedWard = patientTab.querySelector('#data-patient-ward-edit').value;
             const editedStatus = patientTab.querySelector('#data-patient-status-edit').value;
+            const editedPhysician = patientTab.querySelector('#data-patient-physician-edit').value;
             
             // Get phone number
             let editedPhone = '';
@@ -173,6 +245,7 @@ document.addEventListener('DOMContentLoaded', function () {
             patientTab.querySelector('#data-patient-phone-view').textContent = editedPhone;
             patientTab.querySelector('#data-patient-ward-view').textContent = editedWard;
             patientTab.querySelector('#data-patient-status-view').textContent = editedStatus;
+            patientTab.querySelector('#data-physician-name-view').textContent = editedPhysician;
             
             exitPatientEditMode();
         });
@@ -228,7 +301,7 @@ document.addEventListener('DOMContentLoaded', function() {
             
             // Store original values
             originalValues = {
-                name: vitalsTab.querySelector('#data-patient-name-view').textContent,
+                name: vitalsTab.querySelector('#data-patient-name-view1').textContent,
                 allergies: vitalsTab.querySelector('#data-patient-allergies-view').textContent,
                 familyHistory: vitalsTab.querySelector('#data-patient-family-history-view').textContent,
                 physicalExam: vitalsTab.querySelector('#data-patient-physical-exam-view').textContent,
@@ -259,8 +332,8 @@ document.addEventListener('DOMContentLoaded', function() {
             const vitalsTab = document.getElementById('vitals');
             
             // Update view with edited values
-            vitalsTab.querySelector('#data-patient-name-view').textContent = 
-                vitalsTab.querySelector('#data-patient-name-edit').value;   
+            vitalsTab.querySelector('#data-patient-name-view1').textContent = 
+                vitalsTab.querySelector('#data-patient-name-edit1').value;   
             vitalsTab.querySelector('#data-patient-allergies-view').textContent = 
                 vitalsTab.querySelector('#data-patient-allergies-edit').value;  
             vitalsTab.querySelector('#data-patient-family-history-view').textContent = 
@@ -279,7 +352,7 @@ document.addEventListener('DOMContentLoaded', function() {
             const vitalsTab = document.getElementById('vitals');
             
             // Restore original values
-            vitalsTab.querySelector('#data-patient-name-edit').value = originalValues.name;
+            vitalsTab.querySelector('#data-patient-name-edit1').value = originalValues.name;
             vitalsTab.querySelector('#data-patient-allergies-edit').value = originalValues.allergies;
             vitalsTab.querySelector('#data-patient-family-history-edit').value = originalValues.familyHistory;
             vitalsTab.querySelector('#data-patient-physical-exam-edit').value = originalValues.physicalExam;
@@ -334,46 +407,10 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 });
 
-//Vitals TABLE
-document.addEventListener('DOMContentLoaded', function() {
-    // Initialize Bootstrap Table
-    $('#vitals-table').bootstrapTable();
-    // Variables to track selected row
-    let selectedVitalsId = null;
-    // Row selection handler
-    $('#vitals-table').on('click-row.bs.table', function(e, row, $element) {
-        // Remove highlight from all rows
-        $('#vitals-table tbody tr').removeClass('table-primary');
-        // Highlight selected row
-        $element.addClass('table-primary');
-        // Enable edit/delete buttons
-        $('#edit-vitals-btn').prop('disabled', false);
-        $('#delete-vitals-btn').prop('disabled', false);
-        // Store selected vitals ID
-        selectedVitalsId = $element.attr('data-vitals-id');
-    });
-    // Edit button handler
-    $('#edit-vitals-btn').click(function() {
-       });
-    // Add new button handler
-    $('#add-vitals-btn').click(function() {
-    });
-    // Delete button handler
-    $('#delete-vitals-btn').click(function() {
-    });
-
-});
-
 //Medication
 document.addEventListener('DOMContentLoaded', function() {
     new DataTable('#active');
     new DataTable('#inactive');
-    
-    // Future functionality to be added here:
-    // - Form submission handling
-    // - Drug order table interactions
-    // - Edit/delete functionality
-    // - Status toggling
 });
 
 //MEMO/NOTES

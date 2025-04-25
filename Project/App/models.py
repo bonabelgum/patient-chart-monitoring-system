@@ -201,7 +201,7 @@ class PatientInformation(models.Model):
     ]
     
     WARD_CHOICES = [
-        ('General', 'General Ward'),
+        ('General Ward', 'General Ward'),
         ('Pediatrics', 'Pediatrics'),
         ('ICU', 'Intensive Care Unit'),
         ('Maternity', 'Maternity Ward'),

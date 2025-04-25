@@ -118,7 +118,7 @@
                         </div>
                         <div class="patient-field">
                             <strong>Attending Physician:</strong>
-                            <span id="data-physician-name"></span>
+                            <span id="data-physician-name-view"></span>
                             <input type="text" id="data-patient-physician-edit" class="form-control d-none">
                         </div>
 
@@ -139,8 +139,8 @@
                                      <!-- Patient Information Section -->
                                     <div>
                                         <strong>Name:</strong>
-                                        <span id="data-patient-name-view">{{ patient_name }}</span>
-                                        <input type="text" id="data-patient-name-edit" value="{{ patient_name }}" class="form-control d-none">
+                                        <span id="data-patient-name-view1">{{ patient_name }}</span>
+                                        <input type="text" id="data-patient-name-edit1" value="{{ patient_name }}" class="form-control d-none">
                                     </div>
                                     <!-- Edit/Save/Cancel Buttons -->
                                     <div class="action-buttons">
@@ -155,29 +155,29 @@
                         <div class="section">
                             <h4>Allergies</h4>
                             <div class="info-item">
-                                <span id="data-patient-allergies-view">None reported</span>
-                                <textarea id="data-patient-allergies-edit" class="form-control d-none">None reported</textarea>
+                                <span id="data-patient-allergies-view"></span>
+                                <textarea id="data-patient-allergies-edit" class="form-control d-none"></textarea>
                             </div>
                         </div>
                         <div class="section">
                             <h4>Family History</h4>
                             <div class="info-item">
-                                <span id="data-patient-family-history-view">Father - Hypertension; Mother - Type 2 Diabetes</span>
-                                <textarea id="data-patient-family-history-edit" class="form-control d-none">Father - Hypertension; Mother - Type 2 Diabetes</textarea>
+                                <span id="data-patient-family-history-view"></span>
+                                <textarea id="data-patient-family-history-edit" class="form-control d-none"></textarea>
                             </div>
                         </div>
                         <div class="section">
                             <h4>Physical Exam</h4>
                             <div class="info-item">
-                                <span id="data-patient-physical-exam-view">Normal</span>
-                                <textarea id="data-patient-physical-exam-edit" class="form-control d-none">Normal</textarea>
+                                <span id="data-patient-physical-exam-view"></span>
+                                <textarea id="data-patient-physical-exam-edit" class="form-control d-none"></textarea>
                             </div>
                         </div>
                         <div class="section">
                             <h4>Diagnosis</h4>
                             <div class="info-item">
-                                <span id="data-patient-diagnosis-view">Essential hypertension</span>
-                                <textarea id="data-patient-diagnosis-edit" class="form-control d-none">Essential hypertension</textarea>
+                                <span id="data-patient-diagnosis-view"></span>
+                                <textarea id="data-patient-diagnosis-edit" class="form-control d-none"></textarea>
                             </div>
                         </div>
                 
@@ -207,7 +207,7 @@
                                     <!-- Action Buttons -->
                                     <div class="action-buttons mt-3">
                                         <button id="add-vitals-btn" class="btn btn-primary">Add New</button>
-                                        <!--button id="edit-vitals-btn" class="btn btn-secondary" disabled>Edit</button-->
+                                        <button id="edit-vitals-btn" class="btn btn-secondary" disabled>Edit</button>
                                         <button id="delete-vitals-btn" class="btn btn-danger" disabled>Delete</button>
                                     </div>
                             </div>
