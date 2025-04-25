@@ -560,3 +560,29 @@ document.addEventListener('DOMContentLoaded', function() {
     // Start the notes system
     initNotesSystem();
 });
+
+// Poll the server periodically instead of relying on long-running request
+function checkShiftStatus() {
+    fetch('/check_shift/')
+        .then(response => response.json())
+        .then(data => {
+            if (data.session_expired) {
+                alert(data.message);
+                window.location.href = data.redirect;
+            } 
+            else if (data.shift_ended) {
+                alert(data.message);
+                window.location.href = data.redirect;
+            }
+            else {
+                setTimeout(checkShiftStatus, 60000);
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            // setTimeout(checkShiftStatus, 60000);
+        });
+}
+
+// Initial call
+checkShiftStatus();
