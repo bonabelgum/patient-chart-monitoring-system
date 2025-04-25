@@ -1,6 +1,7 @@
 from django.contrib import admin
 from django.utils.html import format_html
-from .models import Admin_logs, Employee, PatientInformation, Shift_schedule
+from .models import Admin_logs, Employee, PatientInformation, Shift_schedule, VitalSigns1, VitalSigns2, Medication, NurseNotes
+    
 
 @admin.register(Employee)
 class EmployeeAdmin(admin.ModelAdmin):
@@ -59,3 +60,4 @@ class PatientInformationAdmin(admin.ModelAdmin):
         }),
     )
     readonly_fields = ('created_at', 'id')
+    

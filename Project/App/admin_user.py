@@ -1,9 +1,11 @@
 import json
 import os
+import secrets
 from django.http import JsonResponse
 from django.core.mail import send_mail
 from django.views.decorators.csrf import csrf_exempt
 from django.utils.dateparse import parse_time
+from cryptography.fernet import Fernet
 from .models import  Employee, Shift_schedule, Admin_logs
 
 
@@ -140,15 +142,21 @@ def create_shift(request):
         # Get employee
         nurse_id = request.session.get('confirm_nurse_id')
         employee = Employee.objects.get(employee_id=nurse_id)
+            
+        master_key = secrets.token_hex(4)  # Create a masterkey (16 characters = 8 bytes)
+        ferney_key = os.environ.get('FERNET_KEY')  # Get the Fernet key from .env
+        encrypted_text = encrypt_string(master_key, ferney_key)
 
         # Create shift
         shift = Shift_schedule.objects.create(
             employee=employee,
             day=convert_day_to_number(data['day']),
             start_time=start_time,
-            end_time=end_time
+            end_time=end_time,
+            shift_password=encrypted_text
         )
 
+            
         return JsonResponse({
             'status': 'success',
             'shift': {
@@ -329,3 +337,8 @@ def convert_day_to_number(day_name):
         return 7
     else:
         return None  # or raise an exception for invalid input
+
+# Encrypt a string
+def encrypt_string(text, key):
+    f = Fernet(key)
+    return f.encrypt(text.encode()).decode()  # Encrypt and return as string

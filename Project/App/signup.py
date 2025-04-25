@@ -10,7 +10,7 @@ from django.contrib import messages
 from cryptography.fernet import Fernet
 from .models import Admin_logs, Employee
 
-###
+### 
 
 
 # Encrypt a string
