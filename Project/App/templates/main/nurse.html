@@ -138,7 +138,6 @@
                     </div>
                     <div class="modal-footer">
                         <button type="button" class="btn btn-primary" id="printQrBtn">Print QR Code</button>
-                        <!--button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button-->
                     </div>
                 </div>
                 </div>
@@ -181,27 +180,6 @@
                 </div>
             </div>
 
-            <!-- Password Confirmation Modal for updating and deleting -->
-            <div class="modal fade" id="patientDetailModal" tabindex="-1" aria-labelledby="patientDetailModalLabel" aria-hidden="true" data-bs-backdrop="static">
-                <div class="modal-dialog">
-                    <div class="modal-content">
-                        <div class="modal-header">
-                            <h5 class="modal-title" id="patientDetailLabel">Access Patient Record</h5>
-                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                        </div>
-                        <div class="modal-body">
-                            <div class="mb-3">
-                                <label for="accessShiftPassword" class="form-label">Enter Shift Password:</label>
-                                <input type="password" class="form-control" id="accessShiftPassword" placeholder="Password">
-                            </div>
-                        </div>
-                        <div class="modal-footer">
-                            <button type="button" class="btn btn-primary" id="confirmData">Confirm</button>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
             <!-- Logs Tab Content -->
             <div class="tab-pane fade" id="nurse-logs" role="tabpanel" aria-labelledby="logs-tab">
                 <table id="nurse-logs" class="table table-striped mt-3" style="width:100%">
@@ -223,6 +201,21 @@
                     </tbody>
                 </table>
             </div>
+            <!-- QR Hidden printable content -->
+            <div id="printable-wristband" style="display: none;">
+                <div style="display: flex; width: 100%; font-family: Arial, sans-serif; border: 1px solid #000; padding: 10px;">
+                    <div style="flex: 1; padding: 10px;">
+                        <p style="margin: 5px 0;"><strong>ID:</strong> <span id="print-id"></span></p>
+                        <p style="margin: 5px 0;"><strong>Name:</strong> <span id="print-name"></span></p>
+                        <p style="margin: 5px 0;"><strong>Birthday:</strong> <span id="print-bday"></span></p>
+                        <p style="margin: 5px 0;"><strong>Ward:</strong> <span id="print-ward"></span></p>
+                    </div>
+                    <div style="flex: 1; display: flex; justify-content: center; align-items: center; padding: 10px;">
+                        <img id="print-qr" src="" style="max-width: 150px; height: auto;">
+                    </div>
+                </div>
+            </div>
+            <!-- QR End of Hidden printable content -->
  
         </div>
         </div>

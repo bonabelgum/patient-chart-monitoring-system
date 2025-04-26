@@ -27,7 +27,9 @@ document.addEventListener('DOMContentLoaded', function () {
         console.log('Response from server:', data);
         
         if (data.status === 'success') {
+            //POPULATE
             const patient = data.patient_data;
+            
             /*--test---
             console.log('Patient Birthday:', patient.birthday);
             console.log('Patient Phone Number:', patient.phone_number);
@@ -47,24 +49,22 @@ document.addEventListener('DOMContentLoaded', function () {
             console.log('Oxygen Saturation:', patient.oxygen);*
             console.log('VS: ', data.vitals_data);
             //med
-            console.log('Drug name:', patient.drug_name);
-            console.log('Dose:', patient.dose);
-            console.log('Units:', patient.units);
-            console.log('Frequency:', patient.frequency);
-            console.log('Route:', patient.route);
-            console.log('Duration:', patient.duration);
-            console.log('Quantity:', patient.quantity);
-            console.log('Start Date:', patient.start_date);
-            console.log('Status: ', patient.status);
-            console.log('Diagnostic: ', patient.health_diagnostic);
-            console.log('Pt instructions: ', patient.patient_instructions);
-            console.log('Physician instruction: ', patient.pharmacist_instructions);
+            /*
+            console.log('Meds: ', data.med_data);
             //notes
-            console.log('Notes:', patient.notes);
-            console.log('Notes:', patient.nurse_id);*/
+            console.log('notes: ', data.notes_data);*/
             //--end of test--
 
             //--tab1--
+            // POPULATE QR CODE
+            const qrCodeImg = document.getElementById('patient-qr-code');
+            if (data.patient_data.qr_code) {
+                qrCodeImg.src = data.patient_data.qr_code;
+                qrCodeImg.style.display = 'block';
+            } else {
+                qrCodeImg.style.display = 'none';
+                console.warn('No QR code available for this patient');
+            }
 
             document.getElementById('data-patient-id-view').textContent = patient.id;
             document.getElementById('data-patient-id-edit').value = patient.id;
@@ -90,7 +90,7 @@ document.addEventListener('DOMContentLoaded', function () {
             document.getElementById('data-physician-name-view').textContent = patient.physician_name;
             document.getElementById('data-patient-physician-edit').value = patient.physician_name;
             //--end of tab1--
-
+            
             //--tab2--
 
             document.getElementById('data-patient-name-view1').textContent = patient.name;
@@ -102,17 +102,15 @@ document.addEventListener('DOMContentLoaded', function () {
             document.getElementById('data-patient-family-history-view').textContent = patient.family_history;
             document.getElementById('data-patient-family-history-edit').value = patient.family_history;
 
-            document.getElementById('data-patient-physical-exam-view').textContent = patient.family_history;
-            document.getElementById('data-patient-physical-exam-edit').value = patient.family_history;
+            document.getElementById('data-patient-physical-exam-view').textContent = patient.physical_exam;
+            document.getElementById('data-patient-physical-exam-edit').value = patient.physical_exam;
 
             document.getElementById('data-patient-diagnosis-view').textContent = patient.diagnosis
             document.getElementById('data-patient-diagnosis-edit').value = patient.diagnosis;
-            //--end of tab2--
 
             // ----VITALS TABLE -----
             if (data.vitals_data) {
                 console.log('Raw VS Data:', data.vitals_data);
-                
                 // 1. Transform data
                 const tableData = data.vitals_data.map(vs => ({
                     datetime: vs.datetime || vs.date_and_time || '',
@@ -123,12 +121,9 @@ document.addEventListener('DOMContentLoaded', function () {
                     oxygen: vs.oxygen || vs.oxygen_saturation || '',
                     id: vs.id || Date.now() + Math.random() // ensure unique ID
                 }));
-                
                 console.log('Processed Table Data:', tableData);
-                
                 // 2. Clear existing server-rendered rows
                 $('#vitals-table tbody').empty();
-                
                 // 3. Initialize or refresh table
                 if ($('#vitals-table').data('bootstrap.table')) {
                     $('#vitals-table').bootstrapTable('load', tableData);
@@ -145,21 +140,119 @@ document.addEventListener('DOMContentLoaded', function () {
                         ]
                     });
                 }
-                
-                // 4. Add row selection
+                // 4. Add row click handler to populate modal
                 $('#vitals-table').on('click-row.bs.table', function(e, row, $element) {
+                    // Highlight the selected row
                     $('#vitals-table tbody tr').removeClass('table-primary');
                     $element.addClass('table-primary');
-                    $('#edit-vitals-btn').prop('disabled', false);
-                    $('#delete-vitals-btn').prop('disabled', false);
+                    // Store the selected row ID
                     window.selectedVitalsId = row.id;
+                    // Populate the modal with the row data
+                    populateVitalsModal(row);
+                    // Show the modal
+                    const editModal = new bootstrap.Modal(document.getElementById('editVitalsModal'));
+                    editModal.show();
                 });
-                
+                // Function to populate modal with row data
+                function populateVitalsModal(row) {
+                    // Fill the form fields
+                    $('#edit-vs-temperature').val(row.temperature || '');
+                    $('#edit-vs-bp').val(row.blood_pressure || '');
+                    $('#edit-vs-pulse').val(row.pulse || '');
+                    $('#edit-vs-respiratory').val(row.respiratory || '');
+                    $('#edit-vs-oxygen').val(row.oxygen || '');
+                    // Clear reason and password fields
+                    $('#edit-vs-reason').val('');
+                    $('#edit-vs-password').val('');
+                }
+                // Helper function to format datetime for input[type=datetime-local]
+                function formatDateTimeForInput(datetimeString) {
+                    if (!datetimeString) return '';
+                    // Create a Date object from the string
+                    const date = new Date(datetimeString);
+                    // Format as YYYY-MM-DDTHH:MM
+                    const pad = num => num.toString().padStart(2, '0');    
+                    return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}T${pad(date.getHours())}:${pad(date.getMinutes())}`;
+                }   
             } else {
                 console.warn('No vitals data received');
                 $('#vitals-table').bootstrapTable(); // Initialize empty table
             }
             // ---- END OF VITALS TABLE SECTION ----
+            //--end of tab2--
+
+            //--tab3--
+            document.getElementById('data-patient-name-view2').textContent = patient.name;
+            document.getElementById('data-patient-name-edit2').value = patient.name;
+
+            // Initialize DataTables and store references to them
+            const activeTable = new DataTable('#active');
+            const inactiveTable = new DataTable('#inactive');
+
+            //--med table--
+            if (data.med_data) {
+                // Clear existing data first
+                activeTable.clear();
+                inactiveTable.clear();
+            
+                // Process each medication record
+                data.med_data.forEach(drug => {
+                    // Create the row data array
+                    const rowValues = [
+                        drug.drug_name || '',
+                        drug.dose || '',
+                        drug.units || '',
+                        drug.frequency || '',
+                        drug.quantity || '',
+                        drug.route || ''
+                    ];
+            
+                    // Add to appropriate table based on status
+                    if (drug.status && drug.status.toLowerCase() === 'active') {
+                        const rowNode = activeTable.row.add(rowValues).draw().node();
+                        $(rowNode).data('fullDrugData', drug); // Attach full drug data
+                    } else {
+                        const rowNode = inactiveTable.row.add(rowValues).draw().node();
+                        $(rowNode).data('fullDrugData', drug); // Attach full drug data
+                    }
+                });
+            } else {
+                console.warn('No med_data found in response');
+            }
+            //--end of med table--
+            //--end of tab3--
+
+            //--tab4--
+            document.getElementById('data-patient-name-view3').textContent = patient.name;
+            document.getElementById('data-patient-name-edit3').value = patient.name;
+
+            //memo
+            //Initialize variables at the top level
+            let notesList, addNoteBtn;   
+            // Main initialization function
+            function initNotesSystem() {
+                // Set up tab event listener
+                const noteTab = document.querySelector('#note-tab');
+                if (noteTab) {
+                    noteTab.addEventListener('shown.bs.tab', function() {
+                        initNotes();
+                    });
+                } else {
+                    console.warn('Could not find element with ID #note-tab');
+                }
+                // Also initialize if we're already on the notes tab
+                if (document.querySelector('#note.active')) {
+                    initNotes();
+                }
+            }
+            // Start the notes system
+            initNotesSystem();
+            //memo
+
+            //--end of tab4--
+
+            window.medData = data.med_data;
+            window.vitalsData = data.vitals_data;
 
         } else {
             alert('Error: ' + data.error);
@@ -168,7 +261,6 @@ document.addEventListener('DOMContentLoaded', function () {
     .catch(error => {
         console.error('Error:', error);
     });
-    
     
 
     //display the patient data on the page
@@ -181,7 +273,7 @@ document.addEventListener('DOMContentLoaded', function () {
     }
     
     // console.log('patient id ', patientId);
-    sessionStorage.clear(); //clear the sessionStorage after displaying the data
+    //sessionStorage.clear(); //clear the sessionStorage after displaying the data
 
     //edit patient details
     const patientEditBtn = document.getElementById('edit-patient-btn');
@@ -192,11 +284,14 @@ document.addEventListener('DOMContentLoaded', function () {
     if (patientEditBtn && patientSaveBtn && patientCancelBtn) {
         patientEditBtn.addEventListener('click', function() {
             // Scope to patient tab only
-            const patientTab = document.getElementById('patient');
+            const patientTab = document.getElementById('patient');      
             
             // Hide view and show edit elements in patient tab only
             patientTab.querySelectorAll('[id$="-view"]').forEach(el => el.classList.add('d-none'));
             patientTab.querySelectorAll('[id$="-edit"]').forEach(el => el.classList.remove('d-none'));
+
+            patientTab.querySelectorAll('.reason-field').forEach(el => el.classList.remove('d-none'));
+            patientTab.querySelectorAll('.password-field').forEach(el => el.classList.remove('d-none'));
 
             // Phone input initialization
             const phoneEditInput = patientTab.querySelector('#data-patient-phone-edit');
@@ -217,6 +312,10 @@ document.addEventListener('DOMContentLoaded', function () {
                 }
             }
 
+            const form = patientTab.querySelector('#patient-info');
+
+            form.classList.remove('was-validated');
+
             // Toggle buttons
             patientEditBtn.classList.add('d-none');
             patientSaveBtn.classList.remove('d-none');
@@ -225,24 +324,50 @@ document.addEventListener('DOMContentLoaded', function () {
 
         patientSaveBtn.addEventListener('click', function() {
             const patientTab = document.getElementById('patient');
-            
-            // Get all edited values
+            const reasonInput = patientTab.querySelector('#data-patient-reason-edit');
+            const passwordInput = patientTab.querySelector('#data-patient-password-edit');
+            let isValid = true;
+        
+            // 1. VALIDATION - Check required fields
+            if (!reasonInput.value.trim()) {
+                reasonInput.classList.add('is-invalid');
+                passwordInput.classList.add('is-invalid');
+                isValid = false;
+            } else {
+                reasonInput.classList.remove('is-invalid');
+                passwordInput.classList.remove('is-invalid');
+            }
+            if (!passwordInput.value.trim()) {
+                passwordInput.classList.add('is-invalid');
+                isValid = false;
+            } else {
+                passwordInput.classList.remove('is-invalid');
+            }
+        
+            // Stop if validation fails
+            if (!isValid) {
+                return;
+            }
+        
+            // 2. GET VALUES - Your existing value collection
             const editedName = patientTab.querySelector('#data-patient-name-edit').value;
             const editedSex = patientTab.querySelector('#data-patient-sex-edit').value;
             const editedBday = patientTab.querySelector('#data-patient-bday-edit').value;
             const editedWard = patientTab.querySelector('#data-patient-ward-edit').value;
             const editedStatus = patientTab.querySelector('#data-patient-status-edit').value;
             const editedPhysician = patientTab.querySelector('#data-patient-physician-edit').value;
+            const editedReason = reasonInput.value;
+            const editedPassword = passwordInput.value;
             
-            // Get phone number
+            // Phone number handling
             let editedPhone = '';
             if (phoneInputInstance) {
                 editedPhone = phoneInputInstance.getNumber();
             } else {
                 editedPhone = patientTab.querySelector('#data-patient-phone-edit').value;
             }
-            
-            // Update view spans
+        
+            // 3. UPDATE VIEW - Your existing view updates
             patientTab.querySelector('#data-patient-name-view').textContent = editedName;
             patientTab.querySelector('#data-patient-sex-view').textContent = editedSex;
             patientTab.querySelector('#data-patient-bday-view').textContent = editedBday;
@@ -250,7 +375,12 @@ document.addEventListener('DOMContentLoaded', function () {
             patientTab.querySelector('#data-patient-ward-view').textContent = editedWard;
             patientTab.querySelector('#data-patient-status-view').textContent = editedStatus;
             patientTab.querySelector('#data-physician-name-view').textContent = editedPhysician;
-            
+            patientTab.querySelector('#data-patient-reason-view').textContent = editedReason;
+            patientTab.querySelector('#data-patient-password-view').textContent = editedPassword;
+        
+            // 4. CLEAR & EXIT
+            reasonInput.value = ''; // Clear the reason field
+            passwordInput.value = '';
             exitPatientEditMode();
         });
         
@@ -258,10 +388,17 @@ document.addEventListener('DOMContentLoaded', function () {
         
         function exitPatientEditMode() {
             const patientTab = document.getElementById('patient');
+
+            const passwordInput = patientTab.querySelector('#data-patient-password-edit');
+            if (passwordInput) {
+                passwordInput.value = ''; // Clear the password
+            }
             
             // Show view and hide edit elements
             patientTab.querySelectorAll('[id$="-view"]').forEach(el => el.classList.remove('d-none'));
             patientTab.querySelectorAll('[id$="-edit"]').forEach(el => el.classList.add('d-none'));
+            patientTab.querySelectorAll('.reason-field').forEach(el => el.classList.add('d-none'));
+            patientTab.querySelectorAll('.password-field').forEach(el => el.classList.add('d-none'));
             
             // Toggle buttons
             patientEditBtn.classList.remove('d-none');
@@ -277,18 +414,125 @@ document.addEventListener('DOMContentLoaded', function () {
     }
 });
 
+//print qr
+document.getElementById('print-qr-btn').addEventListener('click', function() {
+    // Get patient data from the HTML elements
+    const patientId = document.getElementById('data-patient-id-view').textContent;
+    const patientName = document.getElementById('data-patient-name-view').textContent;
+    const patientBirthday = document.getElementById('data-patient-bday-view').textContent;
+    const patientWard = document.getElementById('data-patient-ward-view').textContent;
+    
+    // Get the QR code image source
+    const qrCodeSrc = document.getElementById('patient-qr-code').src;
+    
+    // Debug: Check what values we're getting
+    console.log('Patient Data:', {
+        id: patientId,
+        name: patientName,
+        birthday: patientBirthday,
+        ward: patientWard,
+        qrCode: qrCodeSrc
+    });
+    
+    // Populate the printable content
+    document.getElementById('print-id').textContent = patientId;
+    document.getElementById('print-name').textContent = patientName;
+    document.getElementById('print-bday').textContent = patientBirthday;
+    document.getElementById('print-ward').textContent = patientWard;
+    document.getElementById('print-qr').src = qrCodeSrc;
+    
+    // Show the printable content (temporarily)
+    const printableContent = document.getElementById('printable-wristband');
+    printableContent.style.display = 'block';
+    
+    // Print the content
+    window.print();
+    
+    // Hide it again after printing
+    printableContent.style.display = 'none';
+});
 
 // PRINT SUMMARY BUTTON
-document.addEventListener('DOMContentLoaded', function() {
-    // Initialize tooltip
-    const tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
-    tooltipTriggerList.map(function (tooltipTriggerEl) {
-        return new bootstrap.Tooltip(tooltipTriggerEl);
+document.getElementById('print-header').addEventListener('click', function() {
+    // Get patient data from view elements
+    const patientId = document.getElementById('data-patient-id-view').textContent;
+    const patientName = document.getElementById('data-patient-name-view').textContent;
+    const patientSex = document.getElementById('data-patient-sex-view').textContent;
+    const patientBday = document.getElementById('data-patient-bday-view').textContent;
+    const patientPhone = document.getElementById('data-patient-phone-view').textContent;
+    const physician = document.getElementById('data-physician-name-view').textContent;
+    const allergies = document.getElementById('data-patient-allergies-view').textContent;
+    const familyHistory = document.getElementById('data-patient-family-history-view').textContent;
+    const physicalExam = document.getElementById('data-patient-physical-exam-view').textContent;
+    const diagnosis = document.getElementById('data-patient-diagnosis-view').textContent;
+    
+    // Get current date
+    const today = new Date();
+    document.getElementById('print-date').textContent = today.toLocaleDateString('en-US', {
+        year: 'numeric', 
+        month: 'long', 
+        day: 'numeric',
+        hour: '2-digit',
+        minute: '2-digit'
     });
-    // Print functionality
-    document.getElementById('print-header').addEventListener('click', function() {
-        //
-    });
+    
+    // Populate patient info
+    document.getElementById('print-id1').textContent = patientId;
+    document.getElementById('print-name1').textContent = patientName;
+    document.getElementById('print-sex').textContent = patientSex;
+    document.getElementById('print-bday1').textContent = patientBday;
+    document.getElementById('print-phone').textContent = patientPhone;
+    document.getElementById('print-physician').textContent = physician;
+    document.getElementById('print-allergies').textContent = allergies || 'None recorded';
+    document.getElementById('print-family-history').textContent = familyHistory || 'None recorded';
+    document.getElementById('print-physical-exam').textContent = physicalExam || 'Not documented';
+    document.getElementById('print-diagnosis').textContent = diagnosis || 'Pending diagnosis';
+    
+    // Populate medications table
+    const medsTable = document.getElementById('print-meds-table').getElementsByTagName('tbody')[0];
+    medsTable.innerHTML = ''; // Clear existing rows
+    
+    if (window.medData && window.medData.length > 0) {
+        window.medData.forEach(drug => {
+            const row = medsTable.insertRow();
+            row.innerHTML = `
+                <td style="padding: 8px; border: 1px solid #ddd;">${drug.drug_name || ''}</td>
+                <td style="padding: 8px; border: 1px solid #ddd;">${drug.dose || ''}</td>
+                <td style="padding: 8px; border: 1px solid #ddd;">${drug.units || ''}</td>
+                <td style="padding: 8px; border: 1px solid #ddd;">${drug.frequency || ''}</td>
+                <td style="padding: 8px; border: 1px solid #ddd;">${drug.route || ''}</td>
+                <td style="padding: 8px; border: 1px solid #ddd;">${drug.quantity || ''}</td>
+            `;
+        });
+    } else {
+        medsTable.innerHTML = '<tr><td colspan="6" style="padding: 8px; text-align: center; border: 1px solid #ddd;">No medications prescribed</td></tr>';
+    }
+    
+    // Populate vitals table
+    const vitalsTable = document.getElementById('print-vitals-table').getElementsByTagName('tbody')[0];
+    vitalsTable.innerHTML = ''; // Clear existing rows
+    
+    if (window.vitalsData && window.vitalsData.length > 0) {
+        window.vitalsData.forEach(vs => {
+            const row = vitalsTable.insertRow();
+            row.innerHTML = `
+                <td style="padding: 8px; border: 1px solid #ddd;">${vs.datetime || ''}</td>
+                <td style="padding: 8px; border: 1px solid #ddd;">${vs.temperature || ''}</td>
+                <td style="padding: 8px; border: 1px solid #ddd;">${vs.blood_pressure || ''}</td>
+                <td style="padding: 8px; border: 1px solid #ddd;">${vs.pulse || ''}</td>
+                <td style="padding: 8px; border: 1px solid #ddd;">${vs.respiratory || ''}</td>
+                <td style="padding: 8px; border: 1px solid #ddd;">${vs.oxygen || ''}</td>
+            `;
+        });
+    } else {
+        vitalsTable.innerHTML = '<tr><td colspan="6" style="padding: 8px; text-align: center; border: 1px solid #ddd;">No vital signs recorded</td></tr>';
+    }
+    
+    // Show and print
+    const printableContent = document.getElementById('printable-patient-chart');
+    printableContent.style.display = 'block';
+    window.print();
+    printableContent.style.display = 'none';
 });
 
 //edit patient vs details
@@ -302,6 +546,9 @@ document.addEventListener('DOMContentLoaded', function() {
         vsEditBtn.addEventListener('click', function() {
             // Scope to vitals tab only
             const vitalsTab = document.getElementById('vitals');
+
+            vitalsTab.querySelector('.reason-field').classList.remove('d-none');
+            vitalsTab.querySelector('.password-field1').classList.remove('d-none');
             
             // Store original values
             originalValues = {
@@ -309,20 +556,19 @@ document.addEventListener('DOMContentLoaded', function() {
                 allergies: vitalsTab.querySelector('#data-patient-allergies-view').textContent,
                 familyHistory: vitalsTab.querySelector('#data-patient-family-history-view').textContent,
                 physicalExam: vitalsTab.querySelector('#data-patient-physical-exam-view').textContent,
-                diagnosis: vitalsTab.querySelector('#data-patient-diagnosis-view').textContent
+                diagnosis: vitalsTab.querySelector('#data-patient-diagnosis-view').textContent,
+                //reason: vitalsTab.querySelector('#data-patient-reason-view1').textContent
             };
 
             // Hide view and show edit elements in vitals tab only
             vitalsTab.querySelectorAll('[id$="-view"]').forEach(el => el.classList.add('d-none'));
             vitalsTab.querySelectorAll('[id$="-edit"]').forEach(el => {
                 el.classList.remove('d-none');
+                el.classList.remove('is-invalid'); // Clear any previous validation errors
+                
                 // Set readonly status
-                if (el.id.includes('patient-id-edit')) {
+                if (el.id.includes('patient-id-edit') || el.id.includes('data-patient-name-edit')) {
                     el.readOnly = true;
-                } else if (el.id.includes('data-patient-name-edit')) {
-                    el.readOnly = true;
-                } else {
-                    el.readOnly = false;
                 }
             });
             
@@ -334,7 +580,29 @@ document.addEventListener('DOMContentLoaded', function() {
 
         vsSaveBtn.addEventListener('click', function() {
             const vitalsTab = document.getElementById('vitals');
-            
+            const reasonInput = vitalsTab.querySelector('#data-patient-reason-edit');
+            const passwordInput = vitalsTab.querySelector('#data-patient-password-edit1');
+            let isValid = true;
+
+            // Validate required fields
+            if (!reasonInput.value.trim()) {
+                reasonInput.classList.add('is-invalid');
+                isValid = false;
+            } else {
+                reasonInput.classList.remove('is-invalid');
+            }
+
+            if (!passwordInput.value.trim()) {
+                passwordInput.classList.add('is-invalid');
+                isValid = false;
+            } else {
+                passwordInput.classList.remove('is-invalid');
+            }
+
+            if (!isValid) {
+                return; // Stop if validation fails
+            }
+
             // Update view with edited values
             vitalsTab.querySelector('#data-patient-name-view1').textContent = 
                 vitalsTab.querySelector('#data-patient-name-edit1').value;   
@@ -346,8 +614,13 @@ document.addEventListener('DOMContentLoaded', function() {
                 vitalsTab.querySelector('#data-patient-physical-exam-edit').value;    
             vitalsTab.querySelector('#data-patient-diagnosis-view').textContent = 
                 vitalsTab.querySelector('#data-patient-diagnosis-edit').value;
+            //vitalsTab.querySelector('#data-patient-reason-view1').textContent = reasonInput.value;
 
-            // savePatientDetails();
+            // Clear the reason field for next time
+            vitalsTab.querySelector('.reason-field').classList.add('d-none'); 
+            reasonInput.value = '';
+            vitalsTab.querySelector('.password-field1').classList.add('d-none'); 
+            passwordInput.value = '';
             
             exitVsEditMode();
         });
@@ -361,6 +634,12 @@ document.addEventListener('DOMContentLoaded', function() {
             vitalsTab.querySelector('#data-patient-family-history-edit').value = originalValues.familyHistory;
             vitalsTab.querySelector('#data-patient-physical-exam-edit').value = originalValues.physicalExam;
             vitalsTab.querySelector('#data-patient-diagnosis-edit').value = originalValues.diagnosis;
+            vitalsTab.querySelector('.reason-field').classList.add('d-none');
+            vitalsTab.querySelector('.password-field1').classList.add('d-none');
+            
+            // Clear validation state
+            vitalsTab.querySelector('#data-patient-reason-edit').classList.remove('is-invalid');
+            vitalsTab.querySelector('#data-patient-password-edit1').classList.remove('is-invalid');
             
             exitVsEditMode();
         });
@@ -411,70 +690,290 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 });
 
-//Medication
-document.addEventListener('DOMContentLoaded', function() {
-    new DataTable('#active');
-    new DataTable('#inactive');
+//med
+function getCookie(name) {
+    let cookieValue = null;
+    if (document.cookie && document.cookie !== '') {
+        const cookies = document.cookie.split(';');
+        for (let i = 0; i < cookies.length; i++) {
+            const cookie = cookies[i].trim();
+            if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                break;
+            }
+        }
+    }
+    return cookieValue;
+}
+// Initialize the med modal
+const medicationModal = new bootstrap.Modal(document.getElementById('medicationOrderModal'));
+// Function to populate and show modal with existing data
+function showEditableMedicationModal(drugData) {
+    // Populate editable drug details
+    $('#med-drug-name').val(drugData.drug_name || drugData.drugName || '');
+    $('#med-dose').val(drugData.dose);
+    $('#med-units').val(drugData.units);
+    $('#med-frequency').val(drugData.frequency);
+    $('#med-route').val(drugData.route);
+    
+    // Populate additional fields if they exist in drugData
+    $('#med-diagnostic').val(drugData.health_diagnostic || drugData.diagnostic || '');
+    $('#med-pt-instructions').val(drugData.patient_instructions || drugData.ptInstructions || '');
+    $('#med-md-instructions').val(drugData.pharmacist_instructions || drugData.mdInstructions || '');
+    
+    // Clear password field
+    $('#med-password').val('');
+    
+    // Show modal
+    medicationModal.show();
+}
+// Example of how to call it when a table row is clicked
+$('#active tbody, #inactive tbody').on('click', 'tr', function() {
+    // Get the full drug data from data attributes
+    const fullDrugData = $(this).data('fullDrugData') || {
+        drug_name: $(this).find('td:eq(0)').text(),
+        dose: $(this).find('td:eq(1)').text(),
+        units: $(this).find('td:eq(2)').text(),
+        frequency: $(this).find('td:eq(3)').text(),
+        route: $(this).find('td:eq(5)').text(),
+        // Get additional data from data attributes
+        health_diagnostic: $(this).data('health-diagnostic') || '',
+        patient_instructions: $(this).data('patient-instructions') || '',
+        pharmacist_instructions: $(this).data('pharmacist-instructions') || '',
+        id: $(this).data('drug-id') || null
+    };
+    
+    showEditableMedicationModal(fullDrugData);
+});
+// Handle password confirmation
+$('#med-confirm-btn').click(function() {
+    const password = $('#med-password').val();
+    if (!password) {
+        alert('Please enter your password');
+        return;
+    }
+    
+    // Here you would typically verify the password
+    console.log('Password verification would happen here');
+
+    /*
+        // Validate form
+    if (!$('#medicationOrderForm')[0].checkValidity()) {
+        $('#medicationOrderForm').addClass('was-validated');
+        return;
+    }
+    // Collect all form data
+    const formData = {
+        drugName: $('#med-drug-name').val(),
+        dose: $('#med-dose').val(),
+        units: $('#med-units').val(),
+        frequency: $('#med-frequency').val(),
+        route: $('#med-route').val(),
+        diagnostic: $('#med-diagnostic').val(),
+        ptInstructions: $('#med-pt-instructions').val(),
+        mdInstructions: $('#med-md-instructions').val(),
+        password: $('#med-password').val()
+    };
+    // Here you would typically make an AJAX call to save the data
+    console.log('Saving medication order:', formData);
+    
+    // Close modal after save
+    medicationModal.hide();
+    */
 });
 
+
 //MEMO/NOTES
-document.addEventListener('DOMContentLoaded', function() {
-    // Initialize variables at the top level
-    let notesList, addNoteBtn;
-    
-    // Main initialization function
-    function initNotesSystem() {
-        // Set up tab event listener
-        const noteTab = document.querySelector('#note-tab');
-        if (noteTab) {
-            noteTab.addEventListener('shown.bs.tab', function() {
-                initNotes();
-            });
-        } else {
-            console.warn('Could not find element with ID #note-tab');
-        }
-        // Also initialize if we're already on the notes tab
-        if (document.querySelector('#note.active')) {
-            initNotes();
-        }
+// Initialize notes functionality
+function initNotes() {
+    notesList = document.getElementById('notes-list');
+    addNoteBtn = document.getElementById('add-note-btn');
+    if (!notesList) console.error('Could not find element with ID #notes-list');
+    if (!addNoteBtn) console.error('Could not find element with ID #add-note-btn');
+    if (!notesList || !addNoteBtn) {
+        console.error('Could not initialize notes - required elements missing');
+        return;
     }
     
-    // Initialize notes functionality
-    function initNotes() {
-        notesList = document.getElementById('notes-list');
-        addNoteBtn = document.getElementById('add-note-btn');
-        if (!notesList) console.error('Could not find element with ID #notes-list');
-        if (!addNoteBtn) console.error('Could not find element with ID #add-note-btn');
-        if (!notesList || !addNoteBtn) {
-            console.error('Could not initialize notes - required elements missing');
-            return;
+    // Remove any existing event listeners
+    const newAddNoteBtn = addNoteBtn.cloneNode(true);
+    addNoteBtn.parentNode.replaceChild(newAddNoteBtn, addNoteBtn);
+    addNoteBtn = newAddNoteBtn;   
+    // Add new event listener
+    addNoteBtn.addEventListener('click', function() {
+        addNewNote();
+    });
+    // Load existing notes
+    loadNotes();
+}
+
+function addNewNote() {
+    const now = new Date();
+    const timestamp = formatDateTime(now);   
+    const noteId = Date.now();
+    const currentNurseId = "N123"; // Replace with actual nurse ID okie
+    
+    const noteElement = document.createElement('div');
+    noteElement.className = 'note';
+    noteElement.dataset.id = noteId;
+    noteElement.innerHTML = `
+        <div class="note-header">
+            <!--div class="note-title">Nurse's Note</div-->
+            <div class="note-meta">
+                <span class="note-time">${timestamp}</span>
+                <span class="note-nurse">Nurse ID: ${currentNurseId}</span>
+            </div>
+        </div>
+        <div class="note-content" contenteditable="true" placeholder="Enter your note here..."></div>
+        <div class="note-actions">
+            <button class="note-btn btn-save">Save</button>
+            <button class="note-btn btn-edit">Edit</button>
+            <button class="note-btn btn-delete">Delete</button>
+        </div>
+    `;
+    
+    notesList.prepend(noteElement);
+    setupNoteEvents(noteElement, true);  
+    noteElement.querySelector('.note-content').focus();
+}
+function setupNoteEvents(noteElement, isNew = false) {
+    const content = noteElement.querySelector('.note-content');
+    const editBtn = noteElement.querySelector('.btn-edit');
+    const saveBtn = noteElement.querySelector('.btn-save');
+    const deleteBtn = noteElement.querySelector('.btn-delete');
+    
+    if (!content) console.error('Note content element not found');
+    if (!editBtn) console.error('Edit button not found');
+    if (!saveBtn) console.error('Save button not found');
+    if (!deleteBtn) console.error('Delete button not found');
+
+    // Show Save button first if it's a new note
+    if (isNew) {
+        saveBtn.style.display = 'inline-block';
+        editBtn.style.display = 'none';
+        content.contentEditable = true;
+    } else {
+        saveBtn.style.display = 'none';
+        editBtn.style.display = 'inline-block';
+        content.contentEditable = false;
+    }
+
+    editBtn.addEventListener('click', function() {
+        content.contentEditable = true;
+        content.focus();
+        editBtn.style.display = 'none';
+        saveBtn.style.display = 'inline-block';
+    });
+
+    saveBtn.addEventListener('click', function() {
+        content.contentEditable = false;
+        saveBtn.style.display = 'none';
+        editBtn.style.display = 'inline-block';
+        saveNotes();
+    });
+
+    deleteBtn.addEventListener('click', function() {
+        if (confirm('Are you sure you want to delete this note?')) {
+            noteElement.remove();
+            saveNotes();
         }
-        
-        // Remove any existing event listeners
-        const newAddNoteBtn = addNoteBtn.cloneNode(true);
-        addNoteBtn.parentNode.replaceChild(newAddNoteBtn, addNoteBtn);
-        addNoteBtn = newAddNoteBtn;   
-        // Add new event listener
-        addNoteBtn.addEventListener('click', function() {
-            addNewNote();
+    });
+
+    content.addEventListener('input', function() {
+        this.style.height = 'auto';
+        this.style.height = (this.scrollHeight) + 'px';
+    });
+}
+
+
+function formatDateTime(date) {
+    const options = { 
+        year: 'numeric', 
+        month: 'long', 
+        day: 'numeric', 
+        hour: '2-digit', 
+        minute: '2-digit' 
+    };
+    return date.toLocaleDateString('en-US', options);
+}
+
+function saveNotes() {
+    const notes = [];
+    document.querySelectorAll('.note').forEach(noteElement => {
+        notes.push({
+            id: noteElement.dataset.id,
+            //title: noteElement.querySelector('.note-title').textContent,
+            content: noteElement.querySelector('.note-content').innerHTML,
+            time: noteElement.querySelector('.note-time').textContent
         });
-        // Load existing notes
-        loadNotes();
+    });
+    localStorage.setItem('nurseNotes', JSON.stringify(notes));
+}
+
+function loadNotes() {
+    // Get the patient ID from wherever you're storing it (sessionStorage or URL)
+    const patientId = sessionStorage.getItem('data-patient-id') || 
+                     new URLSearchParams(window.location.search).get('id');
+
+    if (!patientId) {
+        console.error('No patient ID found');
+        return;
     }
-    
-    function addNewNote() {
-        const now = new Date();
-        const timestamp = formatDateTime(now);   
-        const noteId = Date.now(); // Unique ID for each note
+
+    // Make API request to get notes for this patient
+    fetch('/api/receive_data/', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': csrfToken
+        },
+        body: JSON.stringify({
+            patient_id: patientId
+        })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.status === 'success' && data.notes_data) {
+            renderNotes(data.notes_data);
+        } else {
+            console.error('Error loading notes:', data.message || 'No notes data received');
+        }
+    })
+    .catch(error => {
+        console.error('Error fetching notes:', error);
+    });
+}
+function renderNotes(notesData) {
+    // Clear existing notes
+    notesList.innerHTML = '';
+
+    if (!notesData || notesData.length === 0) {
+        notesList.innerHTML = '<div class="no-notes">No notes found for this patient</div>';
+        return;
+    }
+
+    // Sort notes by date (newest first) if not already sorted
+    notesData.sort((a, b) => new Date(b.date) - new Date(a.date));
+
+    // Create and append note elements
+    notesData.forEach(note => {
         const noteElement = document.createElement('div');
         noteElement.className = 'note';
-        noteElement.dataset.id = noteId;
+        noteElement.dataset.id = note.id;
+        
+        // Format the date for display
+        const noteDate = new Date(note.date);
+        const formattedDate = formatDateTime(noteDate);
+
         noteElement.innerHTML = `
             <div class="note-header">
-                <div class="note-title">Nurse's Note</div>
-                <div class="note-time">${timestamp}</div>
+                <!--div class="note-title">Nurse's Note</div-->
+                <div class="note-meta">
+                    <span class="note-time">${formattedDate}</span>
+                    <span class="note-nurse">Nurse ID: ${note.nurse_id || 'Unknown'}</span>
+                </div>
             </div>
-            <div class="note-content" contenteditable="true" placeholder="Enter your note here..."></div>
+            <div class="note-content">${note.notes || ''}</div>
             <div class="note-actions">
                 <button class="note-btn btn-save">Save</button>
                 <button class="note-btn btn-edit">Edit</button>
@@ -482,121 +981,15 @@ document.addEventListener('DOMContentLoaded', function() {
             </div>
         `;
         
-        notesList.prepend(noteElement);
-        setupNoteEvents(noteElement, true);  
-        noteElement.querySelector('.note-content').focus();
-    }
-    
-    function setupNoteEvents(noteElement, isNew = false) {
-        const content = noteElement.querySelector('.note-content');
-        const editBtn = noteElement.querySelector('.btn-edit');
-        const saveBtn = noteElement.querySelector('.btn-save');
-        const deleteBtn = noteElement.querySelector('.btn-delete');
+        notesList.appendChild(noteElement);
+        setupNoteEvents(noteElement);
         
-        if (!content) console.error('Note content element not found');
-        if (!editBtn) console.error('Edit button not found');
-        if (!saveBtn) console.error('Save button not found');
-        if (!deleteBtn) console.error('Delete button not found');
-    
-        // Show Save button first if it's a new note
-        if (isNew) {
-            saveBtn.style.display = 'inline-block';
-            editBtn.style.display = 'none';
-            content.contentEditable = true;
-        } else {
-            saveBtn.style.display = 'none';
-            editBtn.style.display = 'inline-block';
-            content.contentEditable = false;
-        }
-    
-        editBtn.addEventListener('click', function() {
-            content.contentEditable = true;
-            content.focus();
-            editBtn.style.display = 'none';
-            saveBtn.style.display = 'inline-block';
-        });
-    
-        saveBtn.addEventListener('click', function() {
-            content.contentEditable = false;
-            saveBtn.style.display = 'none';
-            editBtn.style.display = 'inline-block';
-            saveNotes();
-        });
-    
-        deleteBtn.addEventListener('click', function() {
-            if (confirm('Are you sure you want to delete this note?')) {
-                noteElement.remove();
-                saveNotes();
-            }
-        });
-    
-        content.addEventListener('input', function() {
-            this.style.height = 'auto';
-            this.style.height = (this.scrollHeight) + 'px';
-        });
-    }
-    
-    
-    function formatDateTime(date) {
-        const options = { 
-            year: 'numeric', 
-            month: 'long', 
-            day: 'numeric', 
-            hour: '2-digit', 
-            minute: '2-digit' 
-        };
-        return date.toLocaleDateString('en-US', options);
-    }
-    
-    function saveNotes() {
-        const notes = [];
-        document.querySelectorAll('.note').forEach(noteElement => {
-            notes.push({
-                id: noteElement.dataset.id,
-                title: noteElement.querySelector('.note-title').textContent,
-                content: noteElement.querySelector('.note-content').innerHTML,
-                time: noteElement.querySelector('.note-time').textContent
-            });
-        });
-        localStorage.setItem('nurseNotes', JSON.stringify(notes));
-    }
-    
-    function loadNotes() {
-        const savedNotes = localStorage.getItem('nurseNotes');
-        if (savedNotes) {
-            const notes = JSON.parse(savedNotes);
-            notesList.innerHTML = ''; // Clear existing notes before loading
-            notes.forEach(note => {
-                const noteElement = document.createElement('div');
-                noteElement.className = 'note';
-                noteElement.dataset.id = note.id;
-                noteElement.innerHTML = `
-                    <div class="note-header">
-                        <div class="note-title">${note.title}</div>
-                        <div class="note-time">${note.time}</div>
-                    </div>
-                    <div class="note-content">${note.content}</div>
-                    <div class="note-actions">
-                        <button class="note-btn btn-save">Save</button>
-                        <button class="note-btn btn-edit">Edit</button>
-                        <button class="note-btn btn-delete">Delete</button>
-                    </div>
-                `;
-                notesList.appendChild(noteElement);
-                setupNoteEvents(noteElement);
-                
-                // Set the height based on content
-                const content = noteElement.querySelector('.note-content');
-                content.style.height = 'auto';
-                content.style.height = (content.scrollHeight) + 'px';
-            });
-        } else {
-            console.log('No saved notes found in storage');
-        }
-    }
-    // Start the notes system
-    initNotesSystem();
-});
+        // Set the height based on content
+        const content = noteElement.querySelector('.note-content');
+        content.style.height = 'auto';
+        content.style.height = (content.scrollHeight) + 'px';
+    });
+}
 
 // Poll the server periodically instead of relying on long-running request
 function checkShiftStatus() {

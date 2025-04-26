@@ -16,7 +16,7 @@ def receive_data(request):
             patient_vs1 = VitalSigns1.objects.filter(patient_id=patient_id)
             patient_vs2 = VitalSigns2.objects.filter(patient_id=patient_id)
             med = Medication.objects.filter(patient_id=patient_id)
-            notes = NurseNotes.objects.filter(patient_id=patient_id)
+            notes = NurseNotes.objects.filter(patient_id=patient_id).order_by('-date')
             print("patient ID: " + patient_id)
 
             # Prepare vitals data
@@ -30,6 +30,33 @@ def receive_data(request):
                     'respiratory': vs.respiratory_rate,
                     'oxygen': vs.oxygen_saturation,
                     'id': vs.id  
+                })
+            # Prepare med data
+            med_data = []
+            for drug in med:
+                med_data.append({
+                    'drug_name': drug.drug_name,
+                    'dose': drug.dose,
+                    'units': drug.units,
+                    'frequency': drug.frequency,
+                    'route': drug.route,
+                    'duration': drug.duration,
+                    'quantity': drug.quantity,
+                    'start_date': drug.start_date,
+                    'status': drug.status,
+                    'health_diagnostic': drug.health_diagnostics,
+                    'patient_instructions': drug.patient_instructions,
+                    'pharmacist_instructions': drug.pharmacist_instructions,
+                    'id': drug.id
+                })
+                #prepare notes data
+            notes_data = []
+            for note in notes:
+                notes_data.append({
+                    'id': note.id,
+                    'date': note.date.isoformat(),
+                    'notes': note.notes,
+                    'nurse_id': note.nurse_id
                 })
 
             response_object = {
@@ -59,7 +86,7 @@ def receive_data(request):
                     'respiratory': patient_vs2[0].respiratory_rate if patient_vs2 else None,
                     'oxygen': patient_vs2[0].oxygen_saturation if patient_vs2 else None,'''
                     #med
-                    'drug_name': med[0].drug_name if med else None,
+                    '''drug_name': med[0].drug_name if med else None,
                     'dose': med[0].dose if med else None,
                     'units': med[0].units if med else None,
                     'frequency': med[0].frequency if med else None,
@@ -70,13 +97,15 @@ def receive_data(request):
                     'status': med[0].status if med else None,
                     'health_diagnostic': med[0].health_diagnostics if med else None,
                     'patient_instructions': med[0].patient_instructions if med else None,
-                    'pharmacist_instructions': med[0].pharmacist_instructions if med else None,
+                    'pharmacist_instructions': med[0].pharmacist_instructions if med else None,'''
                     #note
                     'date': notes[0].date if notes else None,
                     'notes': notes[0].notes if notes else None,
                     'nurse_id': notes[0].nurse_id if notes else None,
                 },
-                'vitals_data': vitals_data
+                'vitals_data': vitals_data,
+                'med_data': med_data,
+                'notes_data': notes_data
             }
             #print(vitals_data)
             return JsonResponse(response_object)

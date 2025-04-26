@@ -44,6 +44,27 @@ body {
     transform: translateY(-1px);
     box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
 }
+/*wrist band print*/
+@media print {
+    @page {
+        size: auto;
+        margin: 0mm;
+    }
+    body * {
+        visibility: hidden;
+    }
+    #printable-wristband, #printable-wristband * {
+        visibility: visible;
+    }
+    #printable-wristband {
+        position: absolute;
+        left: 0;
+        top: 0;
+        width: 100%;
+        height: 100%;
+    }
+}
+
 /*tabs*/
 .nav-tabs {
     border-bottom: 2px solid #e0e0e0;

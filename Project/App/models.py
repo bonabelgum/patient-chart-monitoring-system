@@ -396,6 +396,8 @@ class Medication(models.Model):
         ('tid', 'Three Times Daily (TID)'),
         ('qid', 'Four Times Daily (QID)'),
         ('prn', 'As Needed (PRN)'),
+        ('q6h', 'Every 6 Hours'),
+        ('q8h', 'Every 8 Hours'),
     ]
 
     # Unit choices (e.g., mg, mL, tablets)

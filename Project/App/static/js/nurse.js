@@ -1,5 +1,6 @@
 let currentPatientData = null;
 let end_time_schedule = null;
+let globalPatientData = null;
 
 
 // Initialize modal event listeners once
@@ -182,10 +183,10 @@ function addPatientRow(table, patient) {
             status: currentPatientData.status || '',
             end_time: patient.end_time || ''
         }).toString();
-        //window.location.href = `/patient/${currentPatientData.id}/?${queryParams}`; //redirect
+        window.location.href = `/patient/${currentPatientData.id}/?${queryParams}`; //redirect
     
-        const passwordModal = new bootstrap.Modal(document.getElementById('patientPasswordModal'));
-        passwordModal.show();
+        //const passwordModal = new bootstrap.Modal(document.getElementById('patientPasswordModal'));
+        //passwordModal.show();
     });
 }
 
@@ -231,6 +232,13 @@ document.addEventListener('DOMContentLoaded', function() {
     
     // Save patient handler
     savePatientBtn.addEventListener('click', function() {
+        globalPatientData = {
+            name: document.getElementById('patientName').value,
+            birthday: document.getElementById('patientBirthday').value,
+            ward: document.getElementById('patientWard').value
+        };
+        //console.log("Stored patient data:", globalPatientData);
+        
         if (patientForm.checkValidity()) {
             const patientData = {
                 name: document.getElementById('patientName').value,
@@ -345,6 +353,121 @@ document.addEventListener('DOMContentLoaded', function() {
         return cookieValue;
     }
 });
+
+//print
+let nextPatientId = null; // Store this globally
+// When generating a new patient ID (before saving to database)
+function generatePatientId() {
+    // Get the last ID from the table
+    const lastRow = document.querySelector('#patient tbody tr:last-child');
+    const lastId = lastRow?.dataset?.patientId;
+    
+    // Calculate next ID
+    if (lastId) {
+        const lastNum = parseInt(lastId.replace(/[^0-9]/g, '')) || 0;
+        nextPatientId = `${lastNum + 1}`;
+    } else {
+        nextPatientId = '1'; // Starting ID if no patients exist
+    }
+    
+    return nextPatientId;
+}
+// Get the print button from the QR modal
+document.getElementById('printQrBtn').addEventListener('click', function() {
+    console.log("Print stored data:", globalPatientData);
+    generatePatientId();
+    
+    // Get patient data from the form or stored variable
+    const patientData = currentPatientData || {
+        id: nextPatientId,
+        name: globalPatientData.name,
+        birthday: globalPatientData.birthday,
+        ward: globalPatientData.ward
+    };
+
+    // Get QR code image source
+    const qrCodeImg = document.querySelector('#qrCodeImageContainer img');
+    const qrCodeSrc = qrCodeImg ? qrCodeImg.src : '';
+
+    // Debug: Check what values we're getting
+    console.log('Patient Data for Wristband:', {
+        id: nextPatientId,
+        name: globalPatientData.name,
+        birthday: globalPatientData.birthday,
+        ward: globalPatientData.ward,
+        qrCode: qrCodeSrc
+    });
+
+    // Populate the printable wristband
+    document.getElementById('print-id').textContent = nextPatientId;
+    document.getElementById('print-name').textContent = patientData.name;
+    document.getElementById('print-bday').textContent = patientData.birthday;
+    document.getElementById('print-ward').textContent = patientData.ward;
+    document.getElementById('print-qr').src = qrCodeSrc;
+
+    // Show and print the wristband
+    const printableContent = document.getElementById('printable-wristband');
+    printableContent.style.display = 'block';
+    window.print();
+    printableContent.style.display = 'none';
+});
+
+//print
+/*document.getElementById('printQrBtn').addEventListener('click', function() {
+    // Check if currentPatientData exists
+    if (!currentPatientData) {
+        console.error('No current patient data available');
+        alert('No patient data available to print');
+        return;
+    }
+
+    // Get values from currentPatientData
+    const patientId = currentPatientData.id || 'TEMP-ID';
+    const patientName = currentPatientData.name || 'Not specified';
+    const patientBirthday = currentPatientData.birthday || null; // Assuming birthday might be in the object
+    const patientWard = currentPatientData.ward || 'Not specified';
+    
+    // Get QR code image
+    const qrCodeImg = document.querySelector('#qrCodeImageContainer img');
+    const qrCodeSrc = qrCodeImg ? qrCodeImg.src : '';
+    
+    // Format birthday for display
+    let formattedBirthday = 'Not specified';
+    if (patientBirthday) {
+        // Handle both Date objects and string formats
+        const birthDate = typeof patientBirthday === 'string' ? 
+                         new Date(patientBirthday) : 
+                         patientBirthday;
+        formattedBirthday = birthDate.toLocaleDateString();
+    }
+    
+    // Debug: Check what values we're getting
+    console.log('Printing patient data:', {
+        id: patientId,
+        name: patientName,
+        birthday: formattedBirthday,
+        ward: patientWard,
+        qrCode: qrCodeSrc
+    });
+    
+    // Populate the printable content
+    document.getElementById('print-id').textContent = patientId;
+    document.getElementById('print-name').textContent = patientName;
+    document.getElementById('print-bday').textContent = formattedBirthday;
+    document.getElementById('print-ward').textContent = patientWard;
+    document.getElementById('print-qr').src = qrCodeSrc;
+    
+    // Show the printable content
+    const printableContent = document.getElementById('printable-wristband');
+    printableContent.style.display = 'block';
+    
+    // Print the content
+    window.print();
+    
+    // Hide it again after printing
+    printableContent.style.display = 'none';
+});
+ */
 
 //phone number
 document.addEventListener("DOMContentLoaded", function () {
