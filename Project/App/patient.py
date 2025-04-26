@@ -1,8 +1,13 @@
+
+import json
 from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
-import json
+from django.views.decorators.http import require_POST
+from django.core.exceptions import ValidationError
+from datetime import datetime
+from django.utils.timezone import localtime, now
 
-from .models import PatientInformation, VitalSigns1, VitalSigns2, Medication, NurseNotes
+from .models import PatientInformation, Shift_schedule, VitalSigns1, VitalSigns2, Medication, NurseNotes
 
 # @csrf_exempt  # for demo purposes, not recommended for production without CSRF tokens
 def receive_data(request):
@@ -113,3 +118,115 @@ def receive_data(request):
             return JsonResponse({'status': 'fail', 'error': 'Patient not found'})
 
     return JsonResponse({'status': 'fail', 'error': 'Invalid request method'})
+
+
+@require_POST # Add logs for editing patient and reason
+def update_patient(request):
+    try:
+        data = json.loads(request.body)
+        
+        # Get the patient ID and validate it exists
+        patient_id = data.get('patientId')
+        if not patient_id:
+            return JsonResponse({'status': 'error', 'message': 'Patient ID is required'}, status=400)
+        
+        try: #
+            patient = PatientInformation.objects.get(id=patient_id)
+        except PatientInformation.DoesNotExist:
+            return JsonResponse({'status': 'error', 'message': 'Patient not found'}, status=404)
+        
+        
+        
+        nurse_id = request.session.get('confirm_nurse_id') # Get nurse id
+        is_active = get_active_shift(nurse_id) # Get active shift
+        is_valid = verify_master_key_for_all_employees(data.get('editedPassword')) # Check if shift password is correct
+        
+        if is_valid == True:
+            print('dd')
+            # Prepare update data
+            update_fields = {
+                'name': data.get('editedName'),
+                'sex': data.get('editedSex'),
+                'birthday': data.get('editedBday'),
+                'ward': data.get('editedWard'),
+                'status': data.get('editedStatus'),
+                'physician_name': data.get('editedPhysician'),
+                'phone_number': data.get('editedPhone')
+            }
+            
+            # Validate and clean data
+            try:
+                # Convert birthday string to date object if provided
+                if update_fields['birthday']:
+                    update_fields['birthday'] = datetime.strptime(update_fields['birthday'], '%Y-%m-%d').date()
+                
+                # Update patient fields
+                for field, value in update_fields.items():
+                    if value is not None:  # Only update if value was provided
+                        setattr(patient, field, value)
+                
+                # Full clean and save
+                patient.full_clean()
+                patient.save()
+                
+                return JsonResponse({
+                    'status': 'success',
+                    'message': 'Patient information updated successfully',
+                    'updated_patient': {
+                        'id': patient.id,
+                        'name': patient.name,
+                        'sex': patient.sex,
+                        'birthday': patient.birthday.strftime('%Y-%m-%d'),
+                        'ward': patient.ward,
+                        'status': patient.status,
+                        'physician_name': patient.physician_name,
+                        'phone_number': patient.phone_number
+                    }
+                })
+                
+            except ValidationError as e:
+                return JsonResponse({
+                    'status': 'error',
+                    'message': 'Validation error',
+                    'errors': e.message_dict
+                }, status=400)
+                
+            except ValueError as e:
+                return JsonResponse({
+                    'status': 'error',
+                    'message': str(e)
+                }, status=400)
+                
+        else:
+            # print("wrong shift_password ")s
+            return JsonResponse({"message": "Incorrect Shift Password"})
+            
+    except json.JSONDecodeError:
+        return JsonResponse({'status': 'error', 'message': 'Invalid JSON data'}, status=400)
+    except Exception as e:
+        return JsonResponse({'status': 'error', 'message': str(e)}, status=500)
+    
+def verify_master_key_for_all_employees(master_key_input):
+    for shift in Shift_schedule.objects.all():
+        if shift.shift_password and shift.verify_shift_password(master_key_input):
+            return True  # Match found
+    return False  # No match found
+    
+    
+# Check if nurse shift is active
+def get_active_shift(employee_id):
+        # Get current Manila time
+        manila_now = localtime(now())
+        current_day = manila_now.isoweekday()
+        current_time = manila_now.time()
+        
+        # Get all shifts for this employee
+        shifts = Shift_schedule.get_shifts_by_employee_id(employee_id)
+        
+        # Check each shift
+        for shift in shifts:
+            if (shift.day == current_day and 
+                shift.start_time <= current_time <= shift.end_time):
+                return shift  # Return the active shift
+        
+        return None  # No active shift

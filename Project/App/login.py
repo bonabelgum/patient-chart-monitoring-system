@@ -144,10 +144,10 @@ def check_shift(request):
         logout(request)
         return JsonResponse({'redirect': reverse('index')})
     if current_time > nurse_shift.end_time:
-        print(f"Shift ended for nurse ID {nurse_id} at {nurse_shift.end_time}")
+        # print(f"Shift ended for nurse ID {nurse_id} at {nurse_shift.end_time}")
         deleted = Shift_schedule.delete_shift(nurse_shift.id)
-        if(deleted):
-            print("yes deleted na po")
+        # if(deleted):
+        #     print("yes deleted na po")
         logout(request)
         return JsonResponse({
             'shift_ended': True,
@@ -156,16 +156,12 @@ def check_shift(request):
         })
     
     
-    print(f"Shift is not ended for {nurse_id} today.")
+    # print(f"Shift is not ended for {nurse_id} today.")
     return JsonResponse({'status': 'shift_active'})
 
 
 # Check if nurse shift is active
 def get_active_shift(employee_id):
-        """
-        Check if employee has any active shift right now (Manila time)
-        Returns the active shift or None
-        """
         # Get current Manila time
         manila_now = localtime(now())
         current_day = manila_now.isoweekday()

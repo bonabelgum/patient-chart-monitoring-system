@@ -61,3 +61,26 @@ class PatientInformationAdmin(admin.ModelAdmin):
     )
     readonly_fields = ('created_at', 'id')
     
+@admin.register(VitalSigns1)
+class VitalSigns1Admin(admin.ModelAdmin):
+    list_display = ('patient', 'created_at', 'updated_at')
+    search_fields = ('patient__name',)
+    list_filter = ('created_at',)
+
+@admin.register(VitalSigns2)
+class VitalSigns2Admin(admin.ModelAdmin):
+    list_display = ('patient', 'date_and_time', 'temperature', 'blood_pressure', 'pulse_rate')
+    search_fields = ('patient__name',)
+    list_filter = ('date_and_time',)
+
+@admin.register(Medication)
+class MedicationAdmin(admin.ModelAdmin):
+    list_display = ('patient', 'drug_name', 'dose', 'units', 'status', 'start_date')
+    search_fields = ('patient__name', 'drug_name')
+    list_filter = ('status', 'start_date', 'route')
+
+@admin.register(NurseNotes)
+class NurseNotesAdmin(admin.ModelAdmin):
+    list_display = ('patient', 'nurse', 'date', 'last_updated')
+    search_fields = ('patient__name', 'nurse__employee_id')
+    list_filter = ('date',)

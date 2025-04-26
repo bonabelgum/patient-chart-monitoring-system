@@ -95,7 +95,7 @@ def reject_master_key(request):
             
             is_valid = verify_master_key_for_all_employees(master_key)
             if is_valid == True: #Create the necessary action
-                print("Enter 3")
+                # print("Enter 3")
                 
                 confirm_nurse_id = request.session.get('confirm_nurse_id')
                 employee = Employee.objects.get(employee_id=confirm_nurse_id)

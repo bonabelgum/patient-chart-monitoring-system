@@ -143,6 +143,27 @@ class Shift_schedule(models.Model):
     def get_all_shifts(cls):
         return cls.objects.all().select_related('employee')
     
+    def decrypt_shift_password(self):
+        """Decrypt the master_key using Fernet."""
+        ferney_key = os.environ.get('FERNET_KEY')  # Get the Fernet key from .env
+        if not self.shift_password:
+            return None
+        fernet = Fernet(ferney_key)
+        try:
+            decrypted_key = fernet.decrypt(self.shift_password.encode())
+            return decrypted_key.decode()
+        except InvalidToken:
+            return None  # Handle invalid or corrupted data
+        
+    
+    def verify_shift_password(self, expected_key):
+            """Verify if the decrypted master_key matches the expected key."""
+            decrypted_key = self.decrypt_shift_password()
+            if decrypted_key is None:
+                return False  # Invalid or corrupted data
+            return decrypted_key == expected_key    
+        
+    
     @classmethod
     def get_employee_by_shift_id(cls, shift_id):
         """Get the employee object corresponding to the given shift_id."""

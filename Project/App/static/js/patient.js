@@ -323,6 +323,7 @@ document.addEventListener('DOMContentLoaded', function () {
         });
 
         patientSaveBtn.addEventListener('click', function() {
+            
             const patientTab = document.getElementById('patient');
             const reasonInput = patientTab.querySelector('#data-patient-reason-edit');
             const passwordInput = patientTab.querySelector('#data-patient-password-edit');
@@ -350,6 +351,8 @@ document.addEventListener('DOMContentLoaded', function () {
             }
         
             // 2. GET VALUES - Your existing value collection
+            
+            const editedPatientId = patientTab.querySelector('#data-patient-id-view').textContent;
             const editedName = patientTab.querySelector('#data-patient-name-edit').value;
             const editedSex = patientTab.querySelector('#data-patient-sex-edit').value;
             const editedBday = patientTab.querySelector('#data-patient-bday-edit').value;
@@ -366,22 +369,90 @@ document.addEventListener('DOMContentLoaded', function () {
             } else {
                 editedPhone = patientTab.querySelector('#data-patient-phone-edit').value;
             }
+            
+            
+            // Save Edited Patient Details to db
+            const patientData = {
+                patientId: editedPatientId,
+                editedName: editedName,
+                editedSex: editedSex,
+                editedBday: editedBday,
+                editedWard: editedWard,
+                editedStatus: editedStatus,
+                editedPhysician: editedPhysician,
+                editedReason: editedReason,
+                editedPhone: editedPhone,
+                editedPassword: editedPassword
+            };
+            
+            // Make the POST request
+            fetch('/api/update_patient/', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': csrfToken
+                },
+                body: JSON.stringify(patientData)
+            })
+            .then(async response => {
+                const data = await response.json();
+                
+                if (response.ok) {
+                    // HTTP 200-299
+                    if (data.status === 'success') {
+                        // 3. UPDATE VIEW - Your existing view updates
+                        patientTab.querySelector('#data-patient-name-view').textContent = editedName;
+                        patientTab.querySelector('#data-patient-sex-view').textContent = editedSex;
+                        patientTab.querySelector('#data-patient-bday-view').textContent = editedBday;
+                        patientTab.querySelector('#data-patient-phone-view').textContent = editedPhone;
+                        patientTab.querySelector('#data-patient-ward-view').textContent = editedWard;
+                        patientTab.querySelector('#data-patient-status-view').textContent = editedStatus;
+                        patientTab.querySelector('#data-physician-name-view').textContent = editedPhysician;
+                        patientTab.querySelector('#data-patient-reason-view').textContent = editedReason;
+                        patientTab.querySelector('#data-patient-password-view').textContent = editedPassword;
+                    
+                        // 4. CLEAR & EXIT
+                        reasonInput.value = ''; // Clear the reason field
+                        passwordInput.value = '';
+                        exitPatientEditMode();
+                        alert('Patient information updated successfully!');
+                    } else {
+                        console.error('Update failed:', data.message, data.errors);
+                        let errorMessages = '';
+            
+                        if (data.errors) {
+                            for (let field in data.errors) {
+                                errorMessages += `${field}: ${data.errors[field].join(', ')}\n`;
+                            }
+                        } else {
+                            errorMessages = data.message;
+                        }
+            
+                        alert('Please check your Shift Password:\n' + errorMessages);
+                    }
+                } else {
+                    // HTTP 400, 404, 500, etc.
+                    console.error('Server returned error:', data.message, data.errors);
+                    let errorMessages = '';
+            
+                    if (data.errors) {
+                        for (let field in data.errors) {
+                            errorMessages += `${field}: ${data.errors[field].join(', ')}\n`;
+                        }
+                    } else {
+                        errorMessages = data.message || 'Unknown error';
+                    }
+            
+                    alert('Server error while updating patient:\n' + errorMessages);
+                }
+            })
+            .catch(error => {
+                console.error('Network error:', error);
+                alert('Network error while updating patient');
+            });
+            
         
-            // 3. UPDATE VIEW - Your existing view updates
-            patientTab.querySelector('#data-patient-name-view').textContent = editedName;
-            patientTab.querySelector('#data-patient-sex-view').textContent = editedSex;
-            patientTab.querySelector('#data-patient-bday-view').textContent = editedBday;
-            patientTab.querySelector('#data-patient-phone-view').textContent = editedPhone;
-            patientTab.querySelector('#data-patient-ward-view').textContent = editedWard;
-            patientTab.querySelector('#data-patient-status-view').textContent = editedStatus;
-            patientTab.querySelector('#data-physician-name-view').textContent = editedPhysician;
-            patientTab.querySelector('#data-patient-reason-view').textContent = editedReason;
-            patientTab.querySelector('#data-patient-password-view').textContent = editedPassword;
-        
-            // 4. CLEAR & EXIT
-            reasonInput.value = ''; // Clear the reason field
-            passwordInput.value = '';
-            exitPatientEditMode();
+            
         });
         
         patientCancelBtn.addEventListener('click', exitPatientEditMode);

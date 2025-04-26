@@ -25,7 +25,7 @@ from App.views import signup_view, logout_view, patient_detail, get_employees, l
 from App.login import handle_request  # Import the function
 from App.admin_user import get_nurse_data, verify_master_key, reject_master_key, create_shift , delete_shift, get_all_logs, remove_user, get_all_shifts # Import the function
 from App.nurse import get_patients, check_patient_id
-from App.patient import receive_data
+from App.patient import receive_data, update_patient
 from App.login import check_shift
 
 urlpatterns = [
@@ -60,6 +60,7 @@ urlpatterns = [
     
     # patient
     path('api/receive_data/', receive_data, name='receive_data'),
+    path('api/update_patient/', update_patient, name='update_patient'),
     
     path("log_activity/", log_activity, name="log_activity"),
     path('api/schedule/', views.get_schedule_data, name='schedule-data'),
