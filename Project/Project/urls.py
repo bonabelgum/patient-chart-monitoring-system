@@ -25,7 +25,7 @@ from App.views import signup_view, logout_view, patient_detail, get_employees, l
 from App.login import handle_request  # Import the function
 from App.admin_user import get_nurse_data, verify_master_key, reject_master_key, create_shift , delete_shift, get_all_logs, remove_user, get_all_shifts # Import the function
 from App.nurse import get_patients, check_patient_id
-from App.patient import receive_data, update_patient
+from App.patient import receive_data, save_vital_signs, update_vs1, update_patient, update_vital_signs, check_shift_password, update_medication
 from App.login import check_shift
 
 urlpatterns = [
@@ -61,6 +61,11 @@ urlpatterns = [
     # patient
     path('api/receive_data/', receive_data, name='receive_data'),
     path('api/update_patient/', update_patient, name='update_patient'),
+    path('api/save_vital_signs/', save_vital_signs, name='save_vital_signs'),
+    path('api/update_vs1/', update_vs1, name='update_vs1'),
+    path('api/update_vital_signs/', update_vital_signs, name='update_vital_signs'),
+    path('api/check_shift_password/', check_shift_password, name='check_shift_password'),
+    path('api/update_medication/', update_medication, name='update_medication'),
     
     path("log_activity/", log_activity, name="log_activity"),
     path('api/schedule/', views.get_schedule_data, name='schedule-data'),

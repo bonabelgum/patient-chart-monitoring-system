@@ -463,6 +463,26 @@
                     </div>
                     <!--end of tab 3-->
                 </div>
+                <!-- shift password Confirmation Modal before going to pt page-->
+                <div class="modal fade" id="patientPasswordModal" tabindex="-1" aria-labelledby="passwordModalLabel" aria-hidden="true" data-bs-backdrop="static">
+                    <div class="modal-dialog">
+                        <div class="modal-content">
+                            <div class="modal-header">
+                                <h5 class="modal-title" id="passwordModalLabel">Access Patient Record</h5>
+                                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                            </div>
+                            <div class="modal-body">
+                                <div class="mb-3">
+                                    <label for="accessPassword" class="form-label">Enter Shift Password:</label>
+                                    <input type="password" class="form-control" id="accessPassword" placeholder="Password">
+                                </div>
+                            </div>
+                            <div class="modal-footer">
+                                <button type="button" class="btn btn-primary" id="confirmAccess">Confirm</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
 
                 <!-- tab4 -->
                 <div class="tab-pane fade" id="note" role="tabpanel" aria-labelledby="note-tab">
@@ -719,7 +739,7 @@
         </div>
         <!-- End Summary Hidden printable content -->
 
-        </div> <!--ano to, naliligaw?-->
+        </div> <!--ano to, naliligaw? (hahaha)-->
         
     </div> <!--all page-->
 

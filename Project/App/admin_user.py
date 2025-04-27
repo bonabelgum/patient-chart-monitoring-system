@@ -54,6 +54,7 @@ def get_nurse_data(request):
             return JsonResponse({'status': 'error', 'message': str(e)}, status=500)
     
     return JsonResponse({'status': 'error', 'message': 'Invalid request method'}, status=400) 
+
 # Accept the nurse then send email and change the status in db if correct master_key
 def verify_master_key(request):
     if request.method == "POST":

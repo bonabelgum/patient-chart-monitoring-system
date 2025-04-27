@@ -1,6 +1,7 @@
 
 import json
 from django.http import JsonResponse
+from django.shortcuts import get_object_or_404
 from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_POST
 from django.core.exceptions import ValidationError
@@ -14,6 +15,7 @@ def receive_data(request):
     if request.method == 'POST':
         data = json.loads(request.body)
         patient_id = data.get('patient_id')
+        request.session['patient_id'] = patient_id
 
         try:
             # Retrieve the patient by ID
@@ -22,13 +24,13 @@ def receive_data(request):
             patient_vs2 = VitalSigns2.objects.filter(patient_id=patient_id)
             med = Medication.objects.filter(patient_id=patient_id)
             notes = NurseNotes.objects.filter(patient_id=patient_id).order_by('-date')
-            print("patient ID: " + patient_id)
+            # print("patient ID: " + patient_id)
 
             # Prepare vitals data
             vitals_data = []
             for vs in patient_vs2:
                 vitals_data.append({
-                    'datetime': vs.date_and_time,
+                    'datetime': vs.date_and_time.strftime('%Y-%m-%d %H:%M:%S'),
                     'temperature': vs.temperature,
                     'blood_pressure': vs.blood_pressure,
                     'pulse': vs.pulse_rate,
@@ -120,6 +122,7 @@ def receive_data(request):
     return JsonResponse({'status': 'fail', 'error': 'Invalid request method'})
 
 
+
 @require_POST # Add logs for editing patient and reason
 def update_patient(request):
     try:
@@ -206,6 +209,148 @@ def update_patient(request):
     except Exception as e:
         return JsonResponse({'status': 'error', 'message': str(e)}, status=500)
     
+# add vital signs 
+def save_vital_signs(request):
+    patient_id = request.session.get('patient_id')  # Get patient ID from session
+    patient = get_object_or_404(PatientInformation, id=patient_id)
+
+    if request.method == 'POST':
+        data = json.loads(request.body)
+        vital_signs = VitalSigns2(
+            patient=patient,
+            temperature=data.get('temperature'),
+            blood_pressure=data.get('blood_pressure'),
+            pulse_rate=data.get('pulse'),
+            respiratory_rate=data.get('respiratory_rate'),
+            oxygen_saturation=data.get('oxygen'),
+        )
+        
+        
+        vital_signs.save()
+
+        return JsonResponse({'status': 'success', 'message': 'Vital signs added successfully'})
+
+    return JsonResponse({'status': 'failure', 'message': 'Invalid request'}, status=400)
+
+
+@require_POST
+def update_vs1(request):
+    try:
+        data = json.loads(request.body)
+        patient_id = request.session.get('patient_id')  # Get patient ID from session
+
+        if not patient_id:
+            return JsonResponse({'success': False, 'error': 'No patient ID in session'})
+
+        
+        is_valid = verify_master_key_for_all_employees(data.get('password')) # Check if shift password is correct
+        
+        if is_valid == True:
+            # Find the VitalSigns1 record for this patient
+            vital_signs = VitalSigns1.objects.filter(patient_id=patient_id).first()
+
+            if not vital_signs:
+                return JsonResponse({'success': False, 'error': 'Vital signs record not found'})
+
+            # Update fields
+            vital_signs.allergies = data.get('allergies')
+            vital_signs.family_history = data.get('family_history')
+            vital_signs.physical_exam = data.get('physical_exam')
+            vital_signs.diagnosis = data.get('diagnosis')
+
+            # Save changes
+            vital_signs.save()
+
+            return JsonResponse({'success': True, 'status': 'success', 'message': 'Vital signs updated successfully'})
+        
+        else:
+            # print("wrong shift_password ")s
+            return JsonResponse({'status': 'failed', "message": "Incorrect Shift Password"})
+
+    except Exception as e:
+        return JsonResponse({'success': False, 'error': str(e)})
+    
+@require_POST
+def update_vital_signs(request):
+    try:
+        data = json.loads(request.body)
+
+        # print('Received vital signs data:', data)
+        
+        
+        is_valid = verify_master_key_for_all_employees(data.get('password')) # Check if shift password is correct
+        
+        if is_valid == True:
+            
+            # Fetch the VitalSigns2 instance
+            vs_id = data.get('id')
+            if not vs_id:
+                return JsonResponse({'status': 'error', 'message': 'ID is required'}, status=400)
+
+            vital_sign = get_object_or_404(VitalSigns2, id=vs_id)
+
+            # Update fields if provided
+            if 'temperature' in data:
+                vital_sign.temperature = data['temperature'] or None
+            if 'blood_pressure' in data:
+                vital_sign.blood_pressure = data['blood_pressure'] or None
+            if 'pulse' in data:
+                vital_sign.pulse_rate = data['pulse'] or None
+            if 'respiratory' in data:
+                vital_sign.respiratory_rate = data['respiratory'] or None
+            if 'oxygen' in data:
+                vital_sign.oxygen_saturation = data['oxygen'] or None
+
+            vital_sign.save()
+
+            return JsonResponse({'status': 'success', 'message': 'Vital signs updated successfully'})
+        
+        else:
+            # print("wrong shift_password ")s
+            return JsonResponse({'status': 'failed', "message": "Incorrect Shift Password"})
+
+    except json.JSONDecodeError:
+        return JsonResponse({'status': 'error', 'message': 'Invalid JSON data'}, status=400)
+    except VitalSigns2.DoesNotExist:
+        return JsonResponse({'status': 'error', 'message': 'Vital signs record not found'}, status=404)
+    except Exception as e:
+        return JsonResponse({'status': 'error', 'message': str(e)}, status=500)
+    
+ 
+@require_POST
+def update_medication(request):
+    try:
+        data = json.loads(request.body)
+        # print("Received medication data:", data)
+        
+        is_valid = verify_master_key_for_all_employees(data.get('password')) # Check if shift password is correct
+        
+        if is_valid == True:
+            medication = get_object_or_404(Medication, id=data.get('id'))
+
+            # Update fields
+            medication.drug_name = data.get('drug_name', medication.drug_name)
+            medication.dose = data.get('dose', medication.dose)
+            medication.units = data.get('units', medication.units)
+            medication.frequency = data.get('frequency', medication.frequency)
+            medication.route = data.get('route', medication.route)
+            medication.health_diagnostics = data.get('health_diagnostic', medication.health_diagnostics)
+            medication.patient_instructions = data.get('patient_instructions', medication.patient_instructions)
+            medication.pharmacist_instructions = data.get('pharmacist_instructions', medication.pharmacist_instructions)
+            
+            # Save the updated Medication
+            medication.save()
+
+            return JsonResponse({'status': 'success', 'message': 'Medication updated successfully'})
+        else:
+            # print("wrong shift_password ")s
+            return JsonResponse({'status': 'failed', "message": "Incorrect Shift Password"})
+        
+    except json.JSONDecodeError:
+        return JsonResponse({'status': 'error', 'message': 'Invalid JSON data'}, status=400)
+    except Exception as e:
+        return JsonResponse({'status': 'error', 'message': str(e)}, status=500)
+    
 def verify_master_key_for_all_employees(master_key_input):
     for shift in Shift_schedule.objects.all():
         if shift.shift_password and shift.verify_shift_password(master_key_input):
@@ -230,3 +375,16 @@ def get_active_shift(employee_id):
                 return shift  # Return the active shift
         
         return None  # No active shift
+    
+def check_shift_password(request):
+    if request.method == 'POST':
+        data = json.loads(request.body)
+        # password = data.get('password')
+        
+        is_valid = verify_master_key_for_all_employees(data.get('password')) # Check if shift password is correct
+        
+        if is_valid == True:
+            # print("ytes valid po")
+            return JsonResponse({'is_valid': True})
+        else:
+            return JsonResponse({'is_valid': False})

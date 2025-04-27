@@ -1,4 +1,5 @@
 let schedule_end_time = null
+let isPasswordValid = false;
 
 document.addEventListener('DOMContentLoaded', function () {
     //retrieve the patient data from sessionStorage
@@ -107,6 +108,10 @@ document.addEventListener('DOMContentLoaded', function () {
 
             document.getElementById('data-patient-diagnosis-view').textContent = patient.diagnosis
             document.getElementById('data-patient-diagnosis-edit').value = patient.diagnosis;
+            // data-patient-reason-edit
+            // data-patient-password-edit1
+
+            
 
             // ----VITALS TABLE -----
             if (data.vitals_data) {
@@ -154,6 +159,7 @@ document.addEventListener('DOMContentLoaded', function () {
                     editModal.show();
                 });
                 // Function to populate modal with row data
+                // Edit Vital Sign
                 function populateVitalsModal(row) {
                     // Fill the form fields
                     $('#edit-vs-temperature').val(row.temperature || '');
@@ -164,6 +170,63 @@ document.addEventListener('DOMContentLoaded', function () {
                     // Clear reason and password fields
                     $('#edit-vs-reason').val('');
                     $('#edit-vs-password').val('');
+                    document.getElementById('edit-vs-submit').addEventListener('click', function() {
+                        const vitalSignsData = {
+                            temperature: $('#edit-vs-temperature').val(),
+                            blood_pressure: $('#edit-vs-bp').val(),
+                            pulse: $('#edit-vs-pulse').val(),
+                            respiratory: $('#edit-vs-respiratory').val(),
+                            oxygen: $('#edit-vs-oxygen').val(),
+                            reason: $('#edit-vs-reason').val(),
+                            password: $('#edit-vs-password').val(),
+                            id: row.id
+                        };
+                    
+                    
+                        // console.log('Sending data:', row.id);
+                        fetch('/api/update_vital_signs/', {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json',
+                                'X-CSRFToken': csrfToken,  // Make sure csrfToken is available
+                            },
+                            body: JSON.stringify(vitalSignsData)
+                        })
+                        .then(response => response.json())
+                        .then(data => {
+                            // console.log('Response from server:', data);
+                            
+                            
+                            if(data.status == 'failed'){
+                                alert(data.message);
+                            }else{
+                                console.log('Response from server:', data);
+                                const modal = bootstrap.Modal.getInstance(document.getElementById('editVitalsModal'));
+                                modal.hide();
+                                // Now update the row manually
+                                row.temperature = vitalSignsData.temperature;
+                                row.blood_pressure = vitalSignsData.blood_pressure;
+                                row.pulse = vitalSignsData.pulse;
+                                row.respiratory = vitalSignsData.respiratory;
+                                row.oxygen = vitalSignsData.oxygen;
+
+                                // Then update the table
+                                $('#vitals-table').bootstrapTable('updateByUniqueId', {
+                                    id: row.id,
+                                    row: row
+                                });
+                                alert('Vital Signs Saved');
+                            }
+
+                            
+                            // alert('Data sent successfully!');
+                        })
+                        .catch(error => {
+                            console.error('Error:', error);
+                            alert('Error sending data.');
+                        });
+                    });
+                    
                 }
                 // Helper function to format datetime for input[type=datetime-local]
                 function formatDateTimeForInput(datetimeString) {
@@ -674,26 +737,60 @@ document.addEventListener('DOMContentLoaded', function() {
                 return; // Stop if validation fails
             }
 
-            // Update view with edited values
-            vitalsTab.querySelector('#data-patient-name-view1').textContent = 
-                vitalsTab.querySelector('#data-patient-name-edit1').value;   
-            vitalsTab.querySelector('#data-patient-allergies-view').textContent = 
-                vitalsTab.querySelector('#data-patient-allergies-edit').value;  
-            vitalsTab.querySelector('#data-patient-family-history-view').textContent = 
-                vitalsTab.querySelector('#data-patient-family-history-edit').value;   
-            vitalsTab.querySelector('#data-patient-physical-exam-view').textContent = 
-                vitalsTab.querySelector('#data-patient-physical-exam-edit').value;    
-            vitalsTab.querySelector('#data-patient-diagnosis-view').textContent = 
-                vitalsTab.querySelector('#data-patient-diagnosis-edit').value;
-            //vitalsTab.querySelector('#data-patient-reason-view1').textContent = reasonInput.value;
+            // vs1 edit save to db
+            const patientUpdateData = {
+                name: document.getElementById('data-patient-name-edit1').value,
+                allergies: document.getElementById('data-patient-allergies-edit').value,
+                family_history: document.getElementById('data-patient-family-history-edit').value,
+                physical_exam: document.getElementById('data-patient-physical-exam-edit').value,
+                diagnosis: document.getElementById('data-patient-diagnosis-edit').value,
+                reason: document.getElementById('data-patient-reason-edit').value,
+                password: document.getElementById('data-patient-password-edit1').value
+            };
 
-            // Clear the reason field for next time
-            vitalsTab.querySelector('.reason-field').classList.add('d-none'); 
-            reasonInput.value = '';
-            vitalsTab.querySelector('.password-field1').classList.add('d-none'); 
-            passwordInput.value = '';
+            fetch('/api/update_vs1/', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': csrfToken,   // Make sure you include CSRF token if needed
+                },
+                body: JSON.stringify(patientUpdateData)
+            })
+            .then(response => response.json())
+            .then(result => {
+                if (result.success) {
+                    // Update view with edited values
+                    vitalsTab.querySelector('#data-patient-name-view1').textContent = 
+                    vitalsTab.querySelector('#data-patient-name-edit1').value;   
+                    vitalsTab.querySelector('#data-patient-allergies-view').textContent = 
+                        vitalsTab.querySelector('#data-patient-allergies-edit').value;  
+                    vitalsTab.querySelector('#data-patient-family-history-view').textContent = 
+                        vitalsTab.querySelector('#data-patient-family-history-edit').value;   
+                    vitalsTab.querySelector('#data-patient-physical-exam-view').textContent = 
+                        vitalsTab.querySelector('#data-patient-physical-exam-edit').value;    
+                    vitalsTab.querySelector('#data-patient-diagnosis-view').textContent = 
+                        vitalsTab.querySelector('#data-patient-diagnosis-edit').value;
+                    //vitalsTab.querySelector('#data-patient-reason-view1').textContent = reasonInput.value;
+
+                    // Clear the reason field for next time
+                    vitalsTab.querySelector('.reason-field').classList.add('d-none'); 
+                    reasonInput.value = '';
+                    vitalsTab.querySelector('.password-field1').classList.add('d-none'); 
+                    passwordInput.value = '';
+                    
+                    exitVsEditMode();
+                    alert('Patient updated successfully!');
+                    // Optionally reload or refresh data here
+                } else {
+                    alert('Failed to update patient: ' + (result.error || 'Unknown error.'));
+                }
+            })
+            .catch(error => {
+                console.error('Error updating patient:', error);
+                alert('An error occurred.');
+            });
+
             
-            exitVsEditMode();
         });
 
         vsCancelBtn.addEventListener('click', function() {
@@ -761,6 +858,27 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 });
 
+
+// add vs2
+document.getElementById('add-vitals-btn').addEventListener('click', function() {
+    const temperature = document.querySelector('input[placeholder="°C"]').value;
+    const bloodPressure = document.querySelector('input[placeholder="mmHg"]').value;
+    const pulse = document.querySelector('input[placeholder="bpm"]').value;
+    const respiratory = document.querySelector('input[placeholder="bpm"]').value;
+    const oxygen = document.querySelector('input[placeholder="%"]').value;
+
+    // Check if all fields are filled
+    if (!temperature || !bloodPressure || !pulse || !respiratory || !oxygen) {
+        alert("Please fill out all fields.");
+        return;
+    }
+    
+    initPasswordModal()
+    const passwordModal = new bootstrap.Modal(document.getElementById('patientPasswordModal'));
+    passwordModal.show();
+});
+
+
 //med
 function getCookie(name) {
     let cookieValue = null;
@@ -798,10 +916,11 @@ function showEditableMedicationModal(drugData) {
     // Show modal
     medicationModal.show();
 }
+let selectedDrugData = {};
 // Example of how to call it when a table row is clicked
 $('#active tbody, #inactive tbody').on('click', 'tr', function() {
     // Get the full drug data from data attributes
-    const fullDrugData = $(this).data('fullDrugData') || {
+    fullDrugData = $(this).data('fullDrugData') || {
         drug_name: $(this).find('td:eq(0)').text(),
         dose: $(this).find('td:eq(1)').text(),
         units: $(this).find('td:eq(2)').text(),
@@ -817,13 +936,63 @@ $('#active tbody, #inactive tbody').on('click', 'tr', function() {
     showEditableMedicationModal(fullDrugData);
 });
 // Handle password confirmation
+// edit medication
 $('#med-confirm-btn').click(function() {
     const password = $('#med-password').val();
     if (!password) {
         alert('Please enter your password');
         return;
     }
+    const medicationData = {
+        drug_name: $('#med-drug-name').val(),
+        dose: $('#med-dose').val(),
+        units: $('#med-units').val(),
+        frequency: $('#med-frequency').val(),
+        route: $('#med-route').val(),
+        health_diagnostic: $('#med-diagnostic').val(),
+        patient_instructions: $('#med-pt-instructions').val(),
+        pharmacist_instructions: $('#med-md-instructions').val(),
+        password: $('#med-password').val(),
+        id: fullDrugData.id 
+    };
     
+    fetch('/api/update_medication/', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': csrfToken,  // if CSRF is required
+        },
+        body: JSON.stringify(medicationData)
+    })
+    .then(response => response.json())
+    .then(data => {
+        if(data.status == 'failed'){
+            alert(data.message);
+        }else{
+            console.log("should hide the modal");
+            // Update the specific row in the table without reloading
+            $('#active tbody tr, #inactive tbody tr').each(function() {
+                const fullData = $(this).data('fullDrugData');
+                if (fullData && fullData.id == medicationData.id) {
+                    // Update fullDrugData attached to the row
+                    $(this).data('fullDrugData', medicationData);
+
+                    // Update visible table cells
+                    $(this).find('td:eq(0)').text(medicationData.drug_name);
+                    $(this).find('td:eq(1)').text(medicationData.dose);
+                    $(this).find('td:eq(2)').text(medicationData.units);
+                    $(this).find('td:eq(3)').text(medicationData.frequency);
+                    $(this).find('td:eq(5)').text(medicationData.route);
+                }
+            });
+            
+            alert("Medication's Saved");
+            medicationModal.hide();
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+    });
     // Here you would typically verify the password
     console.log('Password verification would happen here');
 
@@ -1087,3 +1256,119 @@ function checkShiftStatus() {
 
 // Initial call
 checkShiftStatus();
+function initPasswordModal() {
+    // Initial state of password validity
+
+    // Show modal
+    document.getElementById('patientPasswordModal').addEventListener('show.bs.modal', () => {
+        const modal = document.getElementById('patientPasswordModal');
+        modal.removeAttribute('aria-hidden');
+        modal.removeAttribute('inert');
+        document.getElementById('accessPassword').value = '';
+        setTimeout(() => document.getElementById('accessPassword').focus(), 10);
+    });
+
+    // Blur when modal hides
+    document.getElementById('patientPasswordModal').addEventListener('hide.bs.modal', () => {
+        document.activeElement.blur();
+    });
+
+    // Reset modal attributes when hidden
+    document.getElementById('patientPasswordModal').addEventListener('hidden.bs.modal', () => {
+        const modal = document.getElementById('patientPasswordModal');
+        modal.setAttribute('aria-hidden', 'true');
+        modal.setAttribute('inert', '');
+    });
+
+    // Confirm access button logic
+    document.getElementById('confirmAccess').addEventListener('click', function() {
+        const password = document.getElementById('accessPassword').value;
+
+        if (password) { 
+            fetch('/api/check_shift_password/', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': csrfToken, // CSRF Token if required
+                },
+                body: JSON.stringify({ password: password })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.is_valid) {
+                    const temperature = document.querySelector('input[placeholder="°C"]').value;
+                    const bloodPressure = document.querySelector('input[placeholder="mmHg"]').value;
+                    const pulse = document.querySelector('input[placeholder="bpm"]').value;
+                    const respiratory = document.querySelector('input[placeholder="bpm"]').value;
+                    const oxygen = document.querySelector('input[placeholder="%"]').value;
+
+                        // console.log("inside "+pulse +" "+ oxygen);
+                        fetch('/api/save_vital_signs/', {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json',
+                                'X-CSRFToken': csrfToken,  // Add CSRF token if needed
+                            },
+                            body: JSON.stringify({
+                                temperature: temperature,
+                                blood_pressure: bloodPressure,
+                                pulse: pulse,
+                                respiratory_rate: respiratory,
+                                oxygen: oxygen,
+                            })
+                        })
+                        .then(response => response.json())
+                        .then(data => {
+                            // Process the new row
+                            const newRow = {
+                                datetime: new Date().toLocaleString(),  // Current date and time
+                                temperature: temperature,
+                                blood_pressure: bloodPressure,
+                                pulse: pulse,
+                                respiratory: respiratory,
+                                oxygen: oxygen,
+                                id: Date.now() + Math.random()  // Unique ID
+                            };
+
+                            // Get current table data (existing rows)
+                            let tableData = $('#vitals-table').bootstrapTable('getData');
+
+                            // Add the new row
+                            tableData.push(newRow);
+
+                            // Refresh the table
+                            $('#vitals-table').bootstrapTable('load', tableData);
+                        })
+                        
+                        .catch(error => console.error("Error:", error));
+                        
+                        // Print the values
+                        console.log({
+                            temperature: temperature,
+                            bloodPressure: bloodPressure,
+                            pulse: pulse,
+                            respiratory: respiratory,
+                            oxygen: oxygen
+                        });
+    
+                    const modal = bootstrap.Modal.getInstance(document.getElementById('patientPasswordModal'));
+                    modal.hide();
+                } else {
+                    alert('Incorrect Shift Password');
+                }
+            })
+            .catch(error => {
+                console.error("Error:", error);
+            });
+        } else {
+            alert('Please enter a password');
+        }
+    });
+
+    // Allow pressing 'Enter' to confirm access
+    document.getElementById('accessPassword').addEventListener('keypress', function(e) {
+        if (e.key === 'Enter') {
+            document.getElementById('confirmAccess').click();
+        }
+    });
+}
