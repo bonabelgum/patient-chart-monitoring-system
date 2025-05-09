@@ -1,6 +1,6 @@
 from django.contrib import admin
 from django.utils.html import format_html
-from .models import Admin_logs, Employee, MedicationLogs, PatientInformation, Shift_schedule, VitalSigns1, VitalSigns2, Medication, NurseNotes
+from .models import Admin_logs, Employee, MedicationLogs, Nurse_logs, PatientInformation, Shift_schedule, VitalSigns1, VitalSigns2, Medication, NurseNotes
     
 
 @admin.register(Employee)
@@ -93,3 +93,15 @@ class MedicationLogsAdmin(admin.ModelAdmin):
     list_editable = ('status',)
     ordering = ('-date_time',)
     fieldsets = ((None, {'fields': ('patient', 'medication', 'date_time', 'administered_by', 'status')}),)
+
+@admin.register(Nurse_logs)
+class NurseLogsAdmin(admin.ModelAdmin):
+    list_display = ('formatted_date_time', 'activity')
+    search_fields = ('activity',)
+    list_filter = ('date_time',)
+    ordering = ('-date_time',)
+
+    def formatted_date_time(self, obj):
+        from django.utils.timezone import localtime
+        return localtime(obj.date_time).strftime('%Y-%m-%d %H:%M:%S')
+    formatted_date_time.short_description = 'Date/Time (PH)'
