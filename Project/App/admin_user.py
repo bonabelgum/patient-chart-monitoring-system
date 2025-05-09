@@ -3,10 +3,14 @@ import os
 import secrets
 from django.http import JsonResponse
 from django.core.mail import send_mail
+from django.shortcuts import get_object_or_404
 from django.views.decorators.csrf import csrf_exempt
 from django.utils.dateparse import parse_time
+from django.utils.dateparse import parse_date, parse_time
 from cryptography.fernet import Fernet
 from .models import  Employee, Shift_schedule, Admin_logs
+from django.views.decorators.http import require_POST
+from datetime import datetime, timedelta
 
 
 # @csrf_exempt  # Use this decorator if you're not using CSRF token in your AJAX request
@@ -17,23 +21,23 @@ def get_nurse_data(request):
             nurse_id = data.get('id')
             if not nurse_id:
                 return JsonResponse({'status': 'error', 'message': 'No ID provided'}, status=400)
-            
+
             print(nurse_id)
             # Store in session if needed
             request.session['confirm_nurse_id'] = nurse_id
             
-            # Get all shifts for this nurse
-            shifts = Shift_schedule.objects.filter(employee_id=nurse_id).order_by('day', 'start_time')
-            
+            # Get all shifts for this nurse using the method get_shifts_by_employee_id
             shifts = Shift_schedule.get_shifts_by_employee_id(employee_id=nurse_id)
+            
+            # Debugging - print shifts
             for shift in shifts:
                 print(shift.day, shift.start_time, shift.end_time)
-            
-            
+
             # Convert to list of dictionaries
             shift_data = [
-                {
+                { 
                     'id': shift.id,
+                    'date': shift.date.strftime('%B %d, %Y'),  # Format date as March 30, 2025
                     'day': shift.get_day_display(),
                     'day_number': shift.day,
                     'start_time': shift.start_time.strftime('%H:%M'),
@@ -53,7 +57,8 @@ def get_nurse_data(request):
         except Exception as e:
             return JsonResponse({'status': 'error', 'message': str(e)}, status=500)
     
-    return JsonResponse({'status': 'error', 'message': 'Invalid request method'}, status=400) 
+    return JsonResponse({'status': 'error', 'message': 'Invalid request method'}, status=400)
+
 
 # Accept the nurse then send email and change the status in db if correct master_key
 def verify_master_key(request):
@@ -121,13 +126,23 @@ def reject_master_key(request):
 
 # @csrf_exempt  # Remove this in production after testing
 # Create shift here
-def create_shift(request):
-    if request.method != 'POST':
-        return JsonResponse({'status': 'error', 'message': 'Only POST requests are allowed'}, status=405)
 
+@require_POST
+def create_shift(request):
     try:
         data = json.loads(request.body)
-        
+
+        # Validate and parse date
+        try:
+            shift_date = parse_date(data['date'])
+            if not shift_date:
+                raise ValueError("Invalid date format")
+        except (ValueError, TypeError, KeyError):
+            return JsonResponse({
+                'status': 'error',
+                'message': 'Invalid date format. Use YYYY-MM-DD'
+            }, status=400)
+
         # Validate and parse times
         try:
             start_time = parse_time(data['start_time'])
@@ -137,32 +152,32 @@ def create_shift(request):
         except (ValueError, TypeError, KeyError):
             return JsonResponse({
                 'status': 'error',
-                'message': 'Invalid time format. Use HH:MM:SS'
+                'message': 'Invalid time format. Use HH:MM'
             }, status=400)
 
         # Get employee
         nurse_id = request.session.get('confirm_nurse_id')
         employee = Employee.objects.get(employee_id=nurse_id)
-            
-        master_key = secrets.token_hex(4)  # Create a masterkey (16 characters = 8 bytes)
-        ferney_key = os.environ.get('FERNET_KEY')  # Get the Fernet key from .env
+
+        # Encrypt the shift password
+        master_key = secrets.token_hex(4)
+        ferney_key = os.environ.get('FERNET_KEY')
         encrypted_text = encrypt_string(master_key, ferney_key)
 
         # Create shift
         shift = Shift_schedule.objects.create(
             employee=employee,
-            day=convert_day_to_number(data['day']),
+            date=shift_date,
             start_time=start_time,
             end_time=end_time,
             shift_password=encrypted_text
         )
 
-            
         return JsonResponse({
             'status': 'success',
             'shift': {
                 'id': shift.id,
-                'day': shift.get_day_display(),
+                'date': shift.date.strftime('%Y-%m-%d'),
                 'start_time': shift.start_time.strftime('%H:%M'),
                 'end_time': shift.end_time.strftime('%H:%M'),
                 'employee': employee.name
@@ -171,6 +186,39 @@ def create_shift(request):
 
     except Employee.DoesNotExist:
         return JsonResponse({'status': 'error', 'message': 'Employee not found'}, status=404)
+    except Exception as e:
+        return JsonResponse({'status': 'error', 'message': str(e)}, status=500)
+
+    
+@require_POST
+def submit_ot(request):
+    try:
+        data = json.loads(request.body)
+        hours = int(data.get('hours'))  # Convert to int
+        shift_id = data.get('shift_id')
+
+        print("Received OT hours:", hours)
+        print("Received shift ID:", shift_id)
+
+        # Get the shift instance
+        shift = get_object_or_404(Shift_schedule, id=shift_id)
+
+        # Combine today's date and the shift's end_time to create a datetime object
+        today = datetime.today()
+        original_end_datetime = datetime.combine(today, shift.end_time)
+
+        # Add the overtime hours
+        new_end_datetime = original_end_datetime + timedelta(hours=hours)
+
+        # Save the updated end_time back to shift
+        shift.end_time = new_end_datetime.time()  # Only save the time part
+        shift.save()
+
+        print(f"Shift end_time updated to: {shift.end_time}")
+
+        Admin_logs.add_log_activity("Nurse Overtime for " + str(hours) + " hour/s")
+
+        return JsonResponse({'status': 'success', 'time': shift.end_time, 'message': 'OT hours submitted and end_time updated'})
     except Exception as e:
         return JsonResponse({'status': 'error', 'message': str(e)}, status=500)
         
@@ -194,9 +242,9 @@ def delete_shift(request):
         employee = shift.employee  # Directly access the employee through the ForeignKey
         
         # Debug prints
-        print(f"Processing deletion for shift ID: {shift_id}")
-        print(f"Day: {shift.get_day_display()}")
-        print(f"Employee: {employee.name}")
+        # print(f"Processing deletion for shift ID: {shift_id}")
+        # print(f"Day: {shift.get_day_display()}")
+        # print(f"Employee: {employee.name}")
         
         # Delete the shift
         deleted = Shift_schedule.delete_shift_by_id(shift_id)

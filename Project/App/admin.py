@@ -1,6 +1,6 @@
 from django.contrib import admin
 from django.utils.html import format_html
-from .models import Admin_logs, Employee, PatientInformation, Shift_schedule, VitalSigns1, VitalSigns2, Medication, NurseNotes
+from .models import Admin_logs, Employee, MedicationLogs, PatientInformation, Shift_schedule, VitalSigns1, VitalSigns2, Medication, NurseNotes
     
 
 @admin.register(Employee)
@@ -84,3 +84,12 @@ class NurseNotesAdmin(admin.ModelAdmin):
     list_display = ('patient', 'nurse', 'date', 'last_updated')
     search_fields = ('patient__name', 'nurse__employee_id')
     list_filter = ('date',)
+
+@admin.register(MedicationLogs)
+class MedicationLogsAdmin(admin.ModelAdmin):
+    list_display = ('patient', 'medication', 'date_time', 'administered_by', 'status')
+    search_fields = ('patient__name', 'medication__name', 'administered_by')
+    list_filter = ('status', 'date_time')
+    list_editable = ('status',)
+    ordering = ('-date_time',)
+    fieldsets = ((None, {'fields': ('patient', 'medication', 'date_time', 'administered_by', 'status')}),)

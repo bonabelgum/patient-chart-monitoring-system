@@ -15,6 +15,8 @@ import uuid
 from django.utils.timezone import localtime, now
 from datetime import timedelta
 
+from django.core.exceptions import ValidationError
+
 
 
 class Employee(models.Model): 
@@ -131,13 +133,23 @@ class Shift_schedule(models.Model):
         (6, 'Saturday'),
         (7, 'Sunday'),
     ]
-    
-    
-    day = models.PositiveSmallIntegerField(choices=DAYS_OF_WEEK)
+
+    date = models.DateField(null=True, blank=True)
+    day = models.PositiveSmallIntegerField(choices=DAYS_OF_WEEK, editable=False)  # Auto-set based on date
     start_time = models.TimeField()
     end_time = models.TimeField()
     employee = models.ForeignKey(Employee, on_delete=models.CASCADE, related_name='shifts')
-    shift_password = models.TextField(blank=True, null=True) # Optional field
+    shift_password = models.TextField(blank=True, null=True)
+
+    def save(self, *args, **kwargs):
+        if self.date:
+            self.day = self.date.isoweekday()  # 1 = Monday, ..., 7 = Sunday
+        else:
+            raise ValidationError("Date must be set to compute the day.")
+        super().save(*args, **kwargs)
+
+    def __str__(self):
+        return f"{self.employee} - {self.date} ({self.get_day_display()})"
     
     @classmethod
     def get_all_shifts(cls):
@@ -231,6 +243,33 @@ class Admin_logs(models.Model):
     def __str__(self):
         # Convert to Philippine time before display
         ph_time = localtime(self.date_time)
+        return f"[{ph_time.strftime('%B %d, %Y %H:%M:%S')}] {self.activity}"
+
+    @classmethod
+    def add_log_activity(cls, activity_message):
+        """Creates log with automatic UTC timestamp"""
+        return cls.objects.create(activity=activity_message)
+    
+    @classmethod
+    def get_all_logs(cls):
+        """Returns all logs converted to Philippine time"""
+        return [
+            {
+                'date_time': localtime(log.date_time).strftime('%B %d, %Y %H:%M:%S'),
+                'activity': log.activity,
+                'timezone': 'Asia/Manila'  # Explicitly state the timezone
+            }
+            for log in cls.objects.all().order_by('-date_time')
+        ]
+        
+class Nurse_logs(models.Model):
+    # Stores as UTC (correct for database), displays as local time
+    date_time = models.DateTimeField(default=timezone.now)
+    activity = models.TextField()
+
+    def __str__(self):
+        # Convert to Philippine time before display
+        ph_time = localtime(self.date_time)
         return f"[{ph_time.strftime('%Y-%m-%d %H:%M:%S %Z')}] {self.activity}"
 
     @classmethod
@@ -276,8 +315,11 @@ class PatientInformation(models.Model):
     name = models.CharField(max_length=100)
     sex = models.CharField(max_length=10, choices=SEX_CHOICES)
     birthday = models.DateField()
+    weight = models.FloatField(null=True, blank=True)
+    height = models.FloatField(null=True, blank=True)
     phone_number = models.CharField(max_length=20)
     status = models.CharField(max_length=10, choices=STATUS_CHOICES)
+    number = models.CharField(max_length=100, blank=True, null=True)
     ward = models.CharField(max_length=20, choices=WARD_CHOICES)
     qr_code = models.ImageField(upload_to='qr_codes', blank=True)
     physician_name = models.CharField(max_length=100, blank=True)
@@ -310,6 +352,7 @@ class PatientInformation(models.Model):
                 border=4,
             )
 
+            
             qr_data = self.id
             qr.add_data(qr_data)
             qr.make(fit=True)
@@ -397,7 +440,7 @@ class Medication(models.Model):
     STATUS_CHOICES = [
         ('active', 'Active'),
         ('completed', 'Completed'),
-        ('inactive', 'Inactive'),
+        ('discontinued', 'Discontinued'),
     ]
 
     # Route choices (e.g., Oral, IV, Topical)
@@ -476,7 +519,35 @@ class Medication(models.Model):
     class Meta:
         ordering = ['-start_date']  # Newest medications first
         verbose_name_plural = "Medications"
+#med logs
+class MedicationLogs(models.Model):
+    STATUS_CHOICES = [
+        ('administered', 'Administered'),
+        ('not_taken', 'Not Taken'),
+        ('refused', 'Refused'),
+    ]
+    
+    patient = models.ForeignKey(PatientInformation, on_delete=models.CASCADE)
+    medication = models.ForeignKey(  
+        Medication, 
+        on_delete=models.CASCADE,
+        related_name='logs', 
+        null=True,  
+        blank=True
+    )
+    #drug_name = models.CharField(max_length=100)  # Keep for historical reference
+    date_time = models.DateTimeField()
+    administered_by = models.CharField(max_length=100)
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES)
 
+    def __str__(self):
+        return f"{self.medication.drug_name if self.medication else 'No Drug'} - {self.get_status_display()} at {self.date_time}"
+
+
+    class Meta:
+        ordering = ['-date_time']  # Newest logs first
+        verbose_name_plural = "Medication Logs"
+        
 #nurse notes
 class NurseNotes(models.Model):
     patient = models.ForeignKey(

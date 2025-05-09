@@ -54,22 +54,26 @@ def send_master_key(master_key, email):
 # verify otp then create and encrypt masterkey
 def admin_code_verification(request):
     if request.method == "POST":
-        entered_code = request.POST.get("verification_code")
+        try:
+            body_unicode = request.body.decode('utf-8')
+            body_data = json.loads(body_unicode)
+            entered_code = body_data.get('verification_code')  # 🛑 From fetch body
+        except Exception as e:
+            return JsonResponse({"error": "Invalid data"}, status=400)
+
         admin_data = request.session.get("admin_data", {})
-        email = admin_data.get("email")  # Get email from session
+        email = admin_data.get("email")
         stored_otp = cache.get(email)
 
         if entered_code == stored_otp:
-            master_key = secrets.token_hex(8)  # Create a masterkey (16 characters = 8 bytes)
-            ferney_key = os.environ.get('FERNET_KEY')  # Get the Fernet key from .env
+            master_key = secrets.token_hex(8)
+            ferney_key = os.environ.get('FERNET_KEY')
             encrypted_text = encrypt_string(master_key, ferney_key)
 
-            # ✅ Create a new user
             user, created = User.objects.get_or_create(username=email, defaults={"email": email})
 
-            # ✅ Create the Employee and link it to the User
             employee = Employee.objects.create(
-                user=user,  # Link the user to the employee
+                user=user,
                 name=admin_data.get("name"),
                 birthdate=admin_data.get("birthdate"),
                 sex=admin_data.get("sex"),
@@ -78,13 +82,13 @@ def admin_code_verification(request):
                 email=admin_data.get("email"),
                 phone_number=admin_data.get("phone_number"),
                 master_key=encrypted_text,
-                status = "Registered"
+                status="Registered"
             )
 
             send_master_key(master_key, admin_data.get("email"))
-            return redirect("index")  # Redirect to login page after success
+            return JsonResponse({"status": "success", "message": "Verification successful. Redirecting to login."})
         else:
-            return redirect("signup")  # Redirect back if failed
+            return JsonResponse({"status": "fail", "message": "Invalid verification code."})
 
     return JsonResponse({"error": "Invalid request"}, status=400)
     
@@ -117,7 +121,7 @@ def verify_admin(request): #from frontend to django
                 conflicting_fields.append("Employee ID")
             #check for existing email
             if Employee.objects.filter(email=email).exists():
-                conflicting_fields.append("Email")
+                conflicting_fields.append("Email") 
             #check for existing phone number
             phone_number = data.get("phone_number")
             if phone_number and Employee.objects.filter(phone_number=phone_number).exists():
@@ -134,7 +138,7 @@ def verify_admin(request): #from frontend to django
                 "birthdate": birthdate,
                 "sex":sex,
                 "adminID": adminID,
-                "phone_number": phone_number,
+                "phone_number":"(+63)"+phone_number,
                 "email": email,
                 "role":role,
                 "status":"Registered",
@@ -211,7 +215,7 @@ def verify_nurse(request): #from frontend to django
                 employee_id=nurseID,
                 role=role,
                 email=email,
-                phone_number=phone_number,
+                phone_number="(+63)"+phone_number,
                 status="Pending"
             )
             

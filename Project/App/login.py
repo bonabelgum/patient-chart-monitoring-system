@@ -12,8 +12,37 @@ from cryptography.fernet import Fernet
 
 from .models import Admin_logs, Employee, Shift_schedule
 from django.utils.timezone import localtime, now
+from django.utils import timezone
+from datetime import datetime, timedelta
 
-# print("Helllo worllldd")
+def get_finished_shifts():
+    now = timezone.localtime()
+
+    # Get all shifts 
+    shifts = Shift_schedule.objects.all()
+    finished_shifts = []
+
+    for shift in shifts:
+        shift_start_time = shift.start_time
+        shift_end_time = shift.end_time
+        shift_date = shift.date
+
+        # If it's an overnight shift (starts today, ends next day)
+        if shift_end_time < shift_start_time:
+            shift_end_datetime = timezone.make_aware(datetime.combine(shift_date + timedelta(days=1), shift_end_time))
+        else:
+            shift_end_datetime = timezone.make_aware(datetime.combine(shift_date, shift_end_time))
+
+        if now > shift_end_datetime:
+            finished_shifts.append(shift)
+
+    # Delete finished shifts
+    for shift in finished_shifts:
+        print(f"Deleting finished shift ID {shift.id} on {shift.date}")
+        shift.delete()
+
+    return finished_shifts
+
 
 
 def decrypt_string(encrypted_text: str) -> str:
@@ -55,6 +84,11 @@ def send_nurse_shift_password(email, shift):
 
 def handle_request(request):
     if request.method == "POST":
+        
+        
+        shifts_over = get_finished_shifts()
+        # for shift in shifts_over:
+            # print(f"Shift ID {shift.date} is finished.")
         data = json.loads(request.body)
         action = data.get("action")
 
@@ -94,11 +128,12 @@ def handle_request(request):
                     # Log the user in
                     login(request, user)  # ✅ Store user session
                     nurse_id = request.session.get("employeeID")
-                    print(nurse_id)
+                    cache.delete(employee.email)
                     Admin_logs.add_log_activity("Admin: "+employee.name+" Logged In")
-                    response_data = {"message": "Login successful!", "redirect_url": "admin", "user_id": employee_id}
+                    response_data = {"message": "Login successful!", "redirect_url": "admin_user", "user_id": employee_id}
                 else:
                     is_active = get_active_shift(employee_id)
+                    print(is_active)
                     # Check if use has active shift
                     if is_active is None:
                         # print("No active shift found for employee")
@@ -111,6 +146,7 @@ def handle_request(request):
                     nurse_id = employee_id  
                     thread = threading.Thread(target=check_shift, args=(request,), daemon=True)
                     thread.start()
+                    cache.delete(employee.email)
                     Admin_logs.add_log_activity("Nurse: "+employee.name+" Logged In")
                     
                     
@@ -123,10 +159,12 @@ def handle_request(request):
     return JsonResponse({"error": "Invalid request"}, status=400)
 
 
+from datetime import timedelta
+
 def check_shift(request):
-    # Remove the infinite loop - check once and return
-    current_day = localtime(now()).isoweekday()
-    current_time = localtime(now()).time()
+    current_datetime = localtime(now())
+    current_day = current_datetime.isoweekday()
+    current_time = current_datetime.time()
     
     nurse_id = request.session.get("user_id")
     if not nurse_id:
@@ -136,44 +174,60 @@ def check_shift(request):
             'message': 'Session expired',
             'redirect': reverse('index')
         })
-    
+
     nurse_shift = Shift_schedule.get_nearest_shift_by_employee_id(nurse_id)
-        # return JsonResponse({'redirect': reverse('index')})
-    if nurse_shift is None: # If no schedule for today
-        # Handle if nurse_shift return has nothing
+    if nurse_shift is None:
         logout(request)
         return JsonResponse({'redirect': reverse('index')})
-    if current_time > nurse_shift.end_time:
-        # print(f"Shift ended for nurse ID {nurse_id} at {nurse_shift.end_time}")
-        deleted = Shift_schedule.delete_shift(nurse_shift.id)
-        # if(deleted):
-        #     print("yes deleted na po")
-        logout(request)
-        return JsonResponse({
-            'shift_ended': True,
-            'message': 'Your shift has ended',
-            'redirect': reverse('index')
-        })
-    
-    
-    # print(f"Shift is not ended for {nurse_id} today.")
-    return JsonResponse({'status': 'shift_active'})
 
+    if nurse_shift.start_time <= nurse_shift.end_time:
+        # Normal shift (does not pass midnight)
+        if current_time > nurse_shift.end_time:
+            Shift_schedule.delete_shift(nurse_shift.id)
+            logout(request)
+            return JsonResponse({
+                'shift_ended': True,
+                'message': 'Your shift has ended',
+                'redirect': reverse('index')
+            })
+    else:
+        # Overnight shift (crosses midnight)
+        if not (current_time >= nurse_shift.start_time or current_time <= nurse_shift.end_time):
+            # Current time is outside the overnight shift
+            Shift_schedule.delete_shift(nurse_shift.id)
+            logout(request)
+            return JsonResponse({
+                'shift_ended': True,
+                'message': 'Your shift has ended',
+                'redirect': reverse('index')
+            })
+
+    return JsonResponse({'status': 'shift_active'})
 
 # Check if nurse shift is active
 def get_active_shift(employee_id):
-        # Get current Manila time
-        manila_now = localtime(now())
-        current_day = manila_now.isoweekday()
-        current_time = manila_now.time()
-        
-        # Get all shifts for this employee
-        shifts = Shift_schedule.get_shifts_by_employee_id(employee_id)
-        
-        # Check each shift
-        for shift in shifts:
-            if (shift.day == current_day and 
-                shift.start_time <= current_time <= shift.end_time):
-                return shift  # Return the active shift
-        
-        return None  # No active shift
+    manila_now = localtime(now())
+    current_day = manila_now.isoweekday()
+    current_time = manila_now.time()
+
+    # Also calculate yesterday's day number (1 = Monday, 7 = Sunday)
+    yesterday_day = 7 if current_day == 1 else current_day - 1
+
+    shifts = Shift_schedule.get_shifts_by_employee_id(employee_id)
+
+    for shift in shifts:
+        if shift.day == current_day:
+            # Normal shift
+            if shift.start_time <= shift.end_time:
+                if shift.start_time <= current_time <= shift.end_time:
+                    return shift
+            else:
+                # Overnight shift starting today
+                if current_time >= shift.start_time:
+                    return shift
+        elif shift.day == yesterday_day:
+            # Overnight shift continuing from yesterday
+            if shift.start_time > shift.end_time:
+                if current_time <= shift.end_time:
+                    return shift
+    return None

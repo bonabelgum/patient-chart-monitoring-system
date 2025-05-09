@@ -16,7 +16,7 @@ document.addEventListener("DOMContentLoaded", function () {
         let nurseDetails = document.querySelector('.nurse-details');
         adminDetails.style.display = 'none';
         nurseDetails.style.display = 'block';
-    }
+    } 
     function showSignUpUser() {
         let signupUser = document.querySelector('.signup-user');
         let signupDetails = document.querySelector('.signup-details');
@@ -99,6 +99,7 @@ document.addEventListener("DOMContentLoaded", function () {
             console.log(data);
             //alert(data.message || data.error);
             if (data.success) {
+                
                 hideLoading();
                 showVerificationModal(); //if no duplicates
             } else {
@@ -113,6 +114,40 @@ document.addEventListener("DOMContentLoaded", function () {
             })*/
             .catch(error => {hideLoading(); console.error("Error fetching admin details:", error);});
         }).catch(error => {hideLoading(); console.error("Error:", error)});
+    });
+
+    
+    const verificationForm = document.getElementById('confirm-verify-code-admin'); 
+    const verificationInput = document.getElementById('verification_code');
+    
+    document.getElementById('confirm-verify-code-admin').addEventListener('click', function(event) {
+        event.preventDefault(); // Prevent normal button behavior
+    
+        const codeInput = document.getElementById('verify-code-admin').value;
+        console.log("1")
+    
+        fetch('/admin_code_verification/', {  // << This is your Django URL
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                "X-CSRFToken": getCSRFToken(), //CSRF token for security
+            },
+            body: JSON.stringify({ verification_code: codeInput })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.status === 'success') {
+                console.log("redirect go")
+                alert(data.message);
+                window.location.href = '/'; // Redirect to login (or wherever you want)
+            } else {
+                alert(data.message); // Show error
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('Something went wrong. Please try again.');
+        });
     });
 
 

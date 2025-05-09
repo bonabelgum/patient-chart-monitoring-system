@@ -1,3 +1,17 @@
+
+// Refresh the schedule table
+document.addEventListener("DOMContentLoaded", function () {
+    const scheduleTab = document.getElementById("tab3-tab");
+
+    if (scheduleTab) {
+        scheduleTab.addEventListener("click", function () {
+            renderSchedule(); 
+            // Add your custom logic here
+        });
+    }
+});
+
+
 function fetchEmployees() {
     //initialize DataTable with empty data
     let employeesTable = new DataTable('#employees', {
@@ -46,7 +60,21 @@ function fetchEmployees() {
 }
 
 document.addEventListener('DOMContentLoaded', function() {
-    const table = $('#logs').DataTable();  // Assuming you're using DataTable
+    const table = $('#logs').DataTable({ // Assuming you're using DataTable
+        "destroy": true,
+        "paging": true,
+        "ordering": true,
+        "info": true,
+        "order": [[0, "desc"]], // Sort by first column (date) descending
+        "columnDefs": [
+            {
+                "targets": 0,
+                "width": "300px",
+                "className": "dt-left",
+                "type": "date" // Ensure proper date sorting
+            }
+        ]
+    });
 
     //fetch and populate the employee data
     fetchEmployees();
@@ -82,8 +110,7 @@ document.addEventListener('DOMContentLoaded', function() {
             let button = event.target;
     
             id = button.getAttribute("data-id");
-
-            
+        
 
             let name = button.getAttribute("data-name");
             let phone = button.getAttribute("data-phone");
@@ -166,6 +193,7 @@ document.addEventListener('DOMContentLoaded', function() {
                         // console.log("hello data");
                         const shiftRow = createOrUpdateShiftRow(
                             // null, // Create new row
+                            shift.date, 
                             shift.day, 
                             shift.start_time, 
                             shift.end_time,
@@ -201,21 +229,17 @@ document.addEventListener('DOMContentLoaded', function() {
         newShift.classList.add("shift-row");
 
         newShift.innerHTML = `
-            <select class="form-select form-select-sm shift-day">
-                <option value="Monday">Monday</option>
-                <option value="Tuesday">Tuesday</option>
-                <option value="Wednesday">Wednesday</option>
-                <option value="Thursday">Thursday</option>
-                <option value="Friday">Friday</option>
-                <option value="Saturday">Saturday</option>
-                <option value="Sunday">Sunday</option>
-            </select>
+            <label class="form-label">Date:</label>
+            <input type="date" class="form-control form-control-sm shift-date">
+
             <span>From:</span>
             <input type="time" class="form-control form-control-sm shift-from">
+
             <span>To:</span>
             <input type="time" class="form-control form-control-sm shift-to">
-            <button class="btn btn-primary btn-sm saveShiftBtn">Save</button>
-            <button class="btn btn-danger btn-sm cancelShiftBtn">Cancel</button>
+
+            <button class="btn btn-primary btn-sm saveShiftBtn mt-2">Save</button>
+            <button class="btn btn-danger btn-sm cancelShiftBtn mt-2">Cancel</button>
         `;
         
         //appending the new shift row above the button
@@ -223,12 +247,12 @@ document.addEventListener('DOMContentLoaded', function() {
 
         //handle saving the schedule
         newShift.querySelector(".saveShiftBtn").addEventListener("click", function () {
-            let selectedDay = newShift.querySelector(".shift-day")?.value;
+            let selectedDate = newShift.querySelector(".shift-date")?.value;
             let start_time = newShift.querySelector(".shift-from")?.value;
             let end_time = newShift.querySelector(".shift-to")?.value;
 
             //validate input fields
-            if (!selectedDay || !start_time || !end_time) {
+            if (!selectedDate || !start_time || !end_time) {
                 alert("Please fill in all fields.");
                 return;
             }
@@ -250,7 +274,7 @@ document.addEventListener('DOMContentLoaded', function() {
                         <i class="bi bi-trash"></i>
                     </button>
                 </div>
-                <span class="shift-time ms-2">${selectedDay}: ${start_time} - ${end_time}</span>
+                <span class="shift-time ms-2">${selectedDate}: ${start_time} - ${end_time}</span>
             </div>
     `;         
             
@@ -264,7 +288,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     'X-CSRFToken': csrfToken
                 },
                 body: JSON.stringify({
-                    day: selectedDay,
+                    date: selectedDate,
                     start_time: start_time,
                     end_time: end_time
                 })
@@ -295,10 +319,38 @@ document.addEventListener('DOMContentLoaded', function() {
                 });
                 
                 // Add confirm OT button functionality
-                const confirmOtBtn = newShift.querySelector(".confirmOtBtn");
-                confirmOtBtn.addEventListener("click", function() {
-                    const otHours = newShift.querySelector(".ot-hours").value;
-                    alert(`Overtime of ${otHours} hours confirmed!`);
+                const confirmOtBtn = otControls.querySelector('.confirmOtBtn');
+                confirmOtBtn.addEventListener('click', function() {
+                    console.log("send send "+shiftId);
+                            
+                    const otHours = otControls.querySelector('.ot-hours').value;
+                    console.log(otHours);
+                    fetch('/api/submit_ot/', {  // <-- your Django URL here
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'X-CSRFToken': csrfToken,  // for Django CSRF protection
+                        },
+                        body: JSON.stringify({
+                            hours: otHours,
+                            shift_id: shiftId  // <-- send shiftId also
+                        })
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.status === 'success') {
+                            alert('OT submitted successfully!');
+                            window.location.reload();
+                            // FIND the shift time span
+                            
+                        } else {
+                            alert('Error: ' + data.message);
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error submitting OT:', error);
+                    });
+                    // alert(`Overtime of ${otHours} hours confirmed!`);
                     otControls.style.display = "none";
                     // Here you would typically send the OT data to your backend
                 });
@@ -340,7 +392,7 @@ document.addEventListener('DOMContentLoaded', function() {
     });
 
     // Function to create shift row (used when loading existing shifts)
-    function createOrUpdateShiftRow(day, start_time, end_time, shiftId = null) {
+    function createOrUpdateShiftRow(date, day, start_time, end_time, shiftId = null) {
         const shiftRow = document.createElement('div');
         shiftRow.className = 'shift-row';
         
@@ -384,7 +436,7 @@ document.addEventListener('DOMContentLoaded', function() {
         // Create the text span
         const shiftText = document.createElement('span');
         shiftText.className = 'shift-time ms-2';
-        shiftText.textContent = `${day}: ${start_time} - ${end_time}`;
+        shiftText.textContent = `${date}: ${start_time} - ${end_time}`;
         
         deleteBtn.addEventListener('click', function() {
             if (confirm('Are you sure you want to delete this shift?')) {
@@ -407,10 +459,40 @@ document.addEventListener('DOMContentLoaded', function() {
         // Add confirm OT button functionality
         const confirmOtBtn = otControls.querySelector('.confirmOtBtn');
         confirmOtBtn.addEventListener('click', function() {
+            console.log("send send "+shiftId);
+                    
             const otHours = otControls.querySelector('.ot-hours').value;
-            alert(`Overtime of ${otHours} hours confirmed!`);
-            otControls.style.display = 'none';
-            // Here you would typically send the OT data to your backend
+            console.log(otHours);
+                    fetch('/api/submit_ot/', {  // <-- your Django URL here
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'X-CSRFToken': csrfToken,  // for Django CSRF protection
+                        },
+                        body: JSON.stringify({
+                            hours: otHours,
+                            shift_id: shiftId  // <-- send shiftId also
+                        })
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.status === 'success') {
+                            alert('OT submitted successfully!');
+                            window.location.reload();
+                            // Parse the current shift time text
+                            // FIND the shift time span
+                            
+
+                        } else {
+                            alert('Error: ' + data.message);
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error submitting OT:', error);
+                    });
+                    // alert(`Overtime of ${otHours} hours confirmed!`);
+                    otControls.style.display = "none";
+                    // Here you would typically send the OT data to your backend
         });
         
         // Append buttons to container
@@ -516,6 +598,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
     // Get the User input then send to django
     confirmMasterKeyBtn.addEventListener("click", function () {
+        showLoading();
         // Send the input to Django using fetch
         
         let masterKey = masterKeyInput.value;
@@ -530,14 +613,20 @@ document.addEventListener("DOMContentLoaded", function () {
         .then(response => response.json())
         .then(data => {
             if (data.status === "success") {
-                
-                alert("Master key is valid!");
-                var myModal = bootstrap.Modal.getInstance(document.getElementById('employeeModal'));
-                myModal.hide(); // Hide modal
-                fetchEmployees(); // Repopulate the employees 
-                // Handle success (e.g., redirect or update UI)
+                hideLoading();
+    
+                setTimeout(() => {
+                    alert("Master key is valid!");
+
+                    var myModal = bootstrap.Modal.getInstance(document.getElementById('employeeModal'));
+                    myModal.hide(); // Hide modal
+                    fetchEmployees(); // Repopulate the employees 
+                }, 100); // 100ms is usually enough
             } else {
-                alert("Invalid master key.");
+                hideLoading();
+                setTimeout(() => {
+                    alert("Invalid master key.");
+                }, 100);
                 // Handle failure
             }
         })
@@ -550,6 +639,7 @@ document.addEventListener("DOMContentLoaded", function () {
     // Get the User input then send to django
     confirmRejectKeyBtn.addEventListener("click", function () {
         // Send the input to Django using fetch
+        showLoading();
         
         let masterKey = rejectKeyInput.value;
         console.log(masterKey);
@@ -564,14 +654,20 @@ document.addEventListener("DOMContentLoaded", function () {
         .then(response => response.json())
         .then(data => {
             if (data.status === "success") {
-                
-                alert("Master key is valid!");
-                var myModal = bootstrap.Modal.getInstance(document.getElementById('employeeModal'));
-                myModal.hide(); // Hide modal
-                fetchEmployees(); // Repopulate the employees 
-                // Handle success (e.g., redirect or update UI)
+                hideLoading();
+    
+                setTimeout(() => {
+                    alert("Master key is valid!");
+
+                    var myModal = bootstrap.Modal.getInstance(document.getElementById('employeeModal'));
+                    myModal.hide(); // Hide modal
+                    fetchEmployees(); // Repopulate the employees 
+                }, 100); // 100ms is usually enough
             } else {
-                alert("Invalid master key.");
+                hideLoading();
+                setTimeout(() => {
+                    alert("Invalid master key.");
+                }, 100);
                 // Handle failure
             }
         })
@@ -709,114 +805,134 @@ const scheduleTab = document.getElementById('tab3-tab');
 });*/
 
 
+function renderSchedule() {
+    getAllShiftThenReturnArray().then(scheduleData => {
+        console.log(scheduleData);
 
-getAllShiftThenReturnArray().then(scheduleData => {
-    console.log(scheduleData);
+        const days = [
+            { id: 1, name: 'Monday' },
+            { id: 2, name: 'Tuesday' },
+            { id: 3, name: 'Wednesday' },
+            { id: 4, name: 'Thursday' },
+            { id: 5, name: 'Friday' },
+            { id: 6, name: 'Saturday' },
+            { id: 7, name: 'Sunday' }
+        ];
 
-    const days = [
-        { id: 1, name: 'Monday' },
-        { id: 2, name: 'Tuesday' },
-        { id: 3, name: 'Wednesday' },
-        { id: 4, name: 'Thursday' },
-        { id: 5, name: 'Friday' },
-        { id: 6, name: 'Saturday' },
-        { id: 7, name: 'Sunday' }
-    ];
+        const timeSlots = Array.from({ length: 24 }, (_, i) => ({
+            hour: i + 1,
+            label: `${i}:00`
+        }));
 
-    const timeSlots = Array.from({ length: 24 }, (_, i) => ({
-        hour: i + 1,
-        label: `${i}:00`
-    }));
-
-    // Render time header
-    const timeHeader = document.querySelector('.time-slots-container');
-    timeHeader.innerHTML = '';
-    timeSlots.forEach(slot => {
-        const timeSlot = document.createElement('div');
-        timeSlot.className = 'time-slot';
-        timeSlot.textContent = slot.label;
-        timeHeader.appendChild(timeSlot);
-    });
-
-    const minuteWidth = 100 / 1440; // Total minutes in a day
-    const scheduleRows = document.querySelector('.schedule-rows');
-    scheduleRows.innerHTML = '';
-
-    days.forEach(day => {
-        const dayRow = document.createElement('div');
-        dayRow.className = 'schedule-row';
-
-        const dayCell = document.createElement('div');
-        dayCell.className = 'day-cell';
-        dayCell.textContent = day.name;
-        dayRow.appendChild(dayCell);
-
-        const timeCells = document.createElement('div');
-        timeCells.className = 'time-cells';
-
-        // Filter schedules for this day AND the previous day's overnight shifts
-        const daySchedules = scheduleData.filter(item => 
-            item.day === day.id || 
-            (item.day === (day.id === 1 ? 7 : day.id - 1) && // Previous day
-            timeToMinutes(item.endTime) < timeToMinutes(item.startTime) // Overnight shift
-        ));
-
-        const scheduleLanes = calculateScheduleLanes(daySchedules);
-
-        daySchedules.forEach((schedule, index) => {
-            const startMinutes = timeToMinutes(schedule.startTime);
-            const endMinutes = timeToMinutes(schedule.endTime);
-            const lane = scheduleLanes[index];
-
-            const colors = ['#4e73df', '#1cc88a', '#36b9cc', '#f6c23e', '#e74a3b'];
-            
-            // Check if this is an overnight shift that spans to this day
-            if (schedule.day === (day.id === 1 ? 7 : day.id - 1) && endMinutes < startMinutes) {
-                // This is the second part of an overnight shift (continuing from previous day)
-                const employeeBlock = document.createElement('div');
-                employeeBlock.className = 'employee-block';
-                employeeBlock.textContent = schedule.employeeId;
-                employeeBlock.style.left = '0%';
-                employeeBlock.style.width = `${(endMinutes / 1440) * 100}%`;
-                employeeBlock.style.top = `${10 + (lane * 35)}px`;
-                employeeBlock.title = `${schedule.employeeId}: ${schedule.startTime} - ${schedule.endTime}`;
-                employeeBlock.style.backgroundColor = colors[index % colors.length];
-                timeCells.appendChild(employeeBlock);
-            } else if (schedule.day === day.id) {
-                // Regular shift or first part of overnight shift
-                if (endMinutes < startMinutes) {
-                    // This is an overnight shift - create first part
-                    const employeeBlock = document.createElement('div');
-                    employeeBlock.className = 'employee-block';
-                    employeeBlock.textContent = schedule.employeeId;
-                    employeeBlock.style.left = `${(startMinutes / 1440) * 100}%`;
-                    employeeBlock.style.width = `${((1440 - startMinutes) / 1440) * 100}%`;
-                    employeeBlock.style.top = `${10 + (lane * 35)}px`;
-                    employeeBlock.title = `${schedule.employeeId}: ${schedule.startTime} - ${schedule.endTime}`;
-                    employeeBlock.style.backgroundColor = colors[index % colors.length];
-                    timeCells.appendChild(employeeBlock);
-                } else {
-                    // Regular shift
-                    const employeeBlock = document.createElement('div');
-                    employeeBlock.className = 'employee-block';
-                    employeeBlock.textContent = schedule.employeeId;
-                    employeeBlock.style.left = `${(startMinutes / 1440) * 100}%`;
-                    employeeBlock.style.width = `${((endMinutes - startMinutes) / 1440) * 100}%`;
-                    employeeBlock.style.top = `${10 + (lane * 35)}px`;
-                    employeeBlock.title = `${schedule.employeeId}: ${schedule.startTime} - ${schedule.endTime}`;
-                    employeeBlock.style.backgroundColor = colors[index % colors.length];
-                    timeCells.appendChild(employeeBlock);
-                }
-            }
+        // Render time header
+        const timeHeader = document.querySelector('.time-slots-container');
+        timeHeader.innerHTML = '';
+        timeSlots.forEach(slot => {
+            const timeSlot = document.createElement('div');
+            timeSlot.className = 'time-slot';
+            timeSlot.textContent = slot.label;
+            timeHeader.appendChild(timeSlot);
         });
 
-        const lanesNeeded = daySchedules.length > 0 ? Math.max(...scheduleLanes) + 1 : 0;
-        timeCells.style.minHeight = `${50 + (lanesNeeded * 35)}px`;
+        const minuteWidth = 100 / 1440; // Total minutes in a day
+        const scheduleRows = document.querySelector('.schedule-rows');
+        scheduleRows.innerHTML = '';
 
-        dayRow.appendChild(timeCells);
-        scheduleRows.appendChild(dayRow);
+        // Get the current day name
+        const currentDayName = new Date().toLocaleString('en-us', { weekday: 'long' });
+
+        // Function to get a unique color for each employee (based on their employeeId)
+        const getColorForEmployee = (employeeId) => {
+            const colors = ['#4e73df', '#1cc88a', '#36b9cc', '#f6c23e', '#e74a3b'];
+            // Use a simple hash of the employeeId to select a color (you can improve this method if needed)
+            const hash = Array.from(employeeId).reduce((acc, char) => acc + char.charCodeAt(0), 0);
+            return colors[hash % colors.length];
+        };
+
+        days.forEach(day => {
+            const dayRow = document.createElement('div');
+            dayRow.className = 'schedule-row';
+
+            const dayCell = document.createElement('div');
+            dayCell.className = 'day-cell';
+            dayCell.textContent = day.name;
+
+            // Compare the current day name with the day name in the days array
+            if (day.name === currentDayName) {
+                dayCell.classList.add('highlighted-day'); // Apply the highlight class
+            }
+
+            dayRow.appendChild(dayCell);
+
+            const timeCells = document.createElement('div');
+            timeCells.className = 'time-cells';
+
+            // Filter schedules for this day AND the previous day's overnight shifts
+            const daySchedules = scheduleData.filter(item => 
+                item.day === day.id || 
+                (item.day === (day.id === 1 ? 7 : day.id - 1) && // Previous day
+                timeToMinutes(item.endTime) < timeToMinutes(item.startTime) // Overnight shift
+            ));
+
+            const scheduleLanes = calculateScheduleLanes(daySchedules);
+
+            daySchedules.forEach((schedule, index) => {
+                const startMinutes = timeToMinutes(schedule.startTime);
+                const endMinutes = timeToMinutes(schedule.endTime);
+                const lane = scheduleLanes[index];
+
+                const color = getColorForEmployee(schedule.employeeId);  // Get color for the employee
+
+                // Check if this is an overnight shift that spans to this day
+                if (schedule.day === (day.id === 1 ? 7 : day.id - 1) && endMinutes < startMinutes) {
+                    // This is the second part of an overnight shift (continuing from previous day)
+                    const employeeBlock = document.createElement('div');
+                    employeeBlock.className = 'employee-block';
+                    employeeBlock.textContent = schedule.employeeId;
+                    employeeBlock.style.left = '0%';
+                    employeeBlock.style.width = `${(endMinutes / 1440) * 100}%`;
+                    employeeBlock.style.top = `${10 + (lane * 35)}px`;
+                    employeeBlock.title = `${schedule.employeeId}: ${schedule.startTime} - ${schedule.endTime}`;
+                    employeeBlock.style.backgroundColor = color;  // Use the same color
+                    timeCells.appendChild(employeeBlock);
+                } else if (schedule.day === day.id) {
+                    // Regular shift or first part of overnight shift
+                    if (endMinutes < startMinutes) {
+                        // This is an overnight shift - create first part
+                        const employeeBlock = document.createElement('div');
+                        employeeBlock.className = 'employee-block';
+                        employeeBlock.textContent = schedule.employeeId;
+                        employeeBlock.style.left = `${(startMinutes / 1440) * 100}%`;
+                        employeeBlock.style.width = `${((1440 - startMinutes) / 1440) * 100}%`;
+                        employeeBlock.style.top = `${10 + (lane * 35)}px`;
+                        employeeBlock.title = `${schedule.employeeId}: ${schedule.startTime} - ${schedule.endTime}`;
+                        employeeBlock.style.backgroundColor = color;  // Use the same color
+                        timeCells.appendChild(employeeBlock);
+                    } else {
+                        // Regular shift
+                        const employeeBlock = document.createElement('div');
+                        employeeBlock.className = 'employee-block';
+                        employeeBlock.textContent = schedule.employeeId;
+                        employeeBlock.style.left = `${(startMinutes / 1440) * 100}%`;
+                        employeeBlock.style.width = `${((endMinutes - startMinutes) / 1440) * 100}%`;
+                        employeeBlock.style.top = `${10 + (lane * 35)}px`;
+                        employeeBlock.title = `${schedule.employeeId}: ${schedule.startTime} - ${schedule.endTime}`;
+                        employeeBlock.style.backgroundColor = color;  // Use the same color
+                        timeCells.appendChild(employeeBlock);
+                    }
+                }
+            });
+
+            const lanesNeeded = daySchedules.length > 0 ? Math.max(...scheduleLanes) + 1 : 0;
+            timeCells.style.minHeight = `${50 + (lanesNeeded * 35)}px`;
+
+            dayRow.appendChild(timeCells);
+            scheduleRows.appendChild(dayRow);
+        });
     });
-});
+}
+
+
 
 // Helper function to convert time string to minutes
 function timeToMinutes(timeStr) {
@@ -899,4 +1015,12 @@ function getAllShiftThenReturnArray() {
             console.error('Error fetching shifts:', error);
             return [];
         });
+}
+
+function showLoading() { //show loading screen
+    document.getElementById("loadingIndicator").style.display = "flex";
+    //console.log("Loading screen shown");
+}
+function hideLoading() { //hides loading screen
+    document.getElementById("loadingIndicator").style.display = "none";
 }

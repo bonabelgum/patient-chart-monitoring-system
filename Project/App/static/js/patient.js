@@ -1,18 +1,35 @@
 let schedule_end_time = null
 let isPasswordValid = false;
+let editCondition = false
+let newlyAddedMedications = [];  // Stores newly added unsaved rows
+let selectedDrugData = {};
+let medicationId = null;
+
+window.addEventListener('pageshow', function (event) {
+    if (event.persisted || performance.getEntriesByType("navigation")[0].type === "back_forward") {
+        location.reload();
+    }
+});
+
+document.querySelector('input[type="password"]').setAttribute('autocomplete', 'new-password');
+
 
 document.addEventListener('DOMContentLoaded', function () {
     //retrieve the patient data from sessionStorage
     const patientId = sessionStorage.getItem('data-patient-id');
     const patientName = sessionStorage.getItem('data-patient-name');
+    const patientNumber = sessionStorage.getItem('data-patient-number');
     const patientWard = sessionStorage.getItem('data-patient-ward');
     const patientStatus = sessionStorage.getItem('data-patient-status');
     const physicianName= sessionStorage.getItem('data-physician-name-view');
 
     const urlParams = new URLSearchParams(window.location.search);
-    const patientIdParams = urlParams.get('id');
+    // const patientIdParams = urlParams.get('id');
+    const pathParts = window.location.pathname.split('/');
+    const patientIdParams = pathParts[2];  // "11" from /patient/11/
     const schedule_end_time = urlParams.get('end_time');
     console.log(schedule_end_time);
+
     fetch('/api/receive_data/', {
         method: 'POST',
         headers: {
@@ -50,6 +67,8 @@ document.addEventListener('DOMContentLoaded', function () {
             console.log('Oxygen Saturation:', patient.oxygen);*
             console.log('VS: ', data.vitals_data);
             //med
+            const medLogs = data.med_logs || []; 
+            console.log('Medication Logs:', medLogs);
             /*
             console.log('Meds: ', data.med_data);
             //notes
@@ -78,9 +97,18 @@ document.addEventListener('DOMContentLoaded', function () {
     
             document.getElementById('data-patient-bday-view').textContent = patient.birthday;
             document.getElementById('data-patient-bday-edit').value = patient.birthday;
+
+            document.getElementById('data-patient-weight-view').textContent = patient.weight;
+            document.getElementById('data-patient-weight-edit').value = patient.weight;
+
+            document.getElementById('data-patient-height-view').textContent = patient.height;
+            document.getElementById('data-patient-height-edit').value = patient.height;
     
             document.getElementById('data-patient-phone-view').textContent = patient.phone_number;
             document.getElementById('data-patient-phone-edit').value = patient.phone_number;
+
+            document.getElementById('data-patient-number-view').textContent = patient.number;
+            document.getElementById('data-patient-number-edit').value = patient.number;
     
             document.getElementById('data-patient-ward-view').textContent = patient.ward;
             document.getElementById('data-patient-ward-edit').value = patient.ward;
@@ -115,7 +143,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
             // ----VITALS TABLE -----
             if (data.vitals_data) {
-                console.log('Raw VS Data:', data.vitals_data);
+                //console.log('Raw VS Data:', data.vitals_data);
                 // 1. Transform data
                 const tableData = data.vitals_data.map(vs => ({
                     datetime: vs.datetime || vs.date_and_time || '',
@@ -142,7 +170,10 @@ document.addEventListener('DOMContentLoaded', function () {
                             { field: 'pulse', title: 'Pulse rate', sortable: true },
                             { field: 'respiratory', title: 'Respiratory rate', sortable: true },
                             { field: 'oxygen', title: 'Oxygen saturation', sortable: true }
-                        ]
+                        ],
+                        loadingTemplate: function() {
+                            return ''; // This removes the loading message
+                        }
                     });
                 }
                 // 4. Add row click handler to populate modal
@@ -253,6 +284,7 @@ document.addEventListener('DOMContentLoaded', function () {
             const inactiveTable = new DataTable('#inactive');
 
             //--med table--
+            // medication populate
             if (data.med_data) {
                 // Clear existing data first
                 activeTable.clear();
@@ -267,7 +299,9 @@ document.addEventListener('DOMContentLoaded', function () {
                         drug.units || '',
                         drug.frequency || '',
                         drug.quantity || '',
-                        drug.route || ''
+                        drug.route || '',
+                        drug.duration || '',
+                        drug.start_date || ''
                     ];
             
                     // Add to appropriate table based on status
@@ -286,9 +320,10 @@ document.addEventListener('DOMContentLoaded', function () {
             //--end of tab3--
 
             //--tab4--
+            // Populate Nurse
             document.getElementById('data-patient-name-view3').textContent = patient.name;
             document.getElementById('data-patient-name-edit3').value = patient.name;
-
+            
             //memo
             //Initialize variables at the top level
             let notesList, addNoteBtn;   
@@ -330,6 +365,7 @@ document.addEventListener('DOMContentLoaded', function () {
     if (document.getElementById('patient-id')) {
         document.getElementById('patient-id').textContent = patientId || 'N/A';
         document.getElementById('patient-name').textContent = patientName || 'N/A';
+        document.getElementById('patient-number').textContent = patientNumber || 'N/A';
         document.getElementById('patient-ward').textContent = patientWard || 'N/A';
         document.getElementById('patient-status').textContent = patientStatus || 'N/A';
         document.getElementById('physician-name').textContent = physicianName || 'N/A';
@@ -419,6 +455,9 @@ document.addEventListener('DOMContentLoaded', function () {
             const editedName = patientTab.querySelector('#data-patient-name-edit').value;
             const editedSex = patientTab.querySelector('#data-patient-sex-edit').value;
             const editedBday = patientTab.querySelector('#data-patient-bday-edit').value;
+            const editedWeight = patientTab.querySelector('#data-patient-weight-edit').value;
+            const editedHeight = patientTab.querySelector('#data-patient-height-edit').value;
+            const editedNumber = patientTab.querySelector('#data-patient-number-edit').value;
             const editedWard = patientTab.querySelector('#data-patient-ward-edit').value;
             const editedStatus = patientTab.querySelector('#data-patient-status-edit').value;
             const editedPhysician = patientTab.querySelector('#data-patient-physician-edit').value;
@@ -440,6 +479,9 @@ document.addEventListener('DOMContentLoaded', function () {
                 editedName: editedName,
                 editedSex: editedSex,
                 editedBday: editedBday,
+                editedWeight: editedWeight,
+                editedHeight: editedHeight,
+                editedNumber: editedNumber,
                 editedWard: editedWard,
                 editedStatus: editedStatus,
                 editedPhysician: editedPhysician,
@@ -467,7 +509,10 @@ document.addEventListener('DOMContentLoaded', function () {
                         patientTab.querySelector('#data-patient-name-view').textContent = editedName;
                         patientTab.querySelector('#data-patient-sex-view').textContent = editedSex;
                         patientTab.querySelector('#data-patient-bday-view').textContent = editedBday;
+                        patientTab.querySelector('#data-patient-weight-view').textContent = editedWeight;
+                        patientTab.querySelector('#data-patient-height-view').textContent = editedHeight;
                         patientTab.querySelector('#data-patient-phone-view').textContent = editedPhone;
+                        patientTab.querySelector('#data-patient-number-view').textContent = editedNumber;
                         patientTab.querySelector('#data-patient-ward-view').textContent = editedWard;
                         patientTab.querySelector('#data-patient-status-view').textContent = editedStatus;
                         patientTab.querySelector('#data-physician-name-view').textContent = editedPhysician;
@@ -560,13 +605,13 @@ document.getElementById('print-qr-btn').addEventListener('click', function() {
     const qrCodeSrc = document.getElementById('patient-qr-code').src;
     
     // Debug: Check what values we're getting
-    console.log('Patient Data:', {
+    /*console.log('Patient Data:', {
         id: patientId,
         name: patientName,
         birthday: patientBirthday,
         ward: patientWard,
         qrCode: qrCodeSrc
-    });
+    });*/
     
     // Populate the printable content
     document.getElementById('print-id').textContent = patientId;
@@ -669,6 +714,324 @@ document.getElementById('print-header').addEventListener('click', function() {
     printableContent.style.display = 'none';
 });
 
+//print med logs
+document.getElementById('print-medication-logs').addEventListener('click', function() {
+    // Get patient data from view elements
+    const patientId = document.getElementById('data-patient-id-view').textContent;
+    const patientName = document.getElementById('data-patient-name-view').textContent;
+    const patientBday = document.getElementById('data-patient-bday-view').textContent;
+    const physician = document.getElementById('data-physician-name-view').textContent;
+    
+    // Get current date
+    const today = new Date();
+    const formattedDate = today.toLocaleDateString('en-US', {
+        year: 'numeric', 
+        month: 'long', 
+        day: 'numeric',
+        hour: '2-digit',
+        minute: '2-digit'
+    });
+
+    // Fetch medication logs data
+    fetch('/api/receive_data/', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': getCookie('csrftoken') // Use the getCookie function instead
+        },
+        body: JSON.stringify({
+            patient_id: patientId
+        })
+    })
+    .then(response => response.json())
+    .then(data => {
+        console.log('API response data:', data); // Debug log
+
+        if (data.status === 'success') {
+            // Populate patient info in the printable section
+            document.getElementById('meds-print-date').textContent = formattedDate;
+            document.getElementById('meds-print-id').textContent = patientId;
+            document.getElementById('meds-print-name').textContent = patientName;
+            document.getElementById('meds-print-bday').textContent = patientBday;
+            document.getElementById('meds-print-physician').textContent = physician;
+
+            // Get the table body element
+            const tbody = document.querySelector('#print-meds-logs-table tbody');
+            tbody.innerHTML = ''; // Clear any existing rows
+
+            // Group medication logs by drug_name
+            const groupedLogs = data.med_logs.reduce((acc, log) => {
+                const drugName = log.drug_name || '[Not specified]';
+                if (!acc[drugName]) {
+                    acc[drugName] = [];
+                }
+                acc[drugName].push(log);
+                return acc;
+            }, {});
+
+            // Log the grouped logs for debugging
+            console.log('Grouped Medication Logs:', groupedLogs);
+
+            // Iterate over the grouped logs and sort by datetime
+            Object.keys(groupedLogs).forEach(drugName => {
+                const logs = groupedLogs[drugName];
+                
+                // Sort logs for each drug by datetime in descending order
+                logs.sort((a, b) => {
+                    // Convert the datetime strings to Date objects for comparison
+                    const dateA = new Date(a.datetime);
+                    const dateB = new Date(b.datetime);
+                    return dateB - dateA;  // Sorting in descending order (newest first)
+                });
+
+                // Log the sorted logs for debugging
+                console.log(`Sorted logs for drug: ${drugName}`, logs);
+
+                // Add rows for each medication log
+                logs.forEach(log => {
+                    const row = document.createElement('tr');
+                    row.style.borderBottom = '1px solid #ddd';
+                    
+                    const drugNameCell = document.createElement('td');
+                    drugNameCell.style.padding = '8px';
+                    drugNameCell.style.border = '1px solid #ddd';
+                    drugNameCell.textContent = log.drug_name || '[Not specified]';
+                    
+                    const dateCell = document.createElement('td');
+                    dateCell.style.padding = '8px';
+                    dateCell.style.border = '1px solid #ddd';
+                    dateCell.textContent = log.datetime;
+                    
+                    const adminCell = document.createElement('td');
+                    adminCell.style.padding = '8px';
+                    adminCell.style.border = '1px solid #ddd';
+                    adminCell.textContent = log.administered_by || 'N/A';
+                    
+                    const statusCell = document.createElement('td');
+                    statusCell.style.padding = '8px';
+                    statusCell.style.border = '1px solid #ddd';
+                    statusCell.textContent = log.status;
+                    
+                    row.appendChild(drugNameCell);
+                    row.appendChild(dateCell);
+                    row.appendChild(adminCell);
+                    row.appendChild(statusCell);
+                    
+                    tbody.appendChild(row);
+                });
+            });
+
+            // Show the printable content
+            const printableContent = document.getElementById('printable-medication-logs');
+            printableContent.style.display = 'block';
+            
+            // Add print-specific styles (similar to nurse notes)
+            const style = document.createElement('style');
+            style.innerHTML = `
+                @media print {
+                    body * {
+                        visibility: hidden;
+                    }
+                    #printable-medication-logs, #printable-medication-logs * {
+                        visibility: visible;
+                    }
+                    #printable-medication-logs {
+                        position: absolute;
+                        left: 0;
+                        top: 0;
+                        width: 100%;
+                        margin: 0;
+                        padding: 0;
+                    }
+                    #print-meds-logs-table {
+                        page-break-inside: avoid;
+                    }
+                }
+            `;
+            document.head.appendChild(style);
+            
+            // Trigger print dialog
+            window.print();
+            
+            // Clean up
+            setTimeout(() => {
+                printableContent.style.display = 'none';
+                document.head.removeChild(style);
+            }, 100);
+        } else {
+            console.error('Error fetching logs:', data.error || 'Unknown error');
+            alert('Error fetching medication logs: ' + (data.error || 'Unknown error'));
+        }
+    })
+    .catch(error => {
+        console.error('Fetch error:', error);
+        alert('Error fetching medication logs: ' + error.message);
+    });
+});
+
+// Make sure this function is available (same as in your nurse notes code)
+function getCookie(name) {
+    let cookieValue = null;
+    if (document.cookie && document.cookie !== '') {
+        const cookies = document.cookie.split(';');
+        for (let i = 0; i < cookies.length; i++) {
+            const cookie = cookies[i].trim();
+            if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                break;
+            }
+        }
+    }
+    return cookieValue;
+}
+
+//print nurses notes
+document.getElementById('print-nurse-notes').addEventListener('click', function() {
+    const patientId = document.getElementById('data-patient-id-view').textContent;
+    
+    // Fetch notes data for this patient
+    fetch('/api/receive_data/', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': getCookie('csrftoken')
+        },
+        body: JSON.stringify({
+            patient_id: patientId
+        })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.status === 'success' && data.notes_data) {
+            // Get other patient data from view elements
+            const patientName = document.getElementById('data-patient-name-view').textContent;
+            const patientBday = document.getElementById('data-patient-bday-view').textContent;
+            const physician = document.getElementById('data-physician-name-view').textContent;
+            
+            // Get current date
+            const today = new Date();
+            document.getElementById('notes-print-date').textContent = today.toLocaleDateString('en-US', {
+                year: 'numeric', 
+                month: 'long', 
+                day: 'numeric',
+                hour: '2-digit',
+                minute: '2-digit'
+            });
+            
+            // Populate patient info
+            document.getElementById('notes-print-id').textContent = patientId;
+            document.getElementById('notes-print-name').textContent = patientName;
+            document.getElementById('notes-print-bday').textContent = patientBday;
+            document.getElementById('notes-print-physician').textContent = physician;
+            
+            // Populate notes container
+            const notesContainer = document.getElementById('print-notes-container');
+            notesContainer.innerHTML = ''; // Clear existing content
+            
+            if (data.notes_data && data.notes_data.length > 0) {
+                
+                data.notes_data.forEach(note => {
+
+                    const noteElement = document.createElement('div');
+                    noteElement.style.marginBottom = '30px';
+                    noteElement.style.borderBottom = '1px solid #eee';
+                    noteElement.style.paddingBottom = '15px';
+                    
+                    const dateElement = document.createElement('div');
+                    dateElement.style.fontWeight = 'bold';
+                    dateElement.style.marginBottom = '8px';
+                    dateElement.style.color = '#555';
+                    
+                    // Format date
+                    const noteDate = new Date(note.date);
+                    dateElement.textContent = noteDate.toLocaleDateString('en-US', {
+                        month: 'short',
+                        day: 'numeric',
+                        year: 'numeric',
+                        hour: '2-digit',
+                        minute: '2-digit'
+                    }) + ` • Nurse ID: ${note.nurse_id}`;
+                    
+                    const contentElement = document.createElement('div');
+                    contentElement.style.whiteSpace = 'pre-wrap';
+                    contentElement.style.padding = '10px';
+                    contentElement.style.backgroundColor = '#f8f9fa';
+                    contentElement.style.borderRadius = '4px';
+                    contentElement.textContent = note.notes || '';
+                    
+                    noteElement.appendChild(dateElement);
+                    noteElement.appendChild(contentElement);
+                    notesContainer.appendChild(noteElement);
+                });
+            } else {
+                notesContainer.innerHTML = '<div style="text-align: center; color: #666; font-style: italic;">No nursing notes recorded</div>';
+            }
+            
+            // Show and print
+            const printableContent = document.getElementById('printable-nurse-notes');
+            printableContent.style.display = 'block';
+            
+            // Add print-specific styles
+            const style = document.createElement('style');
+            style.innerHTML = `
+                @media print {
+                    body * {
+                        visibility: hidden;
+                    }
+                    #printable-nurse-notes, #printable-nurse-notes * {
+                        visibility: visible;
+                    }
+                    #printable-nurse-notes {
+                        position: absolute;
+                        left: 0;
+                        top: 0;
+                        width: 100%;
+                        margin: 0;
+                        padding: 0;
+                    }
+                    #print-notes-container div {
+                        page-break-inside: avoid;
+                    }
+                }
+            `;
+            document.head.appendChild(style);
+            
+            window.print();
+            
+            // Clean up
+            setTimeout(() => {
+                printableContent.style.display = 'none';
+                document.head.removeChild(style);
+            }, 100);
+        } else {
+            console.error('Error loading notes:', data.message || 'No notes data received');
+            alert('Failed to load nursing notes for printing');
+        }
+    })
+    .catch(error => {
+        console.error('Error fetching notes:', error);
+        alert('Error fetching nursing notes');
+    });
+});
+
+// Helper function to get CSRF token
+function getCookie(name) {
+    let cookieValue = null;
+    if (document.cookie && document.cookie !== '') {
+        const cookies = document.cookie.split(';');
+        for (let i = 0; i < cookies.length; i++) {
+            const cookie = cookies[i].trim();
+            if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                break;
+            }
+        }
+    }
+    return cookieValue;
+}
+
+//end of printing
+
 //edit patient vs details
 document.addEventListener('DOMContentLoaded', function() {
     const vsEditBtn = document.getElementById('edit-vs-details-btn');
@@ -743,7 +1106,6 @@ document.addEventListener('DOMContentLoaded', function() {
                 allergies: document.getElementById('data-patient-allergies-edit').value,
                 family_history: document.getElementById('data-patient-family-history-edit').value,
                 physical_exam: document.getElementById('data-patient-physical-exam-edit').value,
-                diagnosis: document.getElementById('data-patient-diagnosis-edit').value,
                 reason: document.getElementById('data-patient-reason-edit').value,
                 password: document.getElementById('data-patient-password-edit1').value
             };
@@ -858,6 +1220,27 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 });
 
+//bp
+document.querySelector('.bp-input').addEventListener('input', function(e) {
+    // Get cursor position
+    const cursorPos = this.selectionStart;
+    
+    // Format the value: allow digits and exactly one slash
+    let newValue = this.value.replace(/[^\d\/]/g, '');
+    const slashCount = (newValue.match(/\//g) || []).length;
+    
+    // If more than one slash, keep only the first one
+    if (slashCount > 1) {
+        const parts = newValue.split('/');
+        newValue = parts[0] + '/' + parts.slice(1).join('');
+    }
+    
+    // Update the value
+    this.value = newValue;
+    
+    // Restore cursor position (adjusting for any removed characters)
+    this.setSelectionRange(cursorPos, cursorPos);
+});
 
 // add vs2
 document.getElementById('add-vitals-btn').addEventListener('click', function() {
@@ -878,8 +1261,237 @@ document.getElementById('add-vitals-btn').addEventListener('click', function() {
     passwordModal.show();
 });
 
+//med logs
 
-//med
+let originalMedicationData = []; // From database
+let workingMedicationData = []; // Includes unsaved changes
+let medicationTable;
+document.addEventListener('DOMContentLoaded', function() {
+    // Initialize DataTable
+    medicationTable = $('#medicationLogsTable').DataTable({
+        data: workingMedicationData,
+        columns: [
+            { title: 'Date/Time', data: 'datetime', type: 'date'},
+            { title: 'Administered By', data: 'administered_by' },
+            { 
+                title: 'Status', 
+                data: 'status',
+                render: function(data, type, row) {
+                    // For existing records, show as text (non-editable)
+                    if (row.isExisting) {
+                        return ` 
+                            <span class="status-display ${data === 'administered' ? 'status-administered' : 
+                                   data === 'not_taken' ? 'status-not-taken' : 
+                                   'status-refused'}">
+                                ${data === 'administered' ? 'Administered' : 
+                                data === 'not_taken' ? 'Not Taken' : 
+                                'Refused'}
+                            </span>
+                        `;
+                    }
+                    // For new entries, show radio buttons (editable)
+                    return `
+                        <div class="form-check form-check-inline">
+                            <input class="form-check-input" type="radio" id="administered_${row.id}" name="status_${row.id}" value="administered" ${data === 'administered' ? 'checked' : ''}>
+                            <label class="form-check-label" for="administered_${row.id}">Administered</label>
+                        </div>
+                        <div class="form-check form-check-inline">
+                            <input class="form-check-input" type="radio" id="not_taken_${row.id}" name="status_${row.id}" value="not_taken" ${data === 'not_taken' ? 'checked' : ''}>
+                            <label class="form-check-label" for="not_taken_${row.id}">Not Taken</label>
+                        </div>
+                        <div class="form-check form-check-inline">
+                            <input class="form-check-input" type="radio" id="refused_${row.id}" name="status_${row.id}" value="refused" ${data === 'refused' ? 'checked' : ''}>
+                            <label class="form-check-label" for="refused_${row.id}">Refused</label>
+                        </div>
+                    `;
+                }
+            }
+        ],
+        paging: true,
+        pageLength: 5,
+        lengthMenu: [5, 10, 25, 50],
+        searching: true,
+        ordering: true,
+        order: [[0, 'desc']], // 👈 Default sort by Date/Time ascending
+        info: true,
+        responsive: true,
+        language: {
+            paginate: {
+                previous: '‹',
+                next: '›'
+            }
+        }
+    });
+
+    // Add medication button handler
+    document.getElementById('addMedicationBtn').addEventListener('click', function(e) {
+        e.preventDefault();
+        if (confirm('Are you sure you want to add a medication record?')) {
+            addMedicationRow();
+        }
+    });
+
+
+    //  Undo medication button handler
+    document.getElementById('undoMedicationBtn').addEventListener('click', function () {
+        if (newlyAddedMedications.length === 0) {
+            alert("No newly added medication to undo.");
+            return;
+        }
+    
+        // Remove the most recent entry
+        const lastAdded = newlyAddedMedications.shift();
+    
+        // Remove it from workingMedicationData
+        const index = workingMedicationData.findIndex(entry => entry.id === lastAdded.id);
+        if (index !== -1) {
+            workingMedicationData.splice(index, 1);
+        }
+    
+        // Re-render the DataTable
+        medicationTable.clear();
+        medicationTable.rows.add(workingMedicationData).draw();
+        
+        // Optional: go back to first page
+        medicationTable.page(0).draw(false);
+    
+        bindStatusChangeEvents(); // Re-bind any necessary listeners
+    });
+    
+
+    function addMedicationRow() {
+        const now = new Date();
+        const phTime = new Date(now.getTime() + (8 * 60 * 60 * 1000));
+        const formattedDateTime = phTime.toISOString().replace('T', ' ').substring(0, 19);
+        
+        
+        const newEntry = {
+            id: Date.now(), // Temporary ID
+            datetime: formattedDateTime,
+            administered_by: '',
+            status: 'not_taken',
+            medication: medicationId,
+            isExisting: false  // 👈 important!
+        };
+        
+    
+        fetch('/api/medication_log/', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': csrfToken
+            },
+            body: JSON.stringify(newEntry)
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.status === 'success') {
+                // Update nurse name
+                newEntry.administered_by = data.nurse_name;
+
+                // Insert at the beginning of data arrays
+                workingMedicationData.unshift(newEntry);
+                newlyAddedMedications.unshift(newEntry);
+
+                // Clear and re-add all rows to DataTable to ensure new one appears at the top
+                medicationTable.clear();
+                medicationTable.rows.add(workingMedicationData).draw();
+
+                // Optional: Jump to the first page instead of last
+                medicationTable.page(0).draw(false);
+
+                // Re-bind event listeners
+                bindStatusChangeEvents();
+            }
+        })
+        .catch(error => {
+            console.error('Error saving entry:', error);
+        });
+    }
+    
+    
+
+    //auto update when the status is clicked
+    function bindStatusChangeEvents() {
+        $('#medicationLogsTable tbody').off('change', 'input[type=radio]').on('change', 'input[type=radio]', function () {
+            const rowId = $(this).attr('name').split('_')[1];
+            const newStatus = $(this).val();
+    
+            const item = workingMedicationData.find(entry => entry.id == rowId);
+            if (item) {
+                item.status = newStatus;
+            }
+    
+            const newItem = newlyAddedMedications.find(entry => entry.id == rowId);
+            if (newItem) {
+                newItem.status = newStatus;
+                console.log('Updated status in newlyAddedMedications:', newItem);
+            }
+        });
+    }
+    
+    
+
+    function refreshTable() {
+        medicationTable.clear();
+        medicationTable.rows.add(workingMedicationData).draw();
+        bindStatusChangeEvents(); // <-- add this here
+    }
+    
+
+
+    // Modal close handler
+    $('#medicationOrderModal').on('hidden.bs.modal', function() {
+        // Reset to original data (discard unsaved changes)
+        workingMedicationData = [...originalMedicationData];
+        refreshTable();
+    });
+
+
+    // Load initial data  // Call loadInitialData inside DOMContentLoaded
+
+});
+
+// Global loadInitialData function
+function loadInitialData() {
+    const pathParts = window.location.pathname.split('/');
+    const patientId = pathParts[2];  // "11" from /patient/11/
+    
+    // Ensure medicationId is available globally
+    if (typeof medicationId === 'undefined') {
+        console.error('medicationId is undefined');
+        return;
+    }
+
+    // Include both patientId and medicationId in the request
+    fetch(`/api/medication_log/${patientId}/${medicationId}/`)
+      .then(response => response.json())    
+      .then(data => {
+          console.log("Data successfully loaded");
+
+          // Clear previous data and populate with new data
+          originalMedicationData = data.map(entry => ({
+              ...entry,
+              // Mark existing entries with isExisting: true
+              isExisting: true
+          }));
+
+          workingMedicationData = [...originalMedicationData];
+
+          // Clear and re-add rows to DataTable
+          medicationTable.clear();
+          workingMedicationData.forEach(entry => medicationTable.row.add(entry));
+          medicationTable.draw();
+      })
+      .catch(error => {
+          console.error('Error loading initial data:', error);
+      });
+}
+
+//end medlogs
+
+
+//med edit
 function getCookie(name) {
     let cookieValue = null;
     if (document.cookie && document.cookie !== '') {
@@ -896,6 +1508,8 @@ function getCookie(name) {
 }
 // Initialize the med modal
 const medicationModal = new bootstrap.Modal(document.getElementById('medicationOrderModal'));
+
+
 // Function to populate and show modal with existing data
 function showEditableMedicationModal(drugData) {
     // Populate editable drug details
@@ -904,6 +1518,8 @@ function showEditableMedicationModal(drugData) {
     $('#med-units').val(drugData.units);
     $('#med-frequency').val(drugData.frequency);
     $('#med-route').val(drugData.route);
+    $('#med-duration').val(drugData.duration);
+    $('#med-status').val(drugData.status || 'active');
     
     // Populate additional fields if they exist in drugData
     $('#med-diagnostic').val(drugData.health_diagnostic || drugData.diagnostic || '');
@@ -913,10 +1529,71 @@ function showEditableMedicationModal(drugData) {
     // Clear password field
     $('#med-password').val('');
     
+    // Check if the drug is inactive
+    const isInactive = drugData.status === 'inactive' || drugData.status === 'discontinued' || drugData.status === 'completed';
+    
+    // Get all input, select, and textarea elements in the modal
+    const modalInputs = $('#medicationOrderModal').find('input, select, textarea');
+    // Get the password confirmation section
+    const passwordSection = $('#medicationOrderModal').find('.mb-3').last(); // Targets the last form-group
+    
+    if (isInactive) {
+        // Disable all inputs
+        modalInputs.prop('disabled', true);
+        // Hide the confirm button and password section
+        $('#med-confirm-btn').hide();
+        passwordSection.hide();
+        
+        // Change modal title to indicate view-only mode
+        $('#medicationOrderModalLabel').text('View Medication');
+
+        // Hide the print and add buttons
+        $('#addMedicationBtn').hide();
+        $('#addMedicationBtn').prop('disabled', true);
+
+        // Make the medication logs table interactive
+        if ($.fn.DataTable.isDataTable('#medicationLogsTable')) {
+            $('#medicationLogsTable').DataTable().destroy();
+        }
+        $('#medicationLogsTable').DataTable({
+            paging: true,
+            searching: true,
+            ordering: true,
+            pageLength: 5, 
+            lengthMenu: [5, 10, 25, 50]
+        });
+    } else {
+        // Enable all inputs
+        modalInputs.prop('disabled', false);
+        // Show the confirm button and password section
+        $('#med-confirm-btn').show();
+        passwordSection.show();
+        
+        // Change modal title back to edit mode
+        $('#medicationOrderModalLabel').text('Edit Medication');
+
+        // Show the print and add buttons
+        $('#addMedicationBtn').show();
+        $('#addMedicationBtn').prop('disabled', false);
+    }
+    
     // Show modal
     medicationModal.show();
+
+    $('#medicationOrderModal').on('hidden.bs.modal', function() {
+        // Reinitialize DataTable when modal closes
+        if ($.fn.DataTable.isDataTable('#medicationLogsTable')) {
+            $('#medicationLogsTable').DataTable().destroy();
+        }
+        $('#medicationLogsTable').DataTable({
+            paging: true,
+            searching: true,
+            ordering: true,
+            pageLength: 5, 
+            lengthMenu: [5, 10, 25, 50]
+        });
+    });
 }
-let selectedDrugData = {};
 // Example of how to call it when a table row is clicked
 $('#active tbody, #inactive tbody').on('click', 'tr', function() {
     // Get the full drug data from data attributes
@@ -926,6 +1603,10 @@ $('#active tbody, #inactive tbody').on('click', 'tr', function() {
         units: $(this).find('td:eq(2)').text(),
         frequency: $(this).find('td:eq(3)').text(),
         route: $(this).find('td:eq(5)').text(),
+        duration: $(this).find('td:eq(6)').text(),
+        status: $(this).closest('table').attr('id') === 'active' ? 'active' : 
+        $(this).closest('table').attr('id') === 'discontinued' ? 'discontinued' :
+        $(this).closest('table').attr('id') === 'completed' ? 'completed' : 'inactive',
         // Get additional data from data attributes
         health_diagnostic: $(this).data('health-diagnostic') || '',
         patient_instructions: $(this).data('patient-instructions') || '',
@@ -933,13 +1614,19 @@ $('#active tbody, #inactive tbody').on('click', 'tr', function() {
         id: $(this).data('drug-id') || null
     };
     
+    medicationId = fullDrugData.id;
+    
+    loadInitialData();
     showEditableMedicationModal(fullDrugData);
 });
 // Handle password confirmation
 // edit medication
 $('#med-confirm-btn').click(function() {
     const password = $('#med-password').val();
+    
+    // console.log(JSON.stringify(newlyAddedMedications, null, 2));
     if (!password) {
+
         alert('Please enter your password');
         return;
     }
@@ -949,12 +1636,17 @@ $('#med-confirm-btn').click(function() {
         units: $('#med-units').val(),
         frequency: $('#med-frequency').val(),
         route: $('#med-route').val(),
+        duration: $('#med-duration').val(),
+        status: $('#med-status').val(),
         health_diagnostic: $('#med-diagnostic').val(),
         patient_instructions: $('#med-pt-instructions').val(),
         pharmacist_instructions: $('#med-md-instructions').val(),
         password: $('#med-password').val(),
-        id: fullDrugData.id 
+        id: fullDrugData.id,
+        newly_added_logs: newlyAddedMedications  // Include the new entries
     };
+    // medicationId = medicationData.id;
+    // console.log(medicationId);
     
     fetch('/api/update_medication/', {
         method: 'POST',
@@ -982,12 +1674,16 @@ $('#med-confirm-btn').click(function() {
                     $(this).find('td:eq(1)').text(medicationData.dose);
                     $(this).find('td:eq(2)').text(medicationData.units);
                     $(this).find('td:eq(3)').text(medicationData.frequency);
+                    $(this).find('td:eq(4)').text(medicationData.quantity);
                     $(this).find('td:eq(5)').text(medicationData.route);
+                    $(this).find('td:eq(6)').text(medicationData.duration);
+                    $(this).find('td:eq(7)').text(medicationData.start_date);
                 }
             });
             
             alert("Medication's Saved");
             medicationModal.hide();
+            window.location.href = window.location.href; 
         }
     })
     .catch(error => {
@@ -995,33 +1691,70 @@ $('#med-confirm-btn').click(function() {
     });
     // Here you would typically verify the password
     console.log('Password verification would happen here');
-
-    /*
-        // Validate form
-    if (!$('#medicationOrderForm')[0].checkValidity()) {
-        $('#medicationOrderForm').addClass('was-validated');
-        return;
-    }
-    // Collect all form data
-    const formData = {
-        drugName: $('#med-drug-name').val(),
-        dose: $('#med-dose').val(),
-        units: $('#med-units').val(),
-        frequency: $('#med-frequency').val(),
-        route: $('#med-route').val(),
-        diagnostic: $('#med-diagnostic').val(),
-        ptInstructions: $('#med-pt-instructions').val(),
-        mdInstructions: $('#med-md-instructions').val(),
-        password: $('#med-password').val()
-    };
-    // Here you would typically make an AJAX call to save the data
-    console.log('Saving medication order:', formData);
-    
-    // Close modal after save
-    medicationModal.hide();
-    */
 });
 
+// add Med
+document.getElementById('clear_medication').addEventListener('click', function(event) {
+    event.preventDefault(); // prevent form submit if inside a form
+
+    // Clear text inputs
+    document.getElementById('drugName_medication').value = '';
+    document.getElementById('dose_medication').value = 0;
+    document.getElementById('units_medication').selectedIndex = 0;
+    document.getElementById('frequency_medication').selectedIndex = 0;
+    document.getElementById('route_medication').selectedIndex = 0;
+    document.getElementById('duration_medication').value = '';
+    document.getElementById('quantity_medication').value = '';
+    document.getElementById('startDate_medication').value = '';
+
+    // Clear textareas
+    document.getElementById('healthDiagnostics_medication').value = '';
+    document.getElementById('patientInstructions_medication').value = '';
+    document.getElementById('physicianInstructions_medication').value = '';
+});
+
+
+document.getElementById('add_medication').addEventListener('click', function(event) {
+    event.preventDefault(); // Prevent form submission (if inside a form)
+
+    // Get values
+    const drugName = document.getElementById('drugName_medication').value.trim();
+    const dose = document.getElementById('dose_medication').value.trim();
+    const units = document.getElementById('units_medication').value;
+    const frequency = document.getElementById('frequency_medication').value;
+    const route = document.getElementById('route_medication').value;
+    const duration = document.getElementById('duration_medication').value.trim();
+    const quantity = document.getElementById('quantity_medication').value.trim();
+    const startDate = document.getElementById('startDate_medication').value;
+    const healthDiagnostics = document.getElementById('healthDiagnostics_medication').value.trim();
+    const patientInstructions = document.getElementById('patientInstructions_medication').value.trim();
+    const physicianInstructions = document.getElementById('physicianInstructions_medication').value.trim();
+
+    // Validation (Remove comment after)
+    if (
+        drugName === '' ||
+        dose === '' ||
+        units === 'Select' ||
+        frequency === 'Select' ||
+        route === 'Select' ||
+        duration === '' ||
+        quantity === '' ||
+        startDate === '' 
+        // healthDiagnostics === '' ||
+        // patientInstructions === '' ||
+        // physicianInstructions === ''
+    ) {
+        alert('Please fill out all fields before adding medication.');
+        return; // Block the button from doing anything
+    }
+
+    // If all fields are filled correctly, you can proceed
+    
+    saveMedication()
+    const passwordModal = new bootstrap.Modal(document.getElementById('patientPasswordModal'));
+    passwordModal.show();
+    
+});
 
 //MEMO/NOTES
 // Initialize notes functionality
@@ -1048,10 +1781,12 @@ function initNotes() {
 }
 
 function addNewNote() {
+    
+    editCondition = false;
     const now = new Date();
     const timestamp = formatDateTime(now);   
     const noteId = Date.now();
-    const currentNurseId = "N123"; // Replace with actual nurse ID okie
+    const currentNurseId = " "; // Replace with actual nurse ID okie
     
     const noteElement = document.createElement('div');
     noteElement.className = 'note';
@@ -1103,19 +1838,44 @@ function setupNoteEvents(noteElement, isNew = false) {
         content.focus();
         editBtn.style.display = 'none';
         saveBtn.style.display = 'inline-block';
+        editCondition = true;
     });
 
     saveBtn.addEventListener('click', function() {
         content.contentEditable = false;
         saveBtn.style.display = 'none';
         editBtn.style.display = 'inline-block';
-        saveNotes();
+        saveNotes(editCondition, saveBtn);
     });
 
     deleteBtn.addEventListener('click', function() {
+        const noteElement = deleteBtn.closest('.note');
+        const note_id = noteElement.dataset.id;
+
         if (confirm('Are you sure you want to delete this note?')) {
-            noteElement.remove();
-            saveNotes();
+            // Always send the delete request to the server
+            fetch('/api/delete_note/', {
+                method: 'DELETE',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': csrfToken,
+                },
+                body: JSON.stringify({ id: note_id })
+            })
+            .then(response => response.json())
+            .then(result => {
+                if (result.status === 'success') {
+                    noteElement.remove(); 
+                    loadNotes(); // Reload notes if needed
+                } else {
+                    console.error('Failed to delete note');
+                    alert('Failed to delete note');
+                }
+            })
+            .catch(error => {
+                console.error('Error deleting note:', error);
+                alert('Failed to delete note');
+            });
         }
     });
 
@@ -1137,18 +1897,100 @@ function formatDateTime(date) {
     return date.toLocaleDateString('en-US', options);
 }
 
-function saveNotes() {
-    const notes = [];
-    document.querySelectorAll('.note').forEach(noteElement => {
-        notes.push({
-            id: noteElement.dataset.id,
-            //title: noteElement.querySelector('.note-title').textContent,
-            content: noteElement.querySelector('.note-content').innerHTML,
-            time: noteElement.querySelector('.note-time').textContent
+function saveNotes(editCondition, saveBtn) {
+    let newNoteId;
+    // let newNoteCondition = false;
+    console.log("svenote button"+editCondition);
+    if(!editCondition){
+        
+        loadNotes()
+
+    
+        const notes = [];
+        document.querySelectorAll('.note').forEach(noteElement => {
+            notes.push({
+                id: noteElement.dataset.id,
+                content: noteElement.querySelector('.note-content').innerHTML,
+                time: noteElement.querySelector('.note-time').textContent
+            });
         });
-    });
-    localStorage.setItem('nurseNotes', JSON.stringify(notes));
+        // Find the latest note based on the 'time' value
+        const latestNote = notes.reduce((latest, current) => {
+            return parseInt(current.id) > parseInt(latest.id) ? current : latest;
+        });
+        
+        console.log('Sending notes:', latestNote);// This will print the notes data in a readable format
+
+
+        // Send the notes to Django API endpoint
+        fetch('/api/save_notes/', {   // Update this URL with your actual API endpoint
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': csrfToken, // Ensure you have CSRF token set for security
+            },
+            body: JSON.stringify(latestNote)
+        })
+        .then(response => response.json())
+        .then(result => {
+            // console.log('Notes saved successfully:', result.id);
+            newNoteId = result.id
+            loadNotes()
+            // newNoteCondition = true;
+            alert('Notes saved successfully!');
+        })
+        .catch(error => {
+            console.error('Error saving notes:', error);
+            alert('Failed to save notes');
+        });
+
+        // Optionally save to localStorage
+        localStorage.setItem('nurseNotes', JSON.stringify(notes));
+    }else{
+            const noteElement = saveBtn.closest('.note'); // Find the closest .note element
+                const note_id = noteElement.dataset.id;  // Get the note ID from the data-id attribute
+            // Editing existing note logic
+            const editedNote = {
+                id: note_id,  // Find the note with 'editing' class
+                content: noteElement.querySelector('.note-content').innerHTML,
+                time: noteElement.querySelector('.note-time').textContent
+            };
+
+            console.log('Editing note:', editedNote);  // This will print the edited note data in a readable format
+
+            // Send the edited note to Django API endpoint
+            fetch('/api/edit_note/', {  // Update this URL to your edit API endpoint
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': csrfToken, // Ensure you have CSRF token set for security
+                },
+                body: JSON.stringify(editedNote)
+            })
+            .then(response => response.json())
+            .then(result => {
+                if (result.status === 'success') {
+                    console.log('Note edited successfully:', result);
+                    alert('Note edited successfully!');
+                    // Optionally update the note on the UI without reloading the page
+                    editCondition = false;
+                    
+                    loadNotes()
+                } else {
+                    console.error('Error editing note:', result.message);
+                    alert('Failed to edit note');
+                }
+            })
+            .catch(error => {
+                console.error('Error editing note:', error);
+                alert('Failed to edit note');
+            });
+
+            editCondition = false;
+        
+    }
 }
+
 
 function loadNotes() {
     // Get the patient ID from wherever you're storing it (sessionStorage or URL)
@@ -1231,6 +2073,8 @@ function renderNotes(notesData) {
     });
 }
 
+
+
 // Poll the server periodically instead of relying on long-running request
 function checkShiftStatus() {
     fetch('/check_shift/')
@@ -1256,6 +2100,8 @@ function checkShiftStatus() {
 
 // Initial call
 checkShiftStatus();
+
+//Save vital sign
 function initPasswordModal() {
     // Initial state of password validity
 
@@ -1319,25 +2165,41 @@ function initPasswordModal() {
                         })
                         .then(response => response.json())
                         .then(data => {
-                            // Process the new row
-                            const newRow = {
-                                datetime: new Date().toLocaleString(),  // Current date and time
-                                temperature: temperature,
-                                blood_pressure: bloodPressure,
-                                pulse: pulse,
-                                respiratory: respiratory,
-                                oxygen: oxygen,
-                                id: Date.now() + Math.random()  // Unique ID
-                            };
+                            
+                            alert('Vital Signs Saved');
+                            location.reload();
+                            // Get values first
+                            // const temperature = temperatureInput.value;
+                            // const bloodPressure = bloodPressureInput.value;
+                            // const pulse = pulseInput.value;
+                            // const respiratory = respiratoryInput.value;
+                            // const oxygen = oxygenInput.value;
 
-                            // Get current table data (existing rows)
-                            let tableData = $('#vitals-table').bootstrapTable('getData');
+                            // // Now clear them
+                            // temperatureInput.value = '';
+                            // bloodPressureInput.value = '';
+                            // pulseInput.value = '';
+                            // respiratoryInput.value = '';
+                            // oxygenInput.value = '';
+                            // // Process the new row
+                            // const newRow = {
+                            //     datetime: new Date().toLocaleString(),  // Current date and time
+                            //     temperature: temperature,
+                            //     blood_pressure: bloodPressure,
+                            //     pulse: pulse,
+                            //     respiratory: respiratory,
+                            //     oxygen: oxygen,
+                            //     id: Date.now() + Math.random()  // Unique ID
+                            // };
 
-                            // Add the new row
-                            tableData.push(newRow);
+                            // // Get current table data (existing rows)
+                            // let tableData = $('#vitals-table').bootstrapTable('getData');
 
-                            // Refresh the table
-                            $('#vitals-table').bootstrapTable('load', tableData);
+                            // // Add the new row
+                            // tableData.push(newRow);
+
+                            // // Refresh the table
+                            // $('#vitals-table').bootstrapTable('load', tableData);
                         })
                         
                         .catch(error => console.error("Error:", error));
@@ -1353,6 +2215,133 @@ function initPasswordModal() {
     
                     const modal = bootstrap.Modal.getInstance(document.getElementById('patientPasswordModal'));
                     modal.hide();
+                } else {
+                    alert('Incorrect Shift Password');
+                }
+            })
+            .catch(error => {
+                console.error("Error:", error);
+            });
+        } else {
+            alert('Please enter a password');
+        }
+    });
+
+    // Allow pressing 'Enter' to confirm access
+    document.getElementById('accessPassword').addEventListener('keypress', function(e) {
+        if (e.key === 'Enter') {
+            document.getElementById('confirmAccess').click();
+        }
+    });
+}
+
+// add med 2
+function saveMedication() {
+    // Initial state of password validity
+
+    // Show modal
+    document.getElementById('patientPasswordModal').addEventListener('show.bs.modal', () => {
+        const modal = document.getElementById('patientPasswordModal');
+        modal.removeAttribute('aria-hidden');
+        modal.removeAttribute('inert');
+        document.getElementById('accessPassword').value = '';
+        setTimeout(() => document.getElementById('accessPassword').focus(), 10);
+    });
+
+    // Blur when modal hides
+    document.getElementById('patientPasswordModal').addEventListener('hide.bs.modal', () => {
+        document.activeElement.blur();
+    });
+
+    // Reset modal attributes when hidden
+    document.getElementById('patientPasswordModal').addEventListener('hidden.bs.modal', () => {
+        const modal = document.getElementById('patientPasswordModal');
+        modal.setAttribute('aria-hidden', 'true');
+        modal.setAttribute('inert', '');
+    });
+
+    // Confirm access button logic
+    document.getElementById('confirmAccess').addEventListener('click', function() {
+        const password = document.getElementById('accessPassword').value;
+
+        if (password) { 
+            fetch('/api/check_shift_password/', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': csrfToken, // CSRF Token if required
+                },
+                body: JSON.stringify({ password: password })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.is_valid) {
+                    const data = {
+                        drugName: document.getElementById('drugName_medication').value.trim(),
+                        dose: document.getElementById('dose_medication').value.trim(),
+                        units: document.getElementById('units_medication').value,
+                        frequency: document.getElementById('frequency_medication').value,
+                        route: document.getElementById('route_medication').value,
+                        duration: document.getElementById('duration_medication').value.trim(),
+                        quantity: document.getElementById('quantity_medication').value.trim(),
+                        startDate: document.getElementById('startDate_medication').value,
+                        healthDiagnostics: document.getElementById('healthDiagnostics_medication').value.trim(),
+                        patientInstructions: document.getElementById('patientInstructions_medication').value.trim(),
+                        physicianInstructions: document.getElementById('physicianInstructions_medication').value.trim()
+                    };
+                    
+                    fetch('/api/save_medication/', {   // <-- This is the URL (we will make this URL in Django too)
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'X-CSRFToken': csrfToken,// very important for Django security
+                        },
+                        body: JSON.stringify(data)
+                    })
+                    .then(response => response.json())
+                    .then(result => {
+                        console.log(result);
+                        alert(result.message); // Example: show server response
+                        
+                    }) 
+                    .catch(error => {
+                        console.error('Error:', error);
+                    });
+
+                    
+                    const modal = bootstrap.Modal.getInstance(document.getElementById('patientPasswordModal'));
+                    modal.hide();
+
+                    const newRow = {
+                        datetime: new Date().toLocaleString(),  // Current date and time
+                        drugName: data.drugName,
+                        dose: data.dose,
+                        units: data.units,
+                        frequency: data.frequency,
+                        quantity: data.quantity,
+                        route: data.route,
+                        duration: data.duration,
+                        start_date: data.startDate,
+                    };
+                    
+                    // Get the DataTable instance
+                    const activeTable = $('#active').DataTable();
+                    
+                    // Create the new row data
+                    const rowValues = [
+                        newRow.drugName,
+                        newRow.dose,
+                        newRow.units,
+                        newRow.frequency,
+                        newRow.quantity,
+                        newRow.route,
+                        newRow.duration,
+                        newRow.start_date,
+                    ];
+                    
+                    // Add the new row to the table
+                    activeTable.row.add(rowValues).draw();
+                    document.getElementById('clear_medication').click();
                 } else {
                     alert('Incorrect Shift Password');
                 }

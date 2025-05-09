@@ -21,7 +21,8 @@
 </head>
 <body>
     <div class="nurse-header">
-        <h1>Welcome, Nurse!</h1>
+        <h1><img src="/static/images/nurse.png" alt="Admin" class="circle-icon me-2" style="width: 50px; height: 50px;"> Nurse
+        </h1>
         <button id="logoutButton" class="logout-btn">Logout</button>
 
         <!-- Tab Navigation -->
@@ -85,6 +86,24 @@
                                         <input type="date" class="form-control" id="patientBirthday" required>
                                     </div>
                                     <div class="mb-3">
+                                        <label for="patientWeight" class="form-label">Weight (kg)</label>
+                                        <input type="number" 
+                                               class="form-control" 
+                                               id="patientWeight" 
+                                               step="0.01"    
+                                               min="0" 
+                                               lang="en"       
+                                               inputmode="decimal" required> 
+                                    </div>
+                                    <div class="mb-3">
+                                        <label for="patientHeight" class="form-label">Height (cm)</label>
+                                        <input type="number" 
+                                               class="form-control" 
+                                               id="patientHeight"
+                                               pattern="[0-9]+([,\.][0-9]+)?"
+                                               title="Please enter a valid number (e.g. 175.5 or 175,5)" required>
+                                    </div>
+                                    <div class="mb-3">
                                         <label for="patientPhone" class="form-label">Phone Number</label>
                                         <div class="input-group mb-2 w-100">
                                             <input class="form-control" id="phone_number_patient" type="tel" placeholder="Phone Number" pattern="[0-9]*" inputmode="numeric" required>
@@ -97,6 +116,10 @@
                                             <option value="Inpatient">Inpatient</option>
                                             <option value="Outpatient">Outpatient</option>
                                         </select>
+                                    </div>
+                                    <div class="mb-3">
+                                        <label for="patientNumber" class="form-label">Bed/ Room Number</label>
+                                        <input type="text" class="form-control" id="patientNumber" required>
                                     </div>
                                     <div class="mb-3">
                                         <label for="patientWard" class="form-label">Ward</label>
@@ -143,20 +166,25 @@
                 </div>
                 </div>
 
-                <!--TABLE-->
-                <table id="patient" class="table table-striped mt-3" style="width:100%">
-                    <thead>
-                        <tr>
-                            <th>ID</th>
-                            <th>Name</th>
-                            <th>Ward</th>
-                            <th>Status</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        </tr>
-                    </tbody>
-                </table>
+                
+                
+
+                <div class="table-container">
+                    <table id="patient" class="table mt-3" style="width:100%">
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>Name</th>
+                                <th>Bed/Room Number</th>
+                                <th>Ward</th>
+                                <th>Status</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <!-- Table rows will be inserted here -->
+                        </tbody>
+                    </table>
+                </div>
             </div>
 
             <!-- Password Confirmation Modal before going to pt page-->
@@ -170,7 +198,7 @@
                         <div class="modal-body">
                             <div class="mb-3">
                                 <label for="accessPassword" class="form-label">Enter Shift Password:</label>
-                                <input type="password" class="form-control" id="accessPassword" placeholder="Password">
+                                <input type="password" autocomplete="off" class="form-control" id="accessPassword" placeholder="Password">
                             </div>
                         </div>
                         <div class="modal-footer">
@@ -182,7 +210,7 @@
 
             <!-- Logs Tab Content -->
             <div class="tab-pane fade" id="nurse-logs" role="tabpanel" aria-labelledby="logs-tab">
-                <table id="nurse-logs" class="table table-striped mt-3" style="width:100%">
+                <table id="nurse-logs-table" class="table table-striped mt-3" style="width:100%">
                     <thead>
                         <tr>
                             <th>Date/Time</th>
@@ -226,8 +254,8 @@
     </div>
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
-    <!--table-->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <!--table-->
     <script src="https://unpkg.com/bootstrap-table@1.21.3/dist/bootstrap-table.min.js"></script>
     <script src="https://code.jquery.com/jquery-3.7.1.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/5.3.0/js/bootstrap.bundle.min.js"></script>

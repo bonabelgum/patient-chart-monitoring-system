@@ -177,7 +177,7 @@ html, body {
     width: 100%;
 }
 .admin::before {
-    content: "Admin";
+    content: "Admin"; 
 }
 .nurse::before {
     content: "Nurse";

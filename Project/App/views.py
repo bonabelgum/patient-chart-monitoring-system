@@ -7,8 +7,10 @@ from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
 from django.contrib.auth.decorators import login_required   
 from django.contrib.auth import logout
+from django.views.decorators.cache import never_cache
 from django.urls import reverse_lazy
-from .models import Admin_logs, Employee, Shift_schedule, PatientInformation
+from .models import Admin_logs, Employee, Nurse_logs, Shift_schedule, PatientInformation
+
 
 #storing qr test
 from .serializers import PatientInformationSerializer
@@ -21,6 +23,7 @@ def test_env(): #just testing env
     print("Environment Variable:", secret_test)
 test_env()
 
+@never_cache
 def index(request):
     if request.user.is_authenticated:
         role = request.session.get("role")  # ✅ Get role from session
@@ -34,13 +37,14 @@ def signup(request):
     template = "main/signup.html"
     return render(request, template)
 
+@never_cache
 # @login_required(login_url='/')  # ✅ Redirect to the index view
 def admin_page(request):
     template = "main/admin_user.html"
     return render(request, template)
 
-
-# @login_required(login_url='/')  # ✅ Redirect to the index view
+@never_cache
+@login_required(login_url='/')  # ✅ Redirect to the index view
 def nurse(request):
     template = "main/nurse.html"
     return render(request, template)
@@ -70,7 +74,8 @@ def get_employees(request):
     return JsonResponse(list(employees), safe=False)
 
 #patient
-#@login_required(login_url='/')
+@never_cache
+@login_required(login_url='/')
 def patient_detail(request, patient_id):
     #get data from the URL parameters (temporary for now until we use a database here)
     patient_name = request.GET.get('name', 'Unknown')
@@ -134,6 +139,13 @@ def admit_patient(request):
     if request.method == 'POST':
         try:
             data = json.loads(request.body)
+            nurse_id = request.session.get('user_id')
+            nurse = Employee.objects.get(employee_id=nurse_id)
+
+            weight = float(data.get('weight')) if data.get('weight') else None
+            height = float(data.get('height')) if data.get('height') else None
+            print(f"Weight value: {data.get('weight')}, Type: {type(data.get('weight'))}")
+            print(f"Height value: {data.get('height')}, Type: {type(data.get('height'))}")
             
             # Check if patient already exists
             existing_patient = PatientInformation.objects.filter(
@@ -153,13 +165,18 @@ def admit_patient(request):
                 name=data.get('name'),
                 sex=data.get('sex'),
                 birthday=data.get('birthday'),
-                phone_number=data.get('phone_number'),
+                weight=weight,
+                height=height,
+                phone_number="(+63)"+data.get('phone_number'),
                 status=data.get('status'),
+                number=data.get('number'),
                 ward=data.get('ward'),
                 physician_name=data.get('physician_name')
             )
 
             qr_code_url = request.build_absolute_uri(patient.qr_code.url)
+            
+            Nurse_logs.add_log_activity("Nurse "+nurse.name+" Admitted Patient  "+data.get('name'))
             
             return JsonResponse({
                 'status': 'success',

@@ -2,6 +2,74 @@ let currentPatientData = null;
 let end_time_schedule = null;
 let globalPatientData = null;
 
+window.addEventListener('pageshow', function (event) {
+    if (event.persisted || performance.getEntriesByType("navigation")[0].type === "back_forward") {
+        location.reload();
+    }
+});
+
+
+document.addEventListener('DOMContentLoaded', () => {
+    // Disable back navigation by manipulating the history state
+    window.history.pushState(null, null, window.location.href); // Push the current state into history
+
+    // Prevent going back
+    window.onpopstate = function () {
+        window.history.pushState(null, null, window.location.href); // Keep pushing the same state to block back action
+    };
+
+    // Your shift password modal code here, if necessary...
+});
+
+
+
+document.getElementById('nurse-logs-tab').addEventListener('click', function() {
+    // console.log('Logs tab clicked');
+    fetchAndPopulateNurseLogs();
+
+    // You can perform any other actions here
+});
+
+
+// Function to fetch and populate nurse logs
+function fetchAndPopulateNurseLogs() {
+    const table = $('#nurse-logs-table').DataTable({
+        "destroy": true,
+        "paging": true,
+        "ordering": true,
+        "info": true,
+        "order": [[0, "desc"]], // Sort by first column (date) descending
+        "columnDefs": [
+            {
+                "targets": 0,
+                "width": "300px",
+                "className": "dt-left",
+                "type": "date" // Ensure proper date sorting
+            }
+        ]
+    });
+  
+    table.clear();
+
+    fetch('/api/get_nurse_logs/')
+      .then(response => response.json())
+      .then(data => {
+        data.logs.forEach(log => {
+          table.row.add([ 
+            log.date_time,
+            log.activity
+          ]);
+        });
+        table.draw(); // Draw once after all rows are added
+      })
+      .catch(error => {
+        console.error('Error fetching logs:', error);
+      });
+}
+  
+  // Call this function to fetch and repopulate the logs when needed
+  fetchAndPopulateNurseLogs();
+  
 
 // Initialize modal event listeners once
 function initPasswordModal() {
@@ -54,7 +122,39 @@ initPasswordModal()
 
 ///---
 document.addEventListener('DOMContentLoaded', function() {
-    const table = $('#patient').DataTable();  // Initialize DataTable
+    const table = $('#patient').DataTable({
+        // "paging": false,      // Disable pagination
+        // "pageLength": 10,      // Display 5 rows per page
+        // "scrollY": "300px",   // Set the height of the table, allowing it to scroll
+        // "scrollCollapse": true, // Allows table to collapse if fewer rows are available
+        // "searching": true 
+    });  // Initialize DataTable
+
+    $('#patient tbody').on('click', 'tr', function() {
+        const rowData = table.row(this).data(); // Get row data
+        
+        if (!rowData) {
+            console.error("Row data not found!");
+            return;
+        }
+    
+        const patientId = rowData[0]; // ID is the first column
+        const patientName = rowData[1] || '';
+        const patientNumber = rowData[2] || '';
+        const patientWard = rowData[3] || '';
+        const patientStatus = rowData[4] || '';
+        
+        const queryParams = new URLSearchParams({
+            id: patientId,
+            name: patientName,
+            number: patientNumber,
+            ward: patientWard,
+            status: patientStatus,
+            end_time: rowData[5] || '' // Add if available
+        }).toString();
+        
+        window.location.href = `/patient/${patientId}/?${queryParams}`;
+    });
 
     fetch('/get_patients/')
         .then(response => response.json())
@@ -121,20 +221,15 @@ document.addEventListener('DOMContentLoaded', function() {
                 
                 checkPatient(decodedText).then(PatientExist => {
                     if (PatientExist) {
-                        // Store the patient data (you might want to get more details here)
-                        currentPatientData = {
+                        console.log("Scanned:", decodedText);
+                        const queryParams = new URLSearchParams({
                             id: decodedText,
-                            name: '', // You might want to fetch these details
-                            ward: '',
-                            status: ''
-                        };
-                        
-                        // Show the same password modal
-                        const passwordModal = new bootstrap.Modal(document.getElementById('patientPasswordModal'));
-                        passwordModal.show();
-                    } else {
+                        }).toString();
+                
+                        window.location.href = `/patient/${decodedText}/?${queryParams}`;
+                    }else {
                         //alert(`Patient ID ${decodedText} does not exist!`);
-                        alert(`Patient ID does not exist!`);
+                        alert(`Patient does not exist!`);
                     }
                 });
             });
@@ -158,35 +253,18 @@ function addPatientRow(table, patient) {
     const newRow = table.row.add([
         patient.id,
         patient.name,
+        patient.number || 'Unassigned',
         patient.ward || 'Unassigned',
         patient.status,
     ]).draw().node();
 
-    console.log(patient.end_time);
-    newRow.dataset.patientId = patient.id;
-    newRow.dataset.patientName = patient.full_name;
-    newRow.dataset.patientWard = patient.ward;
-    newRow.dataset.patientStatus = patient.status;
-
-    newRow.addEventListener("click", function() {
-        currentPatientData = {
-            id: this.dataset.patientId,
-            name: this.dataset.patientName,
-            ward: this.dataset.patientWard,
-            status: this.dataset.patientStatus
-        };
-
-        const queryParams = new URLSearchParams({
-            id: currentPatientData.id,
-            name: currentPatientData.name || '',
-            ward: currentPatientData.ward || '',
-            status: currentPatientData.status || '',
-            end_time: patient.end_time || ''
-        }).toString();
-        window.location.href = `/patient/${currentPatientData.id}/?${queryParams}`; //redirect
-    
-        //const passwordModal = new bootstrap.Modal(document.getElementById('patientPasswordModal'));
-        //passwordModal.show();
+    // Set data attributes using jQuery (recommended for DataTables)
+    $(newRow).data({
+        'patient-id': patient.id,
+        'patient-name': patient.name,
+        'patient-number': patient.number,
+        'patient-ward': patient.ward,
+        'patient-status': patient.status
     });
 }
 
@@ -235,6 +313,7 @@ document.addEventListener('DOMContentLoaded', function() {
         globalPatientData = {
             name: document.getElementById('patientName').value,
             birthday: document.getElementById('patientBirthday').value,
+            number: document.getElementById('patientNumber').value,
             ward: document.getElementById('patientWard').value
         };
         //console.log("Stored patient data:", globalPatientData);
@@ -244,8 +323,11 @@ document.addEventListener('DOMContentLoaded', function() {
                 name: document.getElementById('patientName').value,
                 sex: document.getElementById('patientSex').value,
                 birthday: document.getElementById('patientBirthday').value,
+                weight: parseFloat(document.getElementById('patientWeight').value),
+                height: parseFloat(document.getElementById('patientHeight').value),
                 phone_number: document.getElementById('phone_number_patient').value,
                 status: document.getElementById('patientStatus').value,
+                number: document.getElementById('patientNumber').value,
                 ward: document.getElementById('patientWard').value,
                 physician_name: document.getElementById('physicianName').value
             };
@@ -412,62 +494,6 @@ document.getElementById('printQrBtn').addEventListener('click', function() {
     printableContent.style.display = 'none';
 });
 
-//print
-/*document.getElementById('printQrBtn').addEventListener('click', function() {
-    // Check if currentPatientData exists
-    if (!currentPatientData) {
-        console.error('No current patient data available');
-        alert('No patient data available to print');
-        return;
-    }
-
-    // Get values from currentPatientData
-    const patientId = currentPatientData.id || 'TEMP-ID';
-    const patientName = currentPatientData.name || 'Not specified';
-    const patientBirthday = currentPatientData.birthday || null; // Assuming birthday might be in the object
-    const patientWard = currentPatientData.ward || 'Not specified';
-    
-    // Get QR code image
-    const qrCodeImg = document.querySelector('#qrCodeImageContainer img');
-    const qrCodeSrc = qrCodeImg ? qrCodeImg.src : '';
-    
-    // Format birthday for display
-    let formattedBirthday = 'Not specified';
-    if (patientBirthday) {
-        // Handle both Date objects and string formats
-        const birthDate = typeof patientBirthday === 'string' ? 
-                         new Date(patientBirthday) : 
-                         patientBirthday;
-        formattedBirthday = birthDate.toLocaleDateString();
-    }
-    
-    // Debug: Check what values we're getting
-    console.log('Printing patient data:', {
-        id: patientId,
-        name: patientName,
-        birthday: formattedBirthday,
-        ward: patientWard,
-        qrCode: qrCodeSrc
-    });
-    
-    // Populate the printable content
-    document.getElementById('print-id').textContent = patientId;
-    document.getElementById('print-name').textContent = patientName;
-    document.getElementById('print-bday').textContent = formattedBirthday;
-    document.getElementById('print-ward').textContent = patientWard;
-    document.getElementById('print-qr').src = qrCodeSrc;
-    
-    // Show the printable content
-    const printableContent = document.getElementById('printable-wristband');
-    printableContent.style.display = 'block';
-    
-    // Print the content
-    window.print();
-    
-    // Hide it again after printing
-    printableContent.style.display = 'none';
-});
- */
 
 //phone number
 document.addEventListener("DOMContentLoaded", function () {
