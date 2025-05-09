@@ -1065,6 +1065,7 @@ body {
 }
 
 /*wrist band print*/
+/*wrist band print*/
 @media print {
     @page {
         size: auto;
@@ -1076,6 +1077,13 @@ body {
     #printable-wristband, #printable-wristband * {
         visibility: visible;
     }
+    #printable-wristband #print-name,
+    #printable-wristband #print-id,
+    #printable-wristband #print-bday,
+    #printable-wristband #print-ward {
+        font-size: 16pt; /* You can adjust individual parts too */
+        font-weight: bold;
+    }
     #printable-wristband {
         position: absolute;
         left: 0;
@@ -1083,7 +1091,7 @@ body {
         width: 12cm;
         height: 2cm;
         /* optional */
-        transform: scale(0.4);
+        transform: scale(0.3);
         transform-origin: top left;
     }
 }
