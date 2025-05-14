@@ -160,11 +160,17 @@
                     </div>
                 </div>
                 <!--loading screen-->
-                <div id="loadingIndicator" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.5);justify-content: center; align-items: center; z-index: 1050;">
+                <div id="loadingIndicator"
+                    style="display: none; position: fixed; top: 0; left: 0;
+                            width: 100%; height: 100%;
+                            background: rgba(0, 0, 0, 0.5);
+                            justify-content: center; align-items: center;
+                            z-index: 1100;"> <!-- Increased z-index -->
                     <div class="spinner-border text-light" role="status" style="width: 4rem; height: 4rem;">
                         <span class="visually-hidden">Loading...</span>
                     </div>
                 </div>
+
 
             </div>
             <p class="existing-acc"><a href="{% url 'index' %}">Already have an account</a></p>

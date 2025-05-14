@@ -83,7 +83,7 @@ def admin_code_verification(request):
                 phone_number=admin_data.get("phone_number"),
                 master_key=encrypted_text,
                 status="Registered"
-            )
+            ) 
 
             send_master_key(master_key, admin_data.get("email"))
             return JsonResponse({"status": "success", "message": "Verification successful. Redirecting to login."})

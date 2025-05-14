@@ -122,6 +122,8 @@ document.addEventListener("DOMContentLoaded", function () {
     
     document.getElementById('confirm-verify-code-admin').addEventListener('click', function(event) {
         event.preventDefault(); // Prevent normal button behavior
+        
+        showLoading();
     
         const codeInput = document.getElementById('verify-code-admin').value;
         console.log("1")
@@ -138,15 +140,18 @@ document.addEventListener("DOMContentLoaded", function () {
         .then(data => {
             if (data.status === 'success') {
                 console.log("redirect go")
+                hideLoading();
                 alert(data.message);
                 window.location.href = '/'; // Redirect to login (or wherever you want)
             } else {
+                hideLoading();
                 alert(data.message); // Show error
             }
         })
         .catch(error => {
             console.error('Error:', error);
             alert('Something went wrong. Please try again.');
+            hideLoading();
         });
     });
 

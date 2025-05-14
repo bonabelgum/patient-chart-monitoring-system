@@ -10,7 +10,7 @@ import threading
 from django.contrib.auth.models import User
 from decimal import Decimal
 
-
+ 
 # nurse_id =  ""
 def get_patients(request):
     # global nurse_id 
