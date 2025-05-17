@@ -142,6 +142,7 @@
                             <textarea class="form-control d-none" id="data-patient-reason-edit" maxlength="100" rows="2" required></textarea>
                             <div class="invalid-feedback">Please provide a reason for the modification.</div>
                         </div>
+
                         <div class="patient-field password-field d-none">
                             <strong>Shift password: <span class="text-danger">*</span></strong>
                             <span id="data-patient-password-view"></span>
@@ -280,6 +281,7 @@
                                                 <th data-field="pulse" data-sortable="true">Pulse rate</th>
                                                 <th data-field="respiratory" data-sortable="true">Respiratory rate</th>
                                                 <th data-field="oxygen" data-sortable="true">Oxygen saturation</th>
+                                                <th data-field="remarks" data-sortable="true">Remarks</th>
                                             </tr>
                                         </thead>
                                         <tbody>
@@ -316,6 +318,10 @@
                                                     <div class="mb-3">
                                                         <label class="form-label">Oxygen Saturation (%)</label>
                                                         <input type="number" class="form-control" id="edit-vs-oxygen">
+                                                    </div>
+                                                    <div class="mb-3">
+                                                        <label class="form-label">Remarks</label>
+                                                        <input type="text" class="form-control" id="edit-vs-remarks">
                                                     </div>
                                                     
                                                     <div class="mb-3">
@@ -474,6 +480,7 @@
                                         <th>Route</th>
                                         <th>Duration</th>
                                         <th>Start Date</th>
+                                        <th>End Date</th>
                                     </tr>
                                 </thead>
                                 <tbody>
@@ -483,11 +490,11 @@
                         </div>
                     </div>
 
-                    <h5 class="mt-5 mb-3">Print all Medication Logs
+                    <!--h5 class="mt-5 mb-3">Print all Medication Logs
                         <button id="print-medication-logs" class="btn btn-link p-0 border-0 text-info" data-bs-toggle="tooltip" title="Print all medication logs">
                             <i class="bi bi-printer-fill fs-6"></i>
                         </button>
-                    </h5>
+                    </h5-->
                     <!--end of tab 3-->
                 </div>
                 <!-- shift password Confirmation Modal before going to pt page-->
@@ -495,10 +502,14 @@
                     <div class="modal-dialog">
                         <div class="modal-content">
                             <div class="modal-header">
-                                <h5 class="modal-title" id="passwordModalLabel">Access Patient Record</h5>
+                                <h5 class="modal-title" id="passwordModalLabel">Patient Record</h5>
                                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                             </div>
                             <div class="modal-body">
+                                <div class="mb-3" id="remarks-container">
+                                    <label for="remarks1" class="form-label">Remarks:</label>
+                                    <input type="text" autocomplete="off" class="form-control" id="remark1" placeholder="N/A">
+                                </div>
                                 <div class="mb-3">
                                     <label for="accessPassword" class="form-label">Enter Shift Password:</label>
                                     <input type="password" autocomplete="off" class="form-control" id="accessPassword" placeholder="Password">
@@ -521,9 +532,9 @@
                     <div class="notes-container">
                         <h1 class="d-flex align-items-center gap-2">
                             Nurse's Notes
-                            <button id="print-nurse-notes" class="btn btn-link p-0 border-0 text-info" data-bs-toggle="tooltip" title="Print nurse's notes">
+                            <!--button id="print-nurse-notes" class="btn btn-link p-0 border-0 text-info" data-bs-toggle="tooltip" title="Print nurse's notes">
                                 <i class="bi bi-printer-fill fs-4"></i>
-                            </button>
+                            </button-->
                         </h1>
                         <div class="notes-controls">
                             <button id="add-note-btn" class="btn-add">+ Add New Note</button>
@@ -650,6 +661,7 @@
                                                         <th>Date/Time</th>
                                                         <th>Administered by</th>
                                                         <th>Status</th>
+                                                        <th>Remarks</th>
                                                     </tr>
                                                 </thead>
                                                 <tbody>
@@ -681,10 +693,14 @@
             <div class="modal-dialog">
                 <div class="modal-content">
                     <div class="modal-header">
-                        <h5 class="modal-title" id="patientDetailLabel">Access Patient Record</h5>
+                        <h5 class="modal-title" id="patientDetailLabel">Patient Record</h5>
                         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                     </div>
                     <div class="modal-body">
+                        <!--div class="mb-3">
+                            <label for="remarks" class="form-label">Remarks:</label>
+                            <input type="text" class="form-control" id="remark" placeholder="N/A">
+                        </div-->
                         <div class="mb-3">
                             <label for="accessShiftPassword" class="form-label">Enter Shift Password:</label>
                             <input type="password" class="form-control" id="accessShiftPassword" placeholder="Password">
@@ -713,7 +729,7 @@
         </div>
         <!-- QR End of Hidden printable content -->
 
-        <!-- Hidden Summary printable content// patient summary-->
+        <!-- Hidden Summary printable content// patient summary/patient information-->
         <div id="printable-patient-chart" style="display: none;">
             <div style="font-family: Arial, sans-serif; padding: 20px; max-width: 800px; margin: 0 auto;">
                 <!-- Header -->
@@ -798,6 +814,7 @@
                                 <th style="padding: 8px; text-align: left; border: 1px solid #ddd;">Pulse</th>
                                 <th style="padding: 8px; text-align: left; border: 1px solid #ddd;">Respiratory</th>
                                 <th style="padding: 8px; text-align: left; border: 1px solid #ddd;">Oxygen (%)</th>
+                                <th style="padding: 8px; text-align: left; border: 1px solid #ddd;">Remarks</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -805,20 +822,50 @@
                         </tbody>
                     </table>
                 </div>
+                <!--nurse notes-->
+                <h2 style="color: #0066cc; border-bottom: 1px solid #ddd; padding-bottom: 5px;">Nurse's notes</h2>
+                <div style="margin-bottom: 30px;" id="print-notes-container">
+                    <!-- Notes will be inserted here -->
+                </div>
+
+
+                <!--med logs-->
+                <div style="margin-bottom: 30px;">
+                    <h2 style="color: #0066cc; border-bottom: 1px solid #ddd; padding-bottom: 5px;">Medication logs</h2>
+                    <table id="print-meds-logs-table" style="width: 100%; border-collapse: collapse; margin-top: 20px;">
+                        <thead>
+                            <tr style="background-color: #0066cc; color: white;">
+                                <th style="padding: 8px; text-align: left; border: 1px solid #ddd;">Drug Name</th>
+                                <th style="padding: 8px; text-align: left; border: 1px solid #ddd;">Date/Time Administered</th>
+                                <th style="padding: 8px; text-align: left; border: 1px solid #ddd;">Administered By</th>
+                                <th style="padding: 8px; text-align: left; border: 1px solid #ddd;">Status</th>
+                                <th style="padding: 8px; text-align: left; border: 1px solid #ddd;">Remarks</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <!-- Will be populated by JavaScript -->
+                        </tbody>
+                    </table>
+                </div>
+
+                <!-- Footer -->
+                <div style="text-align: center; margin-top: 30px; border-top: 2px solid #333; padding-top: 10px;">
+                    <p style="font-size: 12px; color: #666;">Electronic Health Record System - Confidential Patient Information</p>
+                </div>
             </div>
         </div>
         <!-- End Summary Hidden printable content/ patient summary-->
 
-        <!-- Hidden Summary printable content// med logs-->
+        <!-- Hidden Summary printable content// med logs->
         <div id="printable-medication-logs" style="display: none;">
             <div style="font-family: Arial, sans-serif; padding: 20px; max-width: 800px; margin: 0 auto;">
-                <!-- Header -->
+                <!- Header >
                 <div style="text-align: center; margin-bottom: 20px; border-bottom: 2px solid #333; padding-bottom: 10px;">
                     <h1 style="margin: 0; color: #0066cc;">MEDICATION ADMINISTRATION RECORD</h1>
                     <p style="margin: 5px 0; font-size: 14px; color: #666;">Generated on: <span id="meds-print-date"></span></p>
                 </div>
                 
-                <!-- Patient Summary -->
+                <!- Patient Summary >
                 <div style="margin-bottom: 30px; border: 1px solid #ddd; padding: 15px; background: #f9f9f9;">
                     <h2 style="margin-top: 0; color: #0066cc; border-bottom: 1px solid #ddd; padding-bottom: 5px;">Patient Summary</h2>
                     <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
@@ -829,7 +876,7 @@
                     </div>
                 </div>
                 
-                <!-- Medication Logs Table -->
+                <!- Medication Logs Table >
                 <div style="margin-bottom: 30px;">
                     <table id="print-meds-logs-table" style="width: 100%; border-collapse: collapse; margin-top: 20px;">
                         <thead>
@@ -838,32 +885,33 @@
                                 <th style="padding: 8px; text-align: left; border: 1px solid #ddd;">Date/Time Administered</th>
                                 <th style="padding: 8px; text-align: left; border: 1px solid #ddd;">Administered By</th>
                                 <th style="padding: 8px; text-align: left; border: 1px solid #ddd;">Status</th>
+                                <th style="padding: 8px; text-align: left; border: 1px solid #ddd;">Remarks</th>
                             </tr>
                         </thead>
                         <tbody>
-                            <!-- Will be populated by JavaScript -->
+                            <!- Will be populated by JavaScript >
                         </tbody>
                     </table>
                 </div>
                 
-                <!-- Footer -->
+                <!- Footer >
                 <div style="text-align: center; margin-top: 30px; border-top: 2px solid #333; padding-top: 10px;">
                     <p style="font-size: 12px; color: #666;">Electronic Health Record System - Confidential Patient Information</p>
                 </div>
             </div>
-        </div>
+        </div-->
         <!-- end of Hidden Summary printable content// med logs-->
 
-        <!-- Hidden Summary printable content// nurses notes-->
+        <!-- Hidden Summary printable content// nurses notes>
         <div id="printable-nurse-notes" style="display: none;">
             <div style="font-family: Arial, sans-serif; padding: 20px; max-width: 800px; margin: 0 auto;">
-                <!-- Header -->
+                <!- Header >
                 <div style="text-align: center; margin-bottom: 20px; border-bottom: 2px solid #333; padding-bottom: 10px;">
                     <h1 style="margin: 0; color: #0066cc;">NURSE'S NOTES</h1>
                     <p style="margin: 5px 0; font-size: 14px; color: #666;">Generated on: <span id="notes-print-date"></span></p>
                 </div>
                 
-                <!-- Patient Info Summary -->
+                <!- Patient Info Summary ->
                 <div style="margin-bottom: 30px; border: 1px solid #ddd; padding: 15px; background: #f9f9f9;">
                     <h2 style="margin-top: 0; color: #0066cc; border-bottom: 1px solid #ddd; padding-bottom: 5px;">Patient Summary</h2>
                     <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
@@ -874,13 +922,13 @@
                     </div>
                 </div>
                 
-                <!-- Nurse's Notes Section -->
+                <!- Nurse's Notes Section ->
                 <div style="margin-bottom: 30px;" id="print-notes-container">
-                    <!-- Notes will be inserted here -->
+                    <!- Notes will be inserted here >
                 </div>
 
             </div>
-        </div>
+        </div-->
         <!-- end of Hidden Summary printable content// nurses notes-->
 
 

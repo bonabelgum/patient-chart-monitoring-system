@@ -38,6 +38,7 @@ def receive_data(request):
                     'pulse': vs.pulse_rate,
                     'respiratory': vs.respiratory_rate,
                     'oxygen': vs.oxygen_saturation,
+                    'remarks': vs.remarks,
                     'id': vs.id  
                 })
             # Prepare med data
@@ -52,6 +53,7 @@ def receive_data(request):
                     'duration': drug.duration,
                     'quantity': drug.quantity,
                     'start_date': drug.start_date.strftime('%B %d, %Y') if drug.start_date else None,
+                    'end_date': drug.end_date.strftime('%B %d, %Y') if drug.end_date else None,
                     'status': drug.status,
                     'health_diagnostic': drug.health_diagnostics,
                     'patient_instructions': drug.patient_instructions,
@@ -69,6 +71,7 @@ def receive_data(request):
                     'datetime': localtime(log.date_time).strftime('%B %d, %Y %H:%M:%S'),
                     'administered_by': log.administered_by,
                     'status': log.get_status_display(),
+                    'remarks': log.remarks,
                     'medication_id': log.medication.id if log.medication else None
                 }
                 # print("sorted "+localtime(log.date_time).strftime('%B %d, %Y %H:%M:%S'))
@@ -360,6 +363,8 @@ def update_vital_signs(request):
                 vital_sign.respiratory_rate = data['respiratory'] or None
             if 'oxygen' in data:
                 vital_sign.oxygen_saturation = data['oxygen'] or None
+            if 'remarks' in data:
+                vital_sign.remarks = data['remarks']
 
             vital_sign.save()
 
@@ -577,7 +582,8 @@ def get_medication_logs(request, patient_id, medication_id):
             'id': log.id,
             'datetime': local_dt.strftime('%B %d, %Y %H:%M:%S'),  # e.g., May 08, 2025 14:35:00
             'administered_by': log.administered_by,
-            'status': log.status
+            'status': log.status,
+            'remarks': log.remarks
         })
 
     return JsonResponse(data, safe=False)

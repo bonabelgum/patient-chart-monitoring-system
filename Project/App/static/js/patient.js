@@ -152,6 +152,7 @@ document.addEventListener('DOMContentLoaded', function () {
                     pulse: vs.pulse || vs.pulse_rate || '',
                     respiratory: vs.respiratory || vs.respiratory_rate || '',
                     oxygen: vs.oxygen || vs.oxygen_saturation || '',
+                    remarks: vs.remarks || vs.remarks || '',
                     id: vs.id || Date.now() + Math.random() // ensure unique ID
                 }));
                 console.log('Processed Table Data:', tableData);
@@ -169,7 +170,8 @@ document.addEventListener('DOMContentLoaded', function () {
                             { field: 'blood_pressure', title: 'Blood pressure', sortable: true },
                             { field: 'pulse', title: 'Pulse rate', sortable: true },
                             { field: 'respiratory', title: 'Respiratory rate', sortable: true },
-                            { field: 'oxygen', title: 'Oxygen saturation', sortable: true }
+                            { field: 'oxygen', title: 'Oxygen saturation', sortable: true },
+                            { field: 'remarks', title: 'Remarks', sortable: true }
                         ],
                         loadingTemplate: function() {
                             return ''; // This removes the loading message
@@ -198,6 +200,7 @@ document.addEventListener('DOMContentLoaded', function () {
                     $('#edit-vs-pulse').val(row.pulse || '');
                     $('#edit-vs-respiratory').val(row.respiratory || '');
                     $('#edit-vs-oxygen').val(row.oxygen || '');
+                    $('#edit-vs-remarks').val(row.remarks || '');
                     // Clear reason and password fields
                     $('#edit-vs-reason').val('');
                     $('#edit-vs-password').val('');
@@ -208,6 +211,7 @@ document.addEventListener('DOMContentLoaded', function () {
                             pulse: $('#edit-vs-pulse').val(),
                             respiratory: $('#edit-vs-respiratory').val(),
                             oxygen: $('#edit-vs-oxygen').val(),
+                            remarks: $('#edit-vs-remarks').val(),
                             reason: $('#edit-vs-reason').val(),
                             password: $('#edit-vs-password').val(),
                             id: row.id
@@ -240,6 +244,7 @@ document.addEventListener('DOMContentLoaded', function () {
                                 row.pulse = vitalSignsData.pulse;
                                 row.respiratory = vitalSignsData.respiratory;
                                 row.oxygen = vitalSignsData.oxygen;
+                                row.remarks = vitalSignsData.remarks;
 
                                 // Then update the table
                                 $('#vitals-table').bootstrapTable('updateByUniqueId', {
@@ -301,7 +306,8 @@ document.addEventListener('DOMContentLoaded', function () {
                         drug.quantity || '',
                         drug.route || '',
                         drug.duration || '',
-                        drug.start_date || ''
+                        drug.start_date || '',
+                        drug.end_date || ''
                     ];
             
                     // Add to appropriate table based on status
@@ -701,20 +707,119 @@ document.getElementById('print-header').addEventListener('click', function() {
                 <td style="padding: 8px; border: 1px solid #ddd;">${vs.pulse || ''}</td>
                 <td style="padding: 8px; border: 1px solid #ddd;">${vs.respiratory || ''}</td>
                 <td style="padding: 8px; border: 1px solid #ddd;">${vs.oxygen || ''}</td>
+                <td style="padding: 8px; border: 1px solid #ddd;">${vs.remarks || ''}</td>
             `;
         });
     } else {
         vitalsTable.innerHTML = '<tr><td colspan="6" style="padding: 8px; text-align: center; border: 1px solid #ddd;">No vital signs recorded</td></tr>';
     }
+    //print med logs
+    fetch('/api/receive_data/', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': getCookie('csrftoken')
+        },
+        body: JSON.stringify({ patient_id: patientId })
+    })
+        .then(response => response.json())
+        .then(data => {
+            // Med logs
+            const medsLogsTableBody = document.querySelector('#print-meds-logs-table tbody');
+            medsLogsTableBody.innerHTML = '';
+            if (data.med_logs?.length > 0) {
+                const groupedLogs = data.med_logs.reduce((acc, log) => {
+                    const drug = log.drug_name || '[Not specified]';
+                    acc[drug] = acc[drug] || [];
+                    acc[drug].push(log);
+                    return acc;
+                }, {});
+                Object.keys(groupedLogs).forEach(drug => {
+                    groupedLogs[drug].sort((a, b) => new Date(b.datetime) - new Date(a.datetime));
+                    groupedLogs[drug].forEach(log => {
+                        const row = document.createElement('tr');
+                        row.innerHTML = `
+                            <td style="padding:8px; border:1px solid #ddd;">${log.drug_name}</td>
+                            <td style="padding:8px; border:1px solid #ddd;">${log.datetime}</td>
+                            <td style="padding:8px; border:1px solid #ddd;">${log.administered_by || 'N/A'}</td>
+                            <td style="padding:8px; border:1px solid #ddd;">${log.status}</td>
+                            <td style="padding:8px; border:1px solid #ddd;">${log.remarks || 'N/A'}</td>
+                        `;
+                        medsLogsTableBody.appendChild(row);
+                    });
+                });
+            } else {
+                medsLogsTableBody.innerHTML = '<tr><td colspan="5" style="text-align:center;">No medication logs found</td></tr>';
+            }
+
+            // Nurse notes
+            const notesContainer = document.getElementById('print-notes-container');
+            notesContainer.innerHTML = '';
+            if (data.notes_data?.length > 0) {
+                data.notes_data.forEach(note => {
+                    const noteElement = document.createElement('div');
+                    noteElement.style.marginBottom = '30px';
+                    noteElement.style.borderBottom = '1px solid #eee';
+                    noteElement.style.paddingBottom = '15px';
+
+                    const dateElement = document.createElement('div');
+                    dateElement.style.fontWeight = 'bold';
+                    dateElement.style.marginBottom = '8px';
+                    dateElement.style.color = '#555';
+                    const noteDate = new Date(note.date);
+                    dateElement.textContent = noteDate.toLocaleDateString('en-US', {
+                        month: 'short', day: 'numeric', year: 'numeric', hour: '2-digit', minute: '2-digit'
+                    }) + ` • Nurse ID: ${note.nurse_id}`;
+
+                    const contentElement = document.createElement('div');
+                    contentElement.style.whiteSpace = 'pre-wrap';
+                    contentElement.style.padding = '10px';
+                    contentElement.style.backgroundColor = '#f8f9fa';
+                    contentElement.style.borderRadius = '4px';
+                    contentElement.textContent = note.notes || '';
+
+                    noteElement.appendChild(dateElement);
+                    noteElement.appendChild(contentElement);
+                    notesContainer.appendChild(noteElement);
+                });
+            } else {
+                notesContainer.innerHTML = '<div style="text-align: center; color: #666; font-style: italic;">No nursing notes recorded</div>';
+            }
+
+            // Final print action
+            const printableContent = document.getElementById('printable-patient-chart');
+            printableContent.style.display = 'block';
+            window.print();
+            printableContent.style.display = 'none';
+        })
+        .catch(error => {
+            alert('Error fetching data for printing: ' + error.message);
+        });
     
+    
+    //print nurse logs
+
     // Show and print
-    const printableContent = document.getElementById('printable-patient-chart');
+    /*const printableContent = document.getElementById('printable-patient-chart');
     printableContent.style.display = 'block';
     window.print();
-    printableContent.style.display = 'none';
+    printableContent.style.display = 'none';*/
 });
-
-//print med logs
+function getCookie(name) {
+    let cookieValue = null;
+    if (document.cookie && document.cookie !== '') {
+        const cookies = document.cookie.split(';');
+        for (let cookie of cookies) {
+            cookie = cookie.trim();
+            if (cookie.startsWith(name + '=')) {
+                cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                break;
+            }
+        }
+    }
+    return cookieValue;
+}
+/*print med logs
 document.getElementById('print-medication-logs').addEventListener('click', function() {
     // Get patient data from view elements
     const patientId = document.getElementById('data-patient-id-view').textContent;
@@ -811,11 +916,17 @@ document.getElementById('print-medication-logs').addEventListener('click', funct
                     statusCell.style.padding = '8px';
                     statusCell.style.border = '1px solid #ddd';
                     statusCell.textContent = log.status;
+
+                    const remarkCell = document.createElement('td');
+                    remarkCell.style.padding = '8px';
+                    remarkCell.style.border = '1px solid #ddd';
+                    remarkCell.textContent = log.remarks || 'N/A';
                     
                     row.appendChild(drugNameCell);
                     row.appendChild(dateCell);
                     row.appendChild(adminCell);
                     row.appendChild(statusCell);
+                    row.appendChild(remarkCell);
                     
                     tbody.appendChild(row);
                 });
@@ -883,10 +994,10 @@ function getCookie(name) {
         }
     }
     return cookieValue;
-}
+}*/
 
 //print nurses notes
-document.getElementById('print-nurse-notes').addEventListener('click', function() {
+/*document.getElementById('print-nurse-notes').addEventListener('click', function() {
     const patientId = document.getElementById('data-patient-id-view').textContent;
     
     // Fetch notes data for this patient
@@ -1028,7 +1139,7 @@ function getCookie(name) {
         }
     }
     return cookieValue;
-}
+}*/
 
 //end of printing
 
@@ -1255,7 +1366,8 @@ document.getElementById('add-vitals-btn').addEventListener('click', function() {
         alert("Please fill out all fields.");
         return;
     }
-    
+    toggleRemarksField(true);
+
     initPasswordModal()
     const passwordModal = new bootstrap.Modal(document.getElementById('patientPasswordModal'));
     passwordModal.show();
@@ -1305,7 +1417,8 @@ document.addEventListener('DOMContentLoaded', function() {
                         </div>
                     `;
                 }
-            }
+            },
+            { title: 'Remarks', data: 'remarks', defaultContent: '' },
         ],
         paging: true,
         pageLength: 5,
@@ -1370,6 +1483,7 @@ document.addEventListener('DOMContentLoaded', function() {
             datetime: formattedDateTime,
             administered_by: '',
             status: 'not_taken',
+            remarks: '',
             medication: medicationId,
             isExisting: false  // 👈 important!
         };
@@ -1547,9 +1661,11 @@ function showEditableMedicationModal(drugData) {
         // Change modal title to indicate view-only mode
         $('#medicationOrderModalLabel').text('View Medication');
 
-        // Hide the print and add buttons
+        // Hide the add/undo buttons
         $('#addMedicationBtn').hide();
         $('#addMedicationBtn').prop('disabled', true);
+        $('#undoMedicationBtn').hide();
+        $('#undoMedicationBtn').prop('disabled', true);
 
         // Make the medication logs table interactive
         if ($.fn.DataTable.isDataTable('#medicationLogsTable')) {
@@ -1572,9 +1688,11 @@ function showEditableMedicationModal(drugData) {
         // Change modal title back to edit mode
         $('#medicationOrderModalLabel').text('Edit Medication');
 
-        // Show the print and add buttons
+        // Show the add/undo buttons
         $('#addMedicationBtn').show();
         $('#addMedicationBtn').prop('disabled', false);
+        $('#undoMedicationBtn').show();
+        $('#undoMedicationBtn').prop('disabled', false);
     }
     
     // Show modal
@@ -1678,6 +1796,7 @@ $('#med-confirm-btn').click(function() {
                     $(this).find('td:eq(5)').text(medicationData.route);
                     $(this).find('td:eq(6)').text(medicationData.duration);
                     $(this).find('td:eq(7)').text(medicationData.start_date);
+                    $(this).find('td:eq(8)').text(medicationData.end_date);
                 }
             });
             
@@ -1713,6 +1832,14 @@ document.getElementById('clear_medication').addEventListener('click', function(e
     document.getElementById('physicianInstructions_medication').value = '';
 });
 
+function toggleRemarksField(show) { //function to show or dide remarks field in a modal
+    const remarksContainer = document.getElementById('remarks-container');
+    if (show) {
+        remarksContainer.style.display = 'block';
+    } else {
+        remarksContainer.style.display = 'none';
+    }
+}
 
 document.getElementById('add_medication').addEventListener('click', function(event) {
     event.preventDefault(); // Prevent form submission (if inside a form)
@@ -1749,6 +1876,7 @@ document.getElementById('add_medication').addEventListener('click', function(eve
     }
 
     // If all fields are filled correctly, you can proceed
+    toggleRemarksField(false);
     
     saveMedication()
     const passwordModal = new bootstrap.Modal(document.getElementById('patientPasswordModal'));

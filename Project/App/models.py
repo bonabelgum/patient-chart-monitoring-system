@@ -425,6 +425,11 @@ class VitalSigns2(models.Model):
         null=True,
         blank=True
     )
+    remarks = models.TextField(
+        help_text="Optional remarks/ observations",
+        null=True,
+        blank=True
+    )
     def __str__(self):
         return f"Vitals for {self.patient.name} at {self.date_and_time}"
     class Meta:
@@ -490,6 +495,11 @@ class Medication(models.Model):
     duration = models.PositiveIntegerField(help_text="e.g., '7 days'") #
     quantity = models.PositiveIntegerField(help_text="Total quantity dispensed")
     start_date = models.DateField()
+    end_date = models.DateField(
+        null=True,
+        blank=True,
+        help_text="Date when the medication ends or is discontinued"
+    )
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='active')
 
     # Text fields for notes/instructions
@@ -539,6 +549,7 @@ class MedicationLogs(models.Model):
     date_time = models.DateTimeField()
     administered_by = models.CharField(max_length=100)
     status = models.CharField(max_length=20, choices=STATUS_CHOICES)
+    remarks = models.TextField(blank=True, null=True)
 
     def __str__(self):
         return f"{self.medication.drug_name if self.medication else 'No Drug'} - {self.get_status_display()} at {self.date_time}"
