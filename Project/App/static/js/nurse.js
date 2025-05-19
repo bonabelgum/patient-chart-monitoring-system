@@ -66,10 +66,215 @@ function fetchAndPopulateNurseLogs() {
         console.error('Error fetching logs:', error);
       });
 }
+
+// print tabs
+function fetchAndPopulatePrintTabs() {
+    const table = $('#print-tab-table').DataTable({
+        destroy: true,
+        paging: true,
+        ordering: true,
+        info: true,
+        order: [[0, "desc"]],
+        columnDefs: [
+            {
+                targets: 0,
+                width: "300px",
+                className: "dt-left",
+                type: "date"
+            }
+        ]
+    });
+
+    table.clear();
+
+    fetch('/api/fetch_snapshots/')
+        .then(response => response.json())
+        .then(data => {
+            if (data.snapshots && data.snapshots.length > 0) {
+                data.snapshots.forEach(log => {
+                    table.row.add([
+                        log.created_at,         // Date/time
+                        log.patient_name,       // Patient name
+                        log.control_number      // Snapshot control number or ID
+                    ]);
+                });
+            } else {
+                console.log("No snapshots found");
+            }
+            table.draw();
+        })
+        .catch(error => {
+            console.error('Error fetching snapshots:', error);
+        });
+}
+
   
   // Call this function to fetch and repopulate the logs when needed
-  fetchAndPopulateNurseLogs();
-  
+fetchAndPopulateNurseLogs();
+fetchAndPopulatePrintTabs()
+
+
+$('#print-tab-table tbody').on('click', 'tr', function () {
+    const table = $('#print-tab-table').DataTable();
+    const rowData = table.row(this).data();
+
+    if (!rowData) return; // safeguard
+
+    // Extract snapshot info from clicked row
+    const createdAt = rowData[0];
+    const patientName = rowData[1];
+    const controlNumber = rowData[2];  // Assuming this is snapshot ID/control number
+
+    // console.log('Clicked snapshot:', rowData);
+
+    // Now fetch snapshot detail by control number or snapshot ID
+    fetch(`/snapshot/${controlNumber}/`)
+    .then(response => {
+        if (!response.ok) {
+            throw new Error('Snapshot not found');
+        }
+        return response.json();
+    })
+    .then(data => {
+
+      console.log('Snapshot Data:', data);
+
+        // === Fill basic patient info ===
+        document.getElementById('print-date').textContent = new Date().toLocaleString();
+
+        document.getElementById('print-id1').textContent = data.patient_id || '';
+        document.getElementById('print-name1').textContent = data.patient_name || '';
+        document.getElementById('print-sex').textContent = data.patient_sex || '';
+        document.getElementById('print-bday1').textContent = data.patient_birthday || '';
+        document.getElementById('print-phone').textContent = data.patient_phone || '';
+        document.getElementById('print-physician').textContent = data.physician_name || '';
+
+        const vitalSigns1 = data.vitals_data?.vital_signs_1?.[0] || {};
+        document.getElementById('print-allergies').textContent = vitalSigns1.allergies || 'None recorded';
+        document.getElementById('print-family-history').textContent = vitalSigns1.family_history || 'None recorded';
+        document.getElementById('print-physical-exam').textContent = vitalSigns1.physical_exam || 'Not documented';
+        document.getElementById('print-diagnosis').textContent = vitalSigns1.diagnosis || 'Pending diagnosis';
+
+        // === Fill vitals ===
+        const vitalsTable = document.querySelector('#print-vitals-table tbody');
+        vitalsTable.innerHTML = '';
+        const vitals = data.vitals_data?.vital_signs_2 || [];
+        if (vitals.length) {
+            vitals.forEach(vs => {
+                const row = vitalsTable.insertRow();
+                row.innerHTML = `
+                    <td style="padding: 8px; border: 1px solid #ddd;">${vs.date_and_time || ''}</td>
+                    <td style="padding: 8px; border: 1px solid #ddd;">${vs.temperature || ''}</td>
+                    <td style="padding: 8px; border: 1px solid #ddd;">${vs.blood_pressure || ''}</td>
+                    <td style="padding: 8px; border: 1px solid #ddd;">${vs.pulse_rate || ''}</td>
+                    <td style="padding: 8px; border: 1px solid #ddd;">${vs.respiratory_rate || ''}</td>
+                    <td style="padding: 8px; border: 1px solid #ddd;">${vs.oxygen_saturation || ''}</td>
+                    <td style="padding: 8px; border: 1px solid #ddd;">${vs.remarks || ''}</td>
+                `;
+            });
+        } else {
+            vitalsTable.innerHTML = '<tr><td colspan="7" style="text-align:center;">No vital signs recorded</td></tr>';
+        }
+
+        // === Fill medications ===
+        const medsTable = document.querySelector('#print-meds-table tbody');
+        medsTable.innerHTML = '';
+        const meds = data.medications_data || [];
+        if (meds.length) {
+            meds.forEach(med => {
+                const row = medsTable.insertRow();
+                row.innerHTML = `
+                    <td style="padding: 8px; border: 1px solid #ddd;">${med.drug_name || ''}</td>
+                    <td style="padding: 8px; border: 1px solid #ddd;">${med.dose || ''}</td>
+                    <td style="padding: 8px; border: 1px solid #ddd;">${med.units || ''}</td>
+                    <td style="padding: 8px; border: 1px solid #ddd;">${med.frequency || ''}</td>
+                    <td style="padding: 8px; border: 1px solid #ddd;">${med.route || ''}</td>
+                    <td style="padding: 8px; border: 1px solid #ddd;">${med.quantity || ''}</td>
+                `;
+            });
+        } else {
+            medsTable.innerHTML = '<tr><td colspan="6" style="text-align:center;">No medications prescribed</td></tr>';
+        }
+
+        // === Fill med logs ===
+        const medLogsTable = document.querySelector('#print-meds-logs-table tbody');
+        medLogsTable.innerHTML = '';
+        const medLogs = data.medication_logs_data || [];
+        if (medLogs.length) {
+            // Augment logs with medication names
+            const medsById = {};
+            meds.forEach(m => medsById[m.id] = m.drug_name);
+
+            const groupedLogs = medLogs.reduce((acc, log) => {
+                const drug = medsById[log.medication_id] || '[Unknown]';
+                acc[drug] = acc[drug] || [];
+                acc[drug].push({ ...log, drug_name: drug });
+                return acc;
+            }, {});
+            Object.keys(groupedLogs).forEach(drug => {
+                groupedLogs[drug].sort((a, b) => new Date(b.date_time) - new Date(a.date_time));
+                groupedLogs[drug].forEach(log => {
+                    const row = medLogsTable.insertRow();
+                    row.innerHTML = `
+                        <td style="padding:8px; border:1px solid #ddd;">${log.drug_name}</td>
+                        <td style="padding:8px; border:1px solid #ddd;">${log.date_time}</td>
+                        <td style="padding:8px; border:1px solid #ddd;">${log.administered_by || 'N/A'}</td>
+                        <td style="padding:8px; border:1px solid #ddd;">${log.status || 'Given'}</td>
+                        <td style="padding:8px; border:1px solid #ddd;">${log.remarks || 'N/A'}</td>
+                    `;
+                });
+            });
+        } else {
+            medLogsTable.innerHTML = '<tr><td colspan="5" style="text-align:center;">No medication logs found</td></tr>';
+        }
+
+        // === Fill nurse notes ===
+        const notesContainer = document.getElementById('print-notes-container');
+        notesContainer.innerHTML = '';
+        const notes = data.nurse_notes_data || [];
+        if (notes.length) {
+            notes.forEach(note => {
+                const noteDiv = document.createElement('div');
+                noteDiv.style.marginBottom = '30px';
+                noteDiv.style.borderBottom = '1px solid #eee';
+                noteDiv.style.paddingBottom = '15px';
+
+                const dateElement = document.createElement('div');
+                dateElement.style.fontWeight = 'bold';
+                dateElement.style.color = '#555';
+                dateElement.style.marginBottom = '8px';
+                const noteDate = new Date(note.date);
+                dateElement.textContent = noteDate.toLocaleString('en-US', {
+                    month: 'short', day: 'numeric', year: 'numeric', hour: '2-digit', minute: '2-digit'
+                }) + ` • Nurse ID: ${note.nurse_id}`;
+
+                const contentElement = document.createElement('div');
+                contentElement.style.whiteSpace = 'pre-wrap';
+                contentElement.style.backgroundColor = '#f8f9fa';
+                contentElement.style.borderRadius = '4px';
+                contentElement.style.padding = '10px';
+                contentElement.textContent = note.notes || '';
+
+                noteDiv.appendChild(dateElement);
+                noteDiv.appendChild(contentElement);
+                notesContainer.appendChild(noteDiv);
+            });
+        } else {
+            notesContainer.innerHTML = '<div style="text-align:center; font-style:italic;">No nursing notes recorded</div>';
+        }
+
+        // === Print the result ===
+        const printableContent = document.getElementById('printable-patient-chart');
+        printableContent.style.display = 'block';
+        window.print();
+        printableContent.style.display = 'none';
+    })
+    .catch(error => {
+        alert('Error loading snapshot: ' + error.message);
+    });
+
+            
+});
 
 // Initialize modal event listeners once
 function initPasswordModal() {

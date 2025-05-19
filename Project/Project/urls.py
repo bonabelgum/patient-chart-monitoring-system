@@ -24,8 +24,8 @@ from App.signup import verify_admin, verify_nurse, get_admin_details, admin_code
 from App.views import signup_view, logout_view, patient_detail, get_employees, log_activity, admit_patient
 from App.login import handle_request  # Import the function
 from App.admin_user import get_nurse_data, verify_master_key, reject_master_key, create_shift , delete_shift, get_all_logs, remove_user, get_all_shifts, submit_ot # Import the function
-from App.nurse import get_patients, check_patient_id, get_nurse_logs
-from App.patient import receive_data, save_vital_signs, update_vs1, update_patient, update_vital_signs, check_shift_password, save_medication, update_medication, medication_log, get_medication_logs, save_notes, delete_note, edit_note
+from App.nurse import get_patients, check_patient_id, get_nurse_logs, fetch_snapshots, snapshot_json
+from App.patient import receive_data, save_vital_signs, update_vs1, update_patient, update_vital_signs, check_shift_password, save_medication, update_medication, medication_log, get_medication_logs, save_notes, delete_note, edit_note, save_snapshot
 from App.login import check_shift
 
 urlpatterns = [
@@ -60,6 +60,8 @@ urlpatterns = [
     path('get_patients/', get_patients, name='get_patients'),
     path('api/check_patient_id/', check_patient_id, name='check_patient_id'),
     path('api/get_nurse_logs/', get_nurse_logs, name='get_nurse_logs'),
+    path('api/fetch_snapshots/', fetch_snapshots, name='fetch_snapshots'),
+    path('snapshot/<str:control_number>/', snapshot_json, name='snapshot-json'),
     
     # patient
     path('api/receive_data/', receive_data, name='receive_data'),
@@ -74,6 +76,7 @@ urlpatterns = [
     path('api/medication_log/', medication_log, name='medication_log'),
     path('api/medication_log/<int:patient_id>/<int:medication_id>/', get_medication_logs, name='get_medication_logs'),
     path('api/edit_note/', edit_note, name='edit_note'),
+    path('api/save_snapshot/', save_snapshot, name='save_snapshot'),
     
     path("log_activity/", log_activity, name="log_activity"),
     path('api/schedule/', views.get_schedule_data, name='schedule-data'),

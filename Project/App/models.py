@@ -14,6 +14,8 @@ import uuid
 
 from django.utils.timezone import localtime, now
 from datetime import timedelta
+from django.utils.timezone import now
+from django.utils.crypto import get_random_string
 
 from django.core.exceptions import ValidationError
 
@@ -369,6 +371,31 @@ class PatientInformation(models.Model):
 
             # Save ONLY the qr_code field now, so no duplicate insert
             super().save(update_fields=['qr_code'])
+            
+            
+# save printed
+class PatientSnapshot(models.Model):
+    patient = models.ForeignKey('PatientInformation', on_delete=models.CASCADE, related_name='snapshots')
+    control_number = models.CharField(max_length=50, unique=True, editable=False)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    vitals_data = models.JSONField()
+    medications_data = models.JSONField()
+    medication_logs_data = models.JSONField()
+    nurse_notes_data = models.JSONField()
+
+    def save(self, *args, **kwargs):
+        if not self.control_number:
+            # Generate control number, e.g. SNAP-20250519-AB123
+            timestamp = now().strftime("%Y%m%d")
+            random_part = get_random_string(5).upper()
+            self.control_number = f"SNAP-{timestamp}-{random_part}"
+        super().save(*args, **kwargs)
+
+    def __str__(self):
+        return f"{self.control_number} for {self.patient.full_name} @ {self.created_at}"
+
+
 
 
 #vs

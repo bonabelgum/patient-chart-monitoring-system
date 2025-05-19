@@ -6,10 +6,13 @@ from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_POST, require_GET
 from django.core.serializers import serialize
 from django.core.exceptions import ValidationError
+from django.core.serializers.json import DjangoJSONEncoder
 from datetime import datetime
 from django.utils.timezone import localtime, now
+from django.utils import timezone
 
-from .models import Employee, Nurse_logs, PatientInformation, Shift_schedule, VitalSigns1, VitalSigns2, Medication, NurseNotes, MedicationLogs
+
+from .models import Employee, Nurse_logs, PatientInformation, PatientSnapshot, Shift_schedule, VitalSigns1, VitalSigns2, Medication, NurseNotes, MedicationLogs
 
 # @csrf_exempt  # for demo purposes, not recommended for production without CSRF tokens
 def receive_data(request):
@@ -152,7 +155,55 @@ def receive_data(request):
 
     return JsonResponse({'status': 'fail', 'error': 'Invalid request method'})
 
+# save patient snapshot
 
+def save_snapshot(request):
+    if request.method != "POST":
+        return JsonResponse({'error': 'Only POST allowed'}, status=405)
+
+    try:
+        data = json.loads(request.body)
+        patient_id = data.get('patient_id')
+
+        if not patient_id:
+            return JsonResponse({'error': 'Missing patient_id'}, status=400)
+
+        try:
+            patient = PatientInformation.objects.get(id=patient_id)
+        except PatientInformation.DoesNotExist:
+            return JsonResponse({'error': 'Patient not found'}, status=404)
+
+        # Helper to serialize querysets
+        def serialize_qs(qs):
+            return json.loads(json.dumps(list(qs.values()), cls=DjangoJSONEncoder))
+
+        # Fetch and serialize all related data
+        vitals_data = {
+            "vital_signs_1": serialize_qs(patient.vital_signs.all()),
+            "vital_signs_2": serialize_qs(patient.vital_signs2.all())
+        }
+
+        medications_data = serialize_qs(patient.medications.all())
+        medication_logs_data = serialize_qs(MedicationLogs.objects.filter(patient=patient))
+        nurse_notes_data = serialize_qs(patient.nurse_notes.all())
+
+        # Save snapshot
+        snapshot = PatientSnapshot.objects.create(
+            patient=patient,
+            vitals_data=vitals_data,
+            medications_data=medications_data,
+            medication_logs_data=medication_logs_data,
+            nurse_notes_data=nurse_notes_data
+        )
+
+        return JsonResponse({
+            'message': 'Snapshot saved successfully.',
+            'snapshot_id': snapshot.id,
+            'control_number': snapshot.control_number
+        }, status=201)
+
+    except Exception as e:
+        return JsonResponse({'error': str(e)}, status=500)
 
 @require_POST # Add logs for editing patient and reason
 def update_patient(request):
@@ -506,6 +557,9 @@ def update_medication(request):
                     status=log.get('status')
                 )
 
+            if data.get('status') in ['completed', 'discontinued']:
+                medication.end_date = timezone.now().date()
+
                 # Update Medication fields
             if data.get('drug_name') is not None:
                 medication.drug_name = data['drug_name']
@@ -514,7 +568,7 @@ def update_medication(request):
             if data.get('units') is not None:
                 medication.units = data['units']
             if data.get('frequency') is not None:
-                medication.frequency = data['frequency']
+                medication.frequency = data['frequency']    
             if data.get('route') is not None:
                 medication.route = data['route']
             if data.get('duration') is not None:

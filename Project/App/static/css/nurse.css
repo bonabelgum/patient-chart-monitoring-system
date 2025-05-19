@@ -103,6 +103,38 @@ body {
     }
 }
 
+
+/*print summary*/
+@media print {
+    @page {
+        size: A4 portrait;
+        margin: -5mm;
+        margin: 15mm 0mm;
+    }
+    body * {
+        visibility: hidden;
+    }
+    #printable-patient-chart, #printable-patient-chart * {
+        visibility: visible;
+    }
+    #printable-patient-chart {
+        position: absolute;
+        left: 0;
+        top: 0;
+        width: 100%;
+        height: auto;
+        margin: 0;
+        padding: 0;
+    }
+    table {
+        page-break-inside: auto;
+    }
+    tr {
+        page-break-inside: avoid;
+        page-break-after: auto;
+    }
+}
+
 /*tabs*/
 .nav-tabs {
     border-bottom: 2px solid #e0e0e0;

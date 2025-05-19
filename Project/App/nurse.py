@@ -1,17 +1,23 @@
 import json
-from django.http import JsonResponse
+from tracemalloc import Snapshot
+from django.http import Http404, JsonResponse
+from django.shortcuts import get_object_or_404
 from django.utils import timezone  # ✅ this one
 from django.utils.timezone import localtime
+from django.views.decorators.http import require_GET
 from datetime import datetime, timedelta, date
 import random
-from .models import Employee, Medication, Nurse_logs, NurseNotes, PatientInformation, Shift_schedule, VitalSigns1, VitalSigns2
+from .models import Employee, Medication, Nurse_logs, NurseNotes, PatientInformation, PatientSnapshot, Shift_schedule, VitalSigns1, VitalSigns2
 import time
 import threading
 from django.contrib.auth.models import User
 from decimal import Decimal
 
- 
-# nurse_id =  ""
+
+snapshots = PatientSnapshot.objects.all()
+
+
+    
 def get_patients(request):
     # global nurse_id 
     patients = PatientInformation.objects.all()
@@ -45,6 +51,38 @@ def get_patients(request):
     print(f"Patient {patient.id} - Number:", patient.number)
     return JsonResponse({'patients': patient_list})
 
+@require_GET
+def fetch_snapshots(request):
+    snapshots = PatientSnapshot.objects.select_related('patient').order_by('-created_at')
+
+    data = [
+        {
+            "patient_name": snap.patient.name,
+            "control_number": snap.control_number,
+            "created_at": snap.created_at.strftime("%Y-%m-%d %H:%M:%S"),
+        }
+        for snap in snapshots
+    ]
+    return JsonResponse({"snapshots": data})
+
+
+def snapshot_json(request, control_number):
+    try:
+        snap = PatientSnapshot.objects.get(control_number=control_number)
+    except PatientSnapshot.DoesNotExist:
+        return JsonResponse({'error': 'Snapshot not found'}, status=404)
+
+    data = {
+        "control_number": snap.control_number,
+        "patient_name": snap.patient.name,
+        "created_at": snap.created_at.isoformat(),
+        "vitals_data": snap.vitals_data,
+        "medications_data": snap.medications_data,
+        "medication_logs_data": snap.medication_logs_data,
+        "nurse_notes_data": snap.nurse_notes_data,
+    }
+
+    return JsonResponse(data, json_dumps_params={'indent': 2})
 
 # Check if patient exist
 def check_patient_id(request):

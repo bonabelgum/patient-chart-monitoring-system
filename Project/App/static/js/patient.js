@@ -818,6 +818,26 @@ document.getElementById('print-header').addEventListener('click', function() {
             alert('Error fetching data for printing: ' + error.message);
         });
     
+    fetch('/api/save_snapshot/', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': getCookie('csrftoken')
+        },
+        body: JSON.stringify({ patient_id: patientId })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+            alert('Snapshot saved! ID: ' + data.snapshot_id + ' | Control #: ' + data.control_number);
+            } else {
+            console.error('Save failed:', data.error);
+            }
+        })
+        .catch(error => {
+            console.error('Request error:', error);
+        });
+
     
     //print nurse logs
 
