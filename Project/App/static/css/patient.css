@@ -1070,6 +1070,7 @@ body {
     @page {
         size: auto;
         margin: 0mm;
+        
     }
     body * {
         visibility: hidden;
@@ -1100,7 +1101,8 @@ body {
 @media print {
     @page {
         size: A4 portrait;
-        margin: 15mm;
+        margin: -5mm;
+        margin: 15mm 0mm;
     }
     body * {
         visibility: hidden;

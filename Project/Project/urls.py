@@ -53,7 +53,7 @@ urlpatterns = [
     path('delete_shift/', delete_shift, name='delete_shift'),
     path('get_all_logs/', get_all_logs, name='get_all_logs'),
     path('remove_user/', remove_user, name='remove_user'),
-    path('get_all_shifts/', get_all_shifts, name='get_all_shifts'),
+    path('get_all_shifts/', get_all_shifts, name='get_all_shifts'), 
     path('api/submit_ot/', submit_ot, name='submit_ot'),
      
     # Nurse 

@@ -673,25 +673,7 @@ document.getElementById('print-header').addEventListener('click', function() {
     document.getElementById('print-physical-exam').textContent = physicalExam || 'Not documented';
     document.getElementById('print-diagnosis').textContent = diagnosis || 'Pending diagnosis';
     
-    // Populate medications table
-    const medsTable = document.getElementById('print-meds-table').getElementsByTagName('tbody')[0];
-    medsTable.innerHTML = ''; // Clear existing rows
     
-    if (window.medData && window.medData.length > 0) {
-        window.medData.forEach(drug => {
-            const row = medsTable.insertRow();
-            row.innerHTML = `
-                <td style="padding: 8px; border: 1px solid #ddd;">${drug.drug_name || ''}</td>
-                <td style="padding: 8px; border: 1px solid #ddd;">${drug.dose || ''}</td>
-                <td style="padding: 8px; border: 1px solid #ddd;">${drug.units || ''}</td>
-                <td style="padding: 8px; border: 1px solid #ddd;">${drug.frequency || ''}</td>
-                <td style="padding: 8px; border: 1px solid #ddd;">${drug.route || ''}</td>
-                <td style="padding: 8px; border: 1px solid #ddd;">${drug.quantity || ''}</td>
-            `;
-        });
-    } else {
-        medsTable.innerHTML = '<tr><td colspan="6" style="padding: 8px; text-align: center; border: 1px solid #ddd;">No medications prescribed</td></tr>';
-    }
     
     // Populate vitals table
     const vitalsTable = document.getElementById('print-vitals-table').getElementsByTagName('tbody')[0];
@@ -713,6 +695,29 @@ document.getElementById('print-header').addEventListener('click', function() {
     } else {
         vitalsTable.innerHTML = '<tr><td colspan="6" style="padding: 8px; text-align: center; border: 1px solid #ddd;">No vital signs recorded</td></tr>';
     }
+
+    // Populate medications table
+    const medsTable = document.getElementById('print-meds-table').getElementsByTagName('tbody')[0];
+    medsTable.innerHTML = ''; // Clear existing rows
+    
+    if (window.medData && window.medData.length > 0) {
+        window.medData.forEach(drug => {
+            const row = medsTable.insertRow();
+            row.innerHTML = `
+                <td style="padding: 8px; border: 1px solid #ddd;">${drug.drug_name || ''}</td>
+                <td style="padding: 8px; border: 1px solid #ddd;">${drug.dose || ''}</td>
+                <td style="padding: 8px; border: 1px solid #ddd;">${drug.units || ''}</td>
+                <td style="padding: 8px; border: 1px solid #ddd;">${drug.frequency || ''}</td>
+                <td style="padding: 8px; border: 1px solid #ddd;">${drug.route || ''}</td>
+                <td style="padding: 8px; border: 1px solid #ddd;">${drug.quantity || ''}</td>
+            `;
+        });
+    } else {
+        medsTable.innerHTML = '<tr><td colspan="6" style="padding: 8px; text-align: center; border: 1px solid #ddd;">No medications prescribed</td></tr>';
+    }
+    
+
+
     //print med logs
     fetch('/api/receive_data/', {
         method: 'POST',
@@ -738,6 +743,7 @@ document.getElementById('print-header').addEventListener('click', function() {
                     groupedLogs[drug].sort((a, b) => new Date(b.datetime) - new Date(a.datetime));
                     groupedLogs[drug].forEach(log => {
                         const row = document.createElement('tr');
+                        // console.log("ers "+log.medication_id);
                         row.innerHTML = `
                             <td style="padding:8px; border:1px solid #ddd;">${log.drug_name}</td>
                             <td style="padding:8px; border:1px solid #ddd;">${log.datetime}</td>
@@ -751,7 +757,23 @@ document.getElementById('print-header').addEventListener('click', function() {
             } else {
                 medsLogsTableBody.innerHTML = '<tr><td colspan="5" style="text-align:center;">No medication logs found</td></tr>';
             }
+        })
+        .catch(error => {
+            alert('Error fetching data for printing: ' + error.message);
+        });
 
+    //print nurse notes
+    fetch('/api/receive_data/', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': getCookie('csrftoken')
+        },
+        body: JSON.stringify({ patient_id: patientId })
+    })
+        .then(response => response.json())
+        .then(data => {
+            
             // Nurse notes
             const notesContainer = document.getElementById('print-notes-container');
             notesContainer.innerHTML = '';
@@ -1477,6 +1499,7 @@ document.addEventListener('DOMContentLoaded', function() {
         const phTime = new Date(now.getTime() + (8 * 60 * 60 * 1000));
         const formattedDateTime = phTime.toISOString().replace('T', ' ').substring(0, 19);
         
+        // Ensure medicationId is available globally
         
         const newEntry = {
             id: Date.now(), // Temporary ID
@@ -1488,7 +1511,7 @@ document.addEventListener('DOMContentLoaded', function() {
             isExisting: false  // 👈 important!
         };
         
-    
+     
         fetch('/api/medication_log/', {
             method: 'POST',
             headers: {
@@ -1571,11 +1594,8 @@ function loadInitialData() {
     const pathParts = window.location.pathname.split('/');
     const patientId = pathParts[2];  // "11" from /patient/11/
     
-    // Ensure medicationId is available globally
-    if (typeof medicationId === 'undefined') {
-        console.error('medicationId is undefined');
-        return;
-    }
+    
+
 
     // Include both patientId and medicationId in the request
     fetch(`/api/medication_log/${patientId}/${medicationId}/`)
@@ -1723,20 +1743,25 @@ $('#active tbody, #inactive tbody').on('click', 'tr', function() {
         route: $(this).find('td:eq(5)').text(),
         duration: $(this).find('td:eq(6)').text(),
         status: $(this).closest('table').attr('id') === 'active' ? 'active' : 
-        $(this).closest('table').attr('id') === 'discontinued' ? 'discontinued' :
-        $(this).closest('table').attr('id') === 'completed' ? 'completed' : 'inactive',
+                $(this).closest('table').attr('id') === 'discontinued' ? 'discontinued' :
+                $(this).closest('table').attr('id') === 'completed' ? 'completed' : 'inactive',
         // Get additional data from data attributes
         health_diagnostic: $(this).data('health-diagnostic') || '',
         patient_instructions: $(this).data('patient-instructions') || '',
         pharmacist_instructions: $(this).data('pharmacist-instructions') || '',
         id: $(this).data('drug-id') || null
     };
-    
+
+    // // Stop if there's no ID
+    if (!fullDrugData.id) {
+        return;
+    }
+
     medicationId = fullDrugData.id;
-    
     loadInitialData();
     showEditableMedicationModal(fullDrugData);
 });
+
 // Handle password confirmation
 // edit medication
 $('#med-confirm-btn').click(function() {
@@ -2239,6 +2264,7 @@ function initPasswordModal() {
         modal.removeAttribute('aria-hidden');
         modal.removeAttribute('inert');
         document.getElementById('accessPassword').value = '';
+        document.getElementById('remark1').value = '';
         setTimeout(() => document.getElementById('accessPassword').focus(), 10);
     });
 
@@ -2257,6 +2283,7 @@ function initPasswordModal() {
     // Confirm access button logic
     document.getElementById('confirmAccess').addEventListener('click', function() {
         const password = document.getElementById('accessPassword').value;
+        const remark = document.getElementById('remark1').value;
 
         if (password) { 
             fetch('/api/check_shift_password/', {
@@ -2265,7 +2292,10 @@ function initPasswordModal() {
                     'Content-Type': 'application/json',
                     'X-CSRFToken': csrfToken, // CSRF Token if required
                 },
-                body: JSON.stringify({ password: password })
+                body: JSON.stringify({ 
+                    password: password,
+                    remark: remark // Include remark here
+                })
             })
             .then(response => response.json())
             .then(data => {
@@ -2289,6 +2319,7 @@ function initPasswordModal() {
                                 pulse: pulse,
                                 respiratory_rate: respiratory,
                                 oxygen: oxygen,
+                                remark: remark,
                             })
                         })
                         .then(response => response.json())

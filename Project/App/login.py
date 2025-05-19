@@ -116,6 +116,7 @@ def handle_request(request):
 
             stored_otp = cache.get(employee.email)
             if password == stored_otp:
+                cache.delete(employee.email)
                 # Check if user exists; create only if necessary
                 user, created = User.objects.get_or_create(username=employee_id)
 
@@ -128,7 +129,6 @@ def handle_request(request):
                     # Log the user in
                     login(request, user)  # ✅ Store user session
                     nurse_id = request.session.get("employeeID")
-                    cache.delete(employee.email)
                     Admin_logs.add_log_activity("Admin: "+employee.name+" Logged In")
                     response_data = {"message": "Login successful!", "redirect_url": "admin_user", "user_id": employee_id}
                 else:

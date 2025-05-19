@@ -198,7 +198,7 @@ def update_patient(request):
             try:
                 # Convert birthday string to date object if provided
                 if update_fields['birthday']:
-                    update_fields['birthday'] = datetime.strptime(update_fields['birthday'], '%Y-%m-%d').strftime('%B %d, %Y')
+                    update_fields['birthday'] = datetime.strptime(update_fields['birthday'], '%Y-%m-%d')
                 
                 # Update patient fields
                 for field, value in update_fields.items():
@@ -248,15 +248,16 @@ def update_patient(request):
     except Exception as e:
         return JsonResponse({'status': 'error', 'message': str(e)}, status=500)
     
-# add vital signs 
 def save_vital_signs(request):
-    patient_id = request.session.get('patient_id')  # Get patient ID from session
+    patient_id = request.session.get('patient_id')
     patient = get_object_or_404(PatientInformation, id=patient_id)
     nurse_id = request.session.get('user_id')
     nurse = Employee.objects.get(employee_id=nurse_id)
 
     if request.method == 'POST':
         data = json.loads(request.body)
+        remarks = data.get('remark') or 'N/A'  # Default to 'N/A' if empty or null
+
         vital_signs = VitalSigns2(
             patient=patient,
             temperature=data.get('temperature'),
@@ -264,13 +265,17 @@ def save_vital_signs(request):
             pulse_rate=data.get('pulse'),
             respiratory_rate=data.get('respiratory_rate'),
             oxygen_saturation=data.get('oxygen'),
+            remarks=remarks
         )
-        
-        
+
         vital_signs.save()
-        
-        Nurse_logs.add_log_activity(f"Nurse {nurse.name} recorded vital signs for patient {patient.name}: Temp {vital_signs.temperature}°C, BP {vital_signs.blood_pressure}, Pulse {vital_signs.pulse_rate} bpm."
-)
+
+        Nurse_logs.add_log_activity(
+            f"Nurse {nurse.name} recorded vital signs for patient {patient.name}: "
+            f"Temp {vital_signs.temperature}°C, BP {vital_signs.blood_pressure}, "
+            f"Pulse {vital_signs.pulse_rate} bpm."
+        )
+
         return JsonResponse({'status': 'success', 'message': 'Vital signs added successfully'})
 
     return JsonResponse({'status': 'failure', 'message': 'Invalid request'}, status=400)
