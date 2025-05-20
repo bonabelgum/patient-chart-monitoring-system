@@ -1,6 +1,6 @@
 from django.contrib import admin
 from django.utils.html import format_html
-from .models import Admin_logs, Employee, MedicationLogs, Nurse_logs, PatientInformation, Shift_schedule, VitalSigns1, VitalSigns2, Medication, NurseNotes
+from .models import Admin_logs, Employee, MedicationLogs, Nurse_logs, PatientInformation, PatientSnapshot, Shift_schedule, VitalSigns1, VitalSigns2, Medication, NurseNotes
     
 
 @admin.register(Employee)
@@ -105,3 +105,20 @@ class NurseLogsAdmin(admin.ModelAdmin):
         from django.utils.timezone import localtime
         return localtime(obj.date_time).strftime('%Y-%m-%d %H:%M:%S')
     formatted_date_time.short_description = 'Date/Time (PH)'
+    
+@admin.register(PatientSnapshot)
+class PatientSnapshotAdmin(admin.ModelAdmin):
+    list_display = ('control_number', 'patient', 'created_at')
+    list_filter = ('created_at',)
+    search_fields = ('control_number', 'patient_name')
+    readonly_fields = ('control_number', 'created_at')
+
+    fieldsets = (
+        (None, {
+            'fields': ('patient', 'control_number', 'created_at')
+        }),
+        ('Snapshot Data', {
+            'fields': ('patient_data', 'vitals_data', 'medications_data', 'medication_logs_data', 'nurse_notes_data'),
+            'classes': ('collapse',),
+        }),
+    )

@@ -1,5 +1,6 @@
 
 import json
+from django.forms import model_to_dict
 from django.http import JsonResponse
 from django.shortcuts import get_object_or_404
 from django.views.decorators.csrf import csrf_exempt
@@ -7,6 +8,7 @@ from django.views.decorators.http import require_POST, require_GET
 from django.core.serializers import serialize
 from django.core.exceptions import ValidationError
 from django.core.serializers.json import DjangoJSONEncoder
+from django.db.models.fields.files import ImageFieldFile
 from datetime import datetime
 from django.utils.timezone import localtime, now
 from django.utils import timezone
@@ -156,6 +158,12 @@ def receive_data(request):
     return JsonResponse({'status': 'fail', 'error': 'Invalid request method'})
 
 # save patient snapshot
+def safe_model_to_dict(instance):
+    data = model_to_dict(instance)
+    for key, value in data.items():
+        if isinstance(value, ImageFieldFile):
+            data[key] = value.url if value and hasattr(value, 'url') else None
+    return json.loads(json.dumps(data, cls=DjangoJSONEncoder))
 
 def save_snapshot(request):
     if request.method != "POST":
@@ -177,12 +185,12 @@ def save_snapshot(request):
         def serialize_qs(qs):
             return json.loads(json.dumps(list(qs.values()), cls=DjangoJSONEncoder))
 
-        # Fetch and serialize all related data
+        # Safely fetch and serialize all data
+        patient_data = safe_model_to_dict(patient)
         vitals_data = {
             "vital_signs_1": serialize_qs(patient.vital_signs.all()),
             "vital_signs_2": serialize_qs(patient.vital_signs2.all())
         }
-
         medications_data = serialize_qs(patient.medications.all())
         medication_logs_data = serialize_qs(MedicationLogs.objects.filter(patient=patient))
         nurse_notes_data = serialize_qs(patient.nurse_notes.all())
@@ -190,16 +198,22 @@ def save_snapshot(request):
         # Save snapshot
         snapshot = PatientSnapshot.objects.create(
             patient=patient,
+            patient_data=patient_data,
             vitals_data=vitals_data,
             medications_data=medications_data,
             medication_logs_data=medication_logs_data,
             nurse_notes_data=nurse_notes_data
         )
 
+        # Format created_at nicely for JSON response
+        created_at_str = localtime(snapshot.created_at).strftime('%Y-%m-%d %H:%M:%S')
+
         return JsonResponse({
+            'success': True,
             'message': 'Snapshot saved successfully.',
             'snapshot_id': snapshot.id,
-            'control_number': snapshot.control_number
+            'control_number': snapshot.control_number,
+            'created_at': created_at_str,
         }, status=201)
 
     except Exception as e:

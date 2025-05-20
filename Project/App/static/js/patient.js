@@ -829,7 +829,10 @@ document.getElementById('print-header').addEventListener('click', function() {
         .then(response => response.json())
         .then(data => {
             if (data.success) {
-            alert('Snapshot saved! ID: ' + data.snapshot_id + ' | Control #: ' + data.control_number);
+                // console.log('Snapshot saved! ID: ' + data.snapshot_id + ' | Control #: ' + data.control_number);
+                document.getElementById('print-date').textContent = new Date(data.created_at).toLocaleString();
+                document.getElementById('print-snapshot-version').textContent = data.control_number || 'N/A';
+
             } else {
             console.error('Save failed:', data.error);
             }

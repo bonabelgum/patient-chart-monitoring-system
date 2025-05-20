@@ -137,18 +137,23 @@ $('#print-tab-table tbody').on('click', 'tr', function () {
     })
     .then(data => {
 
-      console.log('Snapshot Data:', data);
+        console.log('Snapshot Data:', data);
 
         // === Fill basic patient info ===
         document.getElementById('print-date').textContent = new Date().toLocaleString();
+        document.getElementById('print-date').textContent = new Date(data.created_at).toLocaleString();
+        document.getElementById('print-snapshot-version').textContent = data.control_number || 'N/A';
 
-        document.getElementById('print-id1').textContent = data.patient_id || '';
+        const patient = data.patient_data || {};
+
+        document.getElementById('print-id1').textContent = patient.id || '';
         document.getElementById('print-name1').textContent = data.patient_name || '';
-        document.getElementById('print-sex').textContent = data.patient_sex || '';
-        document.getElementById('print-bday1').textContent = data.patient_birthday || '';
-        document.getElementById('print-phone').textContent = data.patient_phone || '';
-        document.getElementById('print-physician').textContent = data.physician_name || '';
+        document.getElementById('print-sex').textContent = patient.sex || '';
+        document.getElementById('print-bday1').textContent = formatBirthday(patient.birthday) || '';
+        document.getElementById('print-phone').textContent = patient.phone_number || '';
+        document.getElementById('print-physician').textContent = patient.physician_name || '';
 
+        // === Fill clinical notes from vital_signs_1 (if any) ===
         const vitalSigns1 = data.vitals_data?.vital_signs_1?.[0] || {};
         document.getElementById('print-allergies').textContent = vitalSigns1.allergies || 'None recorded';
         document.getElementById('print-family-history').textContent = vitalSigns1.family_history || 'None recorded';
@@ -163,7 +168,7 @@ $('#print-tab-table tbody').on('click', 'tr', function () {
             vitals.forEach(vs => {
                 const row = vitalsTable.insertRow();
                 row.innerHTML = `
-                    <td style="padding: 8px; border: 1px solid #ddd;">${vs.date_and_time || ''}</td>
+                    <td style="padding: 8px; border: 1px solid #ddd;">${formatDateTime(vs.date_and_time) || ''}</td>
                     <td style="padding: 8px; border: 1px solid #ddd;">${vs.temperature || ''}</td>
                     <td style="padding: 8px; border: 1px solid #ddd;">${vs.blood_pressure || ''}</td>
                     <td style="padding: 8px; border: 1px solid #ddd;">${vs.pulse_rate || ''}</td>
@@ -200,6 +205,11 @@ $('#print-tab-table tbody').on('click', 'tr', function () {
         const medLogsTable = document.querySelector('#print-meds-logs-table tbody');
         medLogsTable.innerHTML = '';
         const medLogs = data.medication_logs_data || [];
+        const statusLabels = {
+            administered: 'Administered',
+            not_taken: 'Not Taken',
+            refused: 'Refused'
+        };
         if (medLogs.length) {
             // Augment logs with medication names
             const medsById = {};
@@ -217,9 +227,9 @@ $('#print-tab-table tbody').on('click', 'tr', function () {
                     const row = medLogsTable.insertRow();
                     row.innerHTML = `
                         <td style="padding:8px; border:1px solid #ddd;">${log.drug_name}</td>
-                        <td style="padding:8px; border:1px solid #ddd;">${log.date_time}</td>
+                        <td style="padding:8px; border:1px solid #ddd;">${formatDateTime(log.date_time)}</td>
                         <td style="padding:8px; border:1px solid #ddd;">${log.administered_by || 'N/A'}</td>
-                        <td style="padding:8px; border:1px solid #ddd;">${log.status || 'Given'}</td>
+                        <td style="padding:8px; border:1px solid #ddd;">${statusLabels[log.status] || 'Given'}</td>
                         <td style="padding:8px; border:1px solid #ddd;">${log.remarks || 'N/A'}</td>
                     `;
                 });
@@ -275,6 +285,33 @@ $('#print-tab-table tbody').on('click', 'tr', function () {
 
             
 });
+
+function formatDateTime(isoString) {
+    if (!isoString) return '';
+    const date = new Date(isoString);
+    return date.toLocaleString('en-US', {
+        year: 'numeric',
+        month: 'long',
+        day: 'numeric',
+        hour: 'numeric',
+        minute: '2-digit',
+        hour12: true,
+        timeZone: 'Asia/Manila'  // adjust if needed
+    });
+}
+function formatBirthday(dateString) {
+    if (!dateString) return '';
+
+    const date = new Date(dateString);
+
+    if (isNaN(date.getTime())) return 'Invalid date';
+
+    return date.toLocaleDateString('en-US', {
+        year: 'numeric',
+        month: 'long',
+        day: 'numeric'
+    });
+}
 
 // Initialize modal event listeners once
 function initPasswordModal() {

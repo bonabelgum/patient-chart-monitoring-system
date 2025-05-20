@@ -76,6 +76,7 @@ def snapshot_json(request, control_number):
         "control_number": snap.control_number,
         "patient_name": snap.patient.name,
         "created_at": snap.created_at.isoformat(),
+        "patient_data": snap.patient_data,
         "vitals_data": snap.vitals_data,
         "medications_data": snap.medications_data,
         "medication_logs_data": snap.medication_logs_data,

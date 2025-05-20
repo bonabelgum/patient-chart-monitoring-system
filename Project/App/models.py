@@ -379,6 +379,7 @@ class PatientSnapshot(models.Model):
     control_number = models.CharField(max_length=50, unique=True, editable=False)
     created_at = models.DateTimeField(auto_now_add=True)
 
+    patient_data = models.JSONField(default=dict)
     vitals_data = models.JSONField()
     medications_data = models.JSONField()
     medication_logs_data = models.JSONField()
@@ -393,7 +394,7 @@ class PatientSnapshot(models.Model):
         super().save(*args, **kwargs)
 
     def __str__(self):
-        return f"{self.control_number} for {self.patient.full_name} @ {self.created_at}"
+        return f"{self.control_number} for {self.patient.name} @ {self.created_at}"
 
 
 
