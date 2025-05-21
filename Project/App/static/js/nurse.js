@@ -34,7 +34,7 @@ document.getElementById('nurse-logs-tab').addEventListener('click', function() {
 // Function to fetch and populate nurse logs
 function fetchAndPopulateNurseLogs() {
     const table = $('#nurse-logs-table').DataTable({
-        "destroy": true,
+        "destroy": true, 
         "paging": true,
         "ordering": true,
         "info": true,

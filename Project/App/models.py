@@ -522,11 +522,11 @@ class Medication(models.Model):
     route = models.CharField(max_length=20, choices=ROUTE_CHOICES)
     duration = models.PositiveIntegerField(help_text="e.g., '7 days'") #
     quantity = models.PositiveIntegerField(help_text="Total quantity dispensed")
-    start_date = models.DateField()
-    end_date = models.DateField(
+    start_date = models.DateTimeField()
+    end_date = models.DateTimeField(
         null=True,
         blank=True,
-        help_text="Date when the medication ends or is discontinued"
+        help_text="Date and time when the medication ends or is discontinued"
     )
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='active')
 

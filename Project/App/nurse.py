@@ -12,6 +12,7 @@ import time
 import threading
 from django.contrib.auth.models import User
 from decimal import Decimal
+from zoneinfo import ZoneInfo
 
 
 snapshots = PatientSnapshot.objects.all()
@@ -59,7 +60,7 @@ def fetch_snapshots(request):
         {
             "patient_name": snap.patient.name,
             "control_number": snap.control_number,
-            "created_at": snap.created_at.strftime("%Y-%m-%d %H:%M:%S"),
+            "created_at": snap.created_at.astimezone(ZoneInfo("Asia/Manila")).strftime('%B %d, %Y, %I:%M:%S %p'),
         }
         for snap in snapshots
     ]

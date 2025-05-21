@@ -49,6 +49,7 @@ def receive_data(request):
             # Prepare med data
             med_data = []
             for drug in med:
+                
                 med_data.append({
                     'drug_name': drug.drug_name,
                     'dose': drug.dose,
@@ -58,7 +59,7 @@ def receive_data(request):
                     'duration': drug.duration,
                     'quantity': drug.quantity,
                     'start_date': drug.start_date.strftime('%B %d, %Y') if drug.start_date else None,
-                    'end_date': drug.end_date.strftime('%B %d, %Y') if drug.end_date else None,
+                    'end_date': drug.end_date.strftime('%B %d, %Y %H:%M:%S') if drug.end_date else None,
                     'status': drug.status,
                     'health_diagnostic': drug.health_diagnostics,
                     'patient_instructions': drug.patient_instructions,
@@ -570,7 +571,8 @@ def update_medication(request):
                 )
 
             if data.get('status') in ['completed', 'discontinued']:
-                medication.end_date = timezone.now().date()
+                                
+                medication.end_date = timezone.now()
 
                 # Update Medication fields
             if data.get('drug_name') is not None:

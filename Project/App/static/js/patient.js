@@ -294,7 +294,6 @@ document.addEventListener('DOMContentLoaded', function () {
                 // Clear existing data first
                 activeTable.clear();
                 inactiveTable.clear();
-            
                 // Process each medication record
                 data.med_data.forEach(drug => {
                     // Create the row data array
