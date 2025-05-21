@@ -137,7 +137,7 @@ $('#print-tab-table tbody').on('click', 'tr', function () {
     })
     .then(data => {
 
-        console.log('Snapshot Data:', data);
+        // console.log('Snapshot Data:', data);
 
         // === Fill basic patient info ===
         document.getElementById('print-date').textContent = new Date().toLocaleString();
@@ -195,6 +195,9 @@ $('#print-tab-table tbody').on('click', 'tr', function () {
                     <td style="padding: 8px; border: 1px solid #ddd;">${med.frequency || ''}</td>
                     <td style="padding: 8px; border: 1px solid #ddd;">${med.route || ''}</td>
                     <td style="padding: 8px; border: 1px solid #ddd;">${med.quantity || ''}</td>
+                    <td style="padding: 8px; border: 1px solid #ddd;">${med.status || ''}</td>
+                    <td style="padding: 8px; border: 1px solid #ddd;">${med.start_date || ''}</td>
+                    <td style="padding: 8px; border: 1px solid #ddd;">${med.end_date || ''}</td>
                 `;
             });
         } else {

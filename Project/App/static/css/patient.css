@@ -8,6 +8,10 @@
 
 
 /* Medication Modal */
+#med-remarks{
+    margin: 10px 0px;
+
+}
 
 /* Medication Order Modal Styles */
 #medicationLogsTable td:nth-child(1),

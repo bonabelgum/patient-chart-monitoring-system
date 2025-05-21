@@ -710,6 +710,9 @@ document.getElementById('print-header').addEventListener('click', function() {
                 <td style="padding: 8px; border: 1px solid #ddd;">${drug.frequency || ''}</td>
                 <td style="padding: 8px; border: 1px solid #ddd;">${drug.route || ''}</td>
                 <td style="padding: 8px; border: 1px solid #ddd;">${drug.quantity || ''}</td>
+                <td style="padding: 8px; border: 1px solid #ddd;">${drug.status || ''}</td>
+                <td style="padding: 8px; border: 1px solid #ddd;">${drug.start_date || ''}</td>
+                <td style="padding: 8px; border: 1px solid #ddd;">${drug.end_date || ''}</td>
             `;
         });
     } else {
@@ -743,7 +746,7 @@ document.getElementById('print-header').addEventListener('click', function() {
                     groupedLogs[drug].sort((a, b) => new Date(b.datetime) - new Date(a.datetime));
                     groupedLogs[drug].forEach(log => {
                         const row = document.createElement('tr');
-                        // console.log("ers "+log.medication_id);
+                        console.log("ers "+log.remarks);
                         row.innerHTML = `
                             <td style="padding:8px; border:1px solid #ddd;">${log.drug_name}</td>
                             <td style="padding:8px; border:1px solid #ddd;">${log.datetime}</td>
@@ -1521,20 +1524,22 @@ document.addEventListener('DOMContentLoaded', function() {
         const now = new Date();
         const phTime = new Date(now.getTime() + (8 * 60 * 60 * 1000));
         const formattedDateTime = phTime.toISOString().replace('T', ' ').substring(0, 19);
-        
-        // Ensure medicationId is available globally
-        
+
+        // Get remarks from input and default to "N/A" if empty
+        const remarksInput = document.getElementById('med-remarks');
+        let remarks = remarksInput ? remarksInput.value.trim() : '';
+        if (!remarks) remarks = 'N/A';
+
         const newEntry = {
             id: Date.now(), // Temporary ID
             datetime: formattedDateTime,
             administered_by: '',
             status: 'not_taken',
-            remarks: '',
-            medication: medicationId,
-            isExisting: false  // 👈 important!
+            remarks: remarks,
+            medication: medicationId, // assuming this is available globally
+            isExisting: false
         };
-        
-     
+
         fetch('/api/medication_log/', {
             method: 'POST',
             headers: {
@@ -1549,25 +1554,27 @@ document.addEventListener('DOMContentLoaded', function() {
                 // Update nurse name
                 newEntry.administered_by = data.nurse_name;
 
-                // Insert at the beginning of data arrays
+                // Add to arrays
                 workingMedicationData.unshift(newEntry);
                 newlyAddedMedications.unshift(newEntry);
 
-                // Clear and re-add all rows to DataTable to ensure new one appears at the top
+                // Refresh table
                 medicationTable.clear();
                 medicationTable.rows.add(workingMedicationData).draw();
-
-                // Optional: Jump to the first page instead of last
                 medicationTable.page(0).draw(false);
 
-                // Re-bind event listeners
+                // Re-bind listeners
                 bindStatusChangeEvents();
+
+                // Optionally clear input after submission
+                if (remarksInput) remarksInput.value = '';
             }
         })
         .catch(error => {
             console.error('Error saving entry:', error);
         });
     }
+
     
     
 

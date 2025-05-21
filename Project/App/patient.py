@@ -557,18 +557,16 @@ def update_medication(request):
             medication = get_object_or_404(Medication, id=data.get('id'))
 
             for log in new_logs:
-                print("Log Entry:")
-                print("Datetime:", log.get('datetime'))
-                print("Status:", log.get('status'))
-                print("Administered By:", log.get('administered_by'))
+                
 
                 # Create and save a new MedicationLogs entry using the fetched medication
                 MedicationLogs.objects.create(
                     patient=patient,
-                    medication=medication,  # Associate the fetched medication object
+                    medication=medication,
                     date_time=log.get('datetime'),
                     administered_by=log.get('administered_by'),
-                    status=log.get('status')
+                    status=log.get('status'),
+                    remarks=log.get('remarks')  # ✅ Save remarks too
                 )
 
             if data.get('status') in ['completed', 'discontinued']:
