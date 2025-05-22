@@ -123,8 +123,9 @@ $('#print-tab-table tbody').on('click', 'tr', function () {
 
     // Extract snapshot info from clicked row
     const createdAt = rowData[0];
-    const patientName = rowData[1];
-    const controlNumber = rowData[2];  // Assuming this is snapshot ID/control number
+    const nurseName = rowData[1];
+    const patientName = rowData[2];
+    const controlNumber = rowData[3];  // Assuming this is snapshot ID/control number
 
     // console.log('Clicked snapshot:', rowData);
 
