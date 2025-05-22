@@ -59,13 +59,13 @@ def fetch_snapshots(request):
     data = [
         {
             "patient_name": snap.patient.name,
+            "nurse_name": snap.employee.name if snap.employee else None,  # 👈 Added nurse (employee) name
             "control_number": snap.control_number,
             "created_at": snap.created_at.astimezone(ZoneInfo("Asia/Manila")).strftime('%B %d, %Y, %I:%M:%S %p'),
         }
         for snap in snapshots
     ]
     return JsonResponse({"snapshots": data})
-
 
 def snapshot_json(request, control_number):
     try:
@@ -76,6 +76,7 @@ def snapshot_json(request, control_number):
     data = {
         "control_number": snap.control_number,
         "patient_name": snap.patient.name,
+        "nurse_name": snap.employee.name if snap.employee else None,  # 👈 Added nurse (employee) name
         "created_at": snap.created_at.isoformat(),
         "patient_data": snap.patient_data,
         "vitals_data": snap.vitals_data,
@@ -85,7 +86,6 @@ def snapshot_json(request, control_number):
     }
 
     return JsonResponse(data, json_dumps_params={'indent': 2})
-
 # Check if patient exist
 def check_patient_id(request):
     if request.method == 'POST':

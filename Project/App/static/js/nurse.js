@@ -93,7 +93,8 @@ function fetchAndPopulatePrintTabs() {
             if (data.snapshots && data.snapshots.length > 0) {
                 data.snapshots.forEach(log => {
                     table.row.add([
-                        log.created_at,         // Date/time
+                        log.created_at,        // Date/time
+                        log.nurse_name,         // Date/time
                         log.patient_name,       // Patient name
                         log.control_number      // Snapshot control number or ID
                     ]);

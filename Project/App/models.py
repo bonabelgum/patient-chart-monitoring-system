@@ -376,6 +376,7 @@ class PatientInformation(models.Model):
 # save printed
 class PatientSnapshot(models.Model):
     patient = models.ForeignKey('PatientInformation', on_delete=models.CASCADE, related_name='snapshots')
+    employee = models.ForeignKey('Employee', on_delete=models.SET_NULL, null=True, blank=True, related_name='snapshots')  # <--- Added this line
     control_number = models.CharField(max_length=50, unique=True, editable=False)
     created_at = models.DateTimeField(auto_now_add=True)
 
@@ -387,7 +388,6 @@ class PatientSnapshot(models.Model):
 
     def save(self, *args, **kwargs):
         if not self.control_number:
-            # Generate control number, e.g. SNAP-20250519-AB123
             timestamp = now().strftime("%Y%m%d")
             random_part = get_random_string(5).upper()
             self.control_number = f"SNAP-{timestamp}-{random_part}"
@@ -395,7 +395,6 @@ class PatientSnapshot(models.Model):
 
     def __str__(self):
         return f"{self.control_number} for {self.patient.name} @ {self.created_at}"
-
 
 
 

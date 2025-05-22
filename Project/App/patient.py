@@ -12,6 +12,8 @@ from django.db.models.fields.files import ImageFieldFile
 from datetime import datetime
 from django.utils.timezone import localtime, now
 from django.utils import timezone
+from zoneinfo import ZoneInfo
+from django.utils.timezone import make_aware
 
 
 from .models import Employee, Nurse_logs, PatientInformation, PatientSnapshot, Shift_schedule, VitalSigns1, VitalSigns2, Medication, NurseNotes, MedicationLogs
@@ -35,6 +37,7 @@ def receive_data(request):
 
             # Prepare vitals data
             vitals_data = []
+            manila_tz = ZoneInfo('Asia/Manila')
             for vs in patient_vs2:
                 vitals_data.append({
                     'datetime': localtime(vs.date_and_time).strftime('%B %d, %Y %H:%M:%S'),
@@ -48,7 +51,11 @@ def receive_data(request):
                 })
             # Prepare med data
             med_data = []
+            manila_tz = ZoneInfo('Asia/Manila')
             for drug in med:
+                start_date = make_aware(drug.start_date) if drug.start_date and timezone.is_naive(drug.start_date) else drug.start_date
+                end_date = make_aware(drug.end_date) if drug.end_date and timezone.is_naive(drug.end_date) else drug.end_date
+                
                 
                 med_data.append({
                     'drug_name': drug.drug_name,
@@ -58,8 +65,10 @@ def receive_data(request):
                     'route': drug.route,
                     'duration': drug.duration,
                     'quantity': drug.quantity,
-                    'start_date': drug.start_date.strftime('%B %d, %Y') if drug.start_date else None,
-                    'end_date': drug.end_date.strftime('%B %d, %Y %H:%M:%S') if drug.end_date else None,
+
+                    'start_date': start_date.astimezone(manila_tz).strftime('%B %d, %Y') if start_date else None,
+                    'end_date': end_date.astimezone(manila_tz).strftime('%B %d, %Y %H:%M:%S') if end_date else None,
+
                     'status': drug.status,
                     'health_diagnostic': drug.health_diagnostics,
                     'patient_instructions': drug.patient_instructions,
@@ -166,11 +175,22 @@ def safe_model_to_dict(instance):
             data[key] = value.url if value and hasattr(value, 'url') else None
     return json.loads(json.dumps(data, cls=DjangoJSONEncoder))
 
+
 def save_snapshot(request):
     if request.method != "POST":
         return JsonResponse({'error': 'Only POST allowed'}, status=405)
 
     try:
+        # Get the nurse (employee) from session
+        nurse_id = request.session.get('user_id')
+        if not nurse_id:
+            return JsonResponse({'error': 'No nurse ID in session'}, status=403)
+        
+        try:
+            nurse = Employee.objects.get(employee_id=nurse_id)
+        except Employee.DoesNotExist:
+            return JsonResponse({'error': 'Nurse (employee) not found'}, status=404)
+
         data = json.loads(request.body)
         patient_id = data.get('patient_id')
 
@@ -182,11 +202,9 @@ def save_snapshot(request):
         except PatientInformation.DoesNotExist:
             return JsonResponse({'error': 'Patient not found'}, status=404)
 
-        # Helper to serialize querysets
         def serialize_qs(qs):
             return json.loads(json.dumps(list(qs.values()), cls=DjangoJSONEncoder))
 
-        # Safely fetch and serialize all data
         patient_data = safe_model_to_dict(patient)
         vitals_data = {
             "vital_signs_1": serialize_qs(patient.vital_signs.all()),
@@ -196,9 +214,10 @@ def save_snapshot(request):
         medication_logs_data = serialize_qs(MedicationLogs.objects.filter(patient=patient))
         nurse_notes_data = serialize_qs(patient.nurse_notes.all())
 
-        # Save snapshot
+        # ✅ Create snapshot and link to nurse (employee)
         snapshot = PatientSnapshot.objects.create(
             patient=patient,
+            employee=nurse,
             patient_data=patient_data,
             vitals_data=vitals_data,
             medications_data=medications_data,
@@ -206,7 +225,6 @@ def save_snapshot(request):
             nurse_notes_data=nurse_notes_data
         )
 
-        # Format created_at nicely for JSON response
         created_at_str = localtime(snapshot.created_at).strftime('%Y-%m-%d %H:%M:%S')
 
         return JsonResponse({
