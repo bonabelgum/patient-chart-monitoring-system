@@ -230,6 +230,7 @@ def save_snapshot(request):
         return JsonResponse({
             'success': True,
             'message': 'Snapshot saved successfully.',
+            "nurse_id": snapshot.employee.employee_id if snapshot.employee else None,  # 👈 Added nurse (employee) name
             'snapshot_id': snapshot.id,
             'control_number': snapshot.control_number,
             'created_at': created_at_str,

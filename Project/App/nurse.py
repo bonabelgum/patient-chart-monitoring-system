@@ -76,7 +76,7 @@ def snapshot_json(request, control_number):
     data = {
         "control_number": snap.control_number,
         "patient_name": snap.patient.name,
-        "nurse_name": snap.employee.name if snap.employee else None,  # 👈 Added nurse (employee) name
+        "nurse_id": snap.employee.employee_id if snap.employee else None,  # 👈 Added nurse (employee) name
         "created_at": snap.created_at.isoformat(),
         "patient_data": snap.patient_data,
         "vitals_data": snap.vitals_data,

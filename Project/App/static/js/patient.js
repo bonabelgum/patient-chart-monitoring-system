@@ -834,6 +834,7 @@ document.getElementById('print-header').addEventListener('click', function() {
                 // console.log('Snapshot saved! ID: ' + data.snapshot_id + ' | Control #: ' + data.control_number);
                 document.getElementById('print-date').textContent = new Date(data.created_at).toLocaleString();
                 document.getElementById('print-snapshot-version').textContent = data.control_number || 'N/A';
+                document.getElementById('nurse-printed').textContent = data.nurse_id || 'N/A';
 
             } else {
             console.error('Save failed:', data.error);
