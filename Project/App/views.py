@@ -38,7 +38,7 @@ def signup(request):
     return render(request, template)
 
 @never_cache
-# @login_required(login_url='/')  # ✅ Redirect to the index view
+@login_required(login_url='/')  # ✅ Redirect to the index view
 def admin_page(request):
     template = "main/admin_user.html"
     return render(request, template)
