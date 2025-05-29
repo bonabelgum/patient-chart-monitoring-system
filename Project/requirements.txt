@@ -1,9 +1,0 @@
-gunicorn
-django
-python-dotenv
-whitenoise
-cryptography
-pyngrok
-django-sslserver
-qrcode[pil]
-djangorestframework
